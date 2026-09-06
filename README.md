@@ -4,7 +4,7 @@
 
 **当前是 0.1.0 开发预览版，并未完整覆盖剪映。** 本项目独立实现，不包含剪映代码、付费素材或商标资产。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
 
-实际测试范围见 [验证记录](docs/VERIFICATION.md)。
+操作步骤见 [中文使用说明](docs/QUICKSTART.md)，实际测试范围见 [验证记录](docs/VERIFICATION.md)。
 
 ![专业布局与关键帧面板](docs/screenshots/professional.png)
 

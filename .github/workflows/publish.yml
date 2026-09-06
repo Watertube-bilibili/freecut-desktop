@@ -1,0 +1,61 @@
+name: Publish verified desktop prerelease
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: Successful main push run of Build desktop packages
+        required: true
+        type: string
+      tag:
+        description: Prerelease tag (for example v0.1.0-preview.1)
+        required: true
+        type: string
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: freecut-manual-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BUILD_RUN_ID: ${{ inputs.build_run_id }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      ARTIFACT_ROOT: ${{ github.workspace }}/release-artifacts
+      SOURCE_ROOT: ${{ github.workspace }}/release-source
+      RELEASE_ROOT: ${{ github.workspace }}/release-upload
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate successful trusted build and artifact inventory
+        id: build
+        run: node scripts/prepare-release.mjs verify
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.build_run_id }}
+          pattern: FreeCut-*-unsigned
+          merge-multiple: false
+          path: release-artifacts
+      - name: Check out licenses from the exact build commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.build.outputs.head_sha }}
+          path: release-source
+          persist-credentials: false
+      - name: Verify and assemble complete release assets
+        env:
+          HEAD_SHA: ${{ steps.build.outputs.head_sha }}
+        run: node scripts/prepare-release.mjs prepare
+      - name: Upload draft assets and publish prerelease
+        env:
+          HEAD_SHA: ${{ steps.build.outputs.head_sha }}
+        run: node scripts/prepare-release.mjs publish

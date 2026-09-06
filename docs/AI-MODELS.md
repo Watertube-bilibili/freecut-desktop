@@ -104,7 +104,8 @@ Windows 本机实测使用系统临时目录缓存，测试模型与音频不提
 - 取消任务释放运行状态；全静音无识别窗口；恶意父目录路径与符号链接 tar 被安全拒绝；正常 gzip / bzip2 包解压通过。
 - 额外使用实际 Electron 44.2.0 / 内置 Node 24.20.0 执行中文朗读与英语识别子进程，配合本项目打包用 FFmpeg 成功；修复了 Electron V8 memory cage 不允许外部 ArrayBuffer 的问题，TTS 和 WAV 读取均明确使用复制缓冲区。
 - 下载中取消、实际 native 子进程已启动后取消均通过，取消后运行状态释放。60 秒连续语音合成信号分成 5 段无重叠、每段 12 秒的识别窗口。
-- Electron 宿主 UI 操作与 macOS 真机应另外核验，不据此声称全平台实测通过。
+- 实际 Windows 桌面面板完成 AISHELL 中文输入→生成→试听→加入时间线→选中音频→SenseVoice 识别→修改文字→加入字幕轨道→保存工程，控制台无错误。3.718 秒音频正确引用到音频轨道，字幕为 0–3.66 秒；识别把“测试”误为“设施”，已在界面校对，不能保证无需人工检查。
+- macOS 模型推理仍需真机核验，不据 Windows 结果声称全平台实测通过。
 
 开发机证据位于系统临时目录 `freecut-ai-verify`：`integration-result.json`（中文合成及 tiny 回识别）、`electron-integration-result.json`（真实 Electron 朗读/英语识别）、`sensevoice-integration-result.json`（中英三样本）、`security-results.json`（修复/取消/解包边界）。临时模型路径为其 `userdata/ai` 子目录。这些文件是开发期日志，不属于安装包。
 

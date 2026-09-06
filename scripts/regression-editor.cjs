@@ -125,6 +125,20 @@ async function main() {
     if (await skip.count()) await skip.click();
     await openProject(fixturePath, fixture.name);
 
+    await check('keyboard undo and shifted redo preserve clip edits', async () => {
+      await page
+        .getByRole('button', { name: `片段 ${fixture.clips[0].name}`, exact: true })
+        .click();
+      await page.getByTitle('复制片段', { exact: true }).click();
+      await expect(page.locator('.timeline-clip')).toHaveCount(2);
+      await page.keyboard.press('ControlOrMeta+z');
+      await expect(page.locator('.timeline-clip')).toHaveCount(1);
+      await page.keyboard.press('ControlOrMeta+Shift+Z');
+      await expect(page.locator('.timeline-clip')).toHaveCount(2);
+      await page.keyboard.press('ControlOrMeta+z');
+      await expect(page.locator('.timeline-clip')).toHaveCount(1);
+    });
+
     await check('mobile inspector closes with visible button and Escape', async () => {
       await page.getByTitle('切换专业布局 / 手机风格', { exact: true }).click();
       await expect(page.locator('.app')).toHaveClass(/mobile-mode/);
@@ -328,7 +342,7 @@ async function main() {
           await expect(relink).toHaveCount(0);
           const recovered = (await snapshot('relinked')).project;
           assert.equal(recovered.assets[0].missing, false);
-          assert.equal(path.resolve(recovered.assets[0].path), compatible);
+          assert.equal(await fs.realpath(recovered.assets[0].path), await fs.realpath(compatible));
           assert.equal(recovered.assets[0].kind, 'video');
           assert.deepEqual(recovered.clips, missing.clips);
         },

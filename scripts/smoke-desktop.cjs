@@ -77,6 +77,12 @@ async function run() {
     }, sample);
     await page.locator('.import-button').click();
     await page.waitForSelector('.asset-card');
+    const mediaRange = await page.evaluate(async () => {
+      const [asset] = await window.freecut.importMedia();
+      const response = await fetch(asset.url, { headers: { Range: 'bytes=0-43' } });
+      return { status: response.status, size: (await response.arrayBuffer()).byteLength };
+    });
+    assert.deepEqual(mediaRange, { status: 206, size: 44 });
     await page.locator('.asset-card').dblclick();
     await page.getByRole('button', { name: '基础', exact: true }).click();
     await page.getByTitle('添加缩放关键帧').click();

@@ -826,6 +826,7 @@ export default function App() {
         return;
       if (exportOpen || aiOpen || onboarding) return;
       const mod = event.ctrlKey || event.metaKey;
+      const key = event.key.toLowerCase();
       if (event.key === 'Escape') {
         setInspectorOpen(false);
         setMobileShelf(false);
@@ -835,16 +836,16 @@ export default function App() {
       } else if (event.key === 'Delete' || event.key === 'Backspace') {
         event.preventDefault();
         remove();
-      } else if (mod && event.key === 'z') {
+      } else if (mod && key === 'z') {
         event.preventDefault();
         event.shiftKey ? redo() : undo();
-      } else if (mod && event.key === 's') {
+      } else if (mod && key === 's') {
         event.preventDefault();
         void save();
-      } else if (mod && event.key === 'o') {
+      } else if (mod && key === 'o') {
         event.preventDefault();
         void open();
-      } else if (mod && event.key === 'b') {
+      } else if (mod && key === 'b') {
         event.preventDefault();
         split();
       } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {

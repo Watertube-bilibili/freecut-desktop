@@ -10,7 +10,7 @@
 - 真实 FFmpeg 解析 1000 个音量关键帧，并按音频样本检查全部五种缓动、保持跳点和区间边界。FFmpeg 6.1.1 与 9.0.1 均通过。
 - `npm run build`：TypeScript 和生产构建通过。
 - `scripts/smoke-desktop.cjs`：真实桌面导入生成的视频素材，添加缩放关键帧与中文文字，保存及重开工程，输出并解码 720p/24fps MP4；渲染页面错误为空。既可针对开发应用，也可用 `FREECUT_TEST_EXE` 指向实际打包应用。
-- `scripts/regression-editor.cjs`：手机布局检查器的关闭按钮和 Esc、锁轨编辑保护、带关键帧及淡变的时长缩短与保存重开、错误类型/过短素材拒绝及兼容素材重连，4 组均通过。
+- `scripts/regression-editor.cjs`：键盘撤销及重做、手机布局检查器的关闭按钮和 Esc、锁轨编辑保护、带关键帧及淡变的时长缩短与保存重开、错误类型/过短素材拒绝及兼容素材重连，5 组均通过。Mac 临时目录的 `/var` 和 `/private/var` 别名以实际规范路径比较。
 - npm 依赖审计：当日报告 0 个已知漏洞；这不代替完整安全审计。
 
 桌面测试使用独立测试配置和本地产生的素材。视频烟雾测试产物位于忽略的 `artifacts/smoke/`；编辑回归使用新的系统临时目录。
@@ -19,7 +19,9 @@
 
 原生 sherpa-onnx 在真实 Electron 子进程中测试，已解决 Electron 外部 ArrayBuffer 兼容问题。SenseVoice 完成中文和英文录音识别；Whisper tiny 完成英文识别，中文表现较弱；AISHELL-3 VITS 完成中文 WAV 合成和取消。可复现实测脚本为 `scripts/smoke-ai.cjs`，默认禁止网络下载。
 
-ChatTTS 完成独立 Python 和 CPU 依赖准备、全部模型 SHA-256 校验、真实 WAV 自检、再次合成与媒体导入。已修复 Windows 隔离 Python 对中文输入的编码问题；测试文本“你好，这是自由剪辑的真实语音测试。”由 SenseVoice 转写并核对一致。可复现脚本为 `scripts/smoke-chattts.cjs`，模型和结果报告保存在显式指定的外部数据目录。
+Windows 桌面面板另行完成 AISHELL 生成/试听/加入音轨、SenseVoice 识别/编辑/加入字幕轨道、保存工程；音频引用和字幕时间均正确，控制台无错误。原识别存在“测试→设施”的误字，已校对后加入字幕。
+
+ChatTTS 完成独立 Python 和 CPU 依赖准备、全部模型 SHA-256 校验、真实 WAV 自检、再次合成与媒体导入。已修复 Windows 隔离 Python 对中文输入的编码问题；测试文本“你好，这是自由剪辑的真实语音测试。”由 SenseVoice 转写并核对一致。可复现脚本为 `scripts/smoke-chattts.cjs`，模型和结果报告保存在显式指定的外部数据目录。实际桌面面板也完成生成、2.91 秒音频试听、加入时间线与工程保存，生成文件散列与内容核验样本一致。
 
 语音质量与每段内容仍需要试听、校对。ChatTTS 模型许可限非商业用途；AISHELL-3 权重许可状态见模型文档。Mac 的可选语音模型推理尚未完成设备验收。
 
