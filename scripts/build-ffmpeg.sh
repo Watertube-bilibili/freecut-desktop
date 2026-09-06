@@ -124,4 +124,14 @@ Native OS libraries/compiler runtime are listed by the toolchain inventory.
 Source inputs are fixed, but cross-toolchain bit-identical output is not claimed.
 INFO
 tar -czf "$ROOT/artifacts/FreeCut-ffmpeg-source-$TARGET.tar.gz" -C "$BUNDLE" .
+node - "$ENGINE_DIR" "$ROOT/artifacts/FreeCut-ffmpeg-source-$TARGET.tar.gz" <<'NODE'
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
+const [engine,bundle]=process.argv.slice(2),file=path.join(engine,'source-manifest.json');
+const manifest=JSON.parse(fs.readFileSync(file,'utf8')),bytes=fs.readFileSync(bundle);
+manifest.sourceBundleSha256=crypto.createHash('sha256').update(bytes).digest('hex');
+manifest.sourceBundleBytes=bytes.length;
+// The source bundle retains the pre-bundle manifest; its enclosing manifest
+// records this hash afterward to avoid a recursive self-hashing archive.
+fs.writeFileSync(file,JSON.stringify(manifest,null,2));
+NODE
 echo "Source-built FFmpeg ready: $ENGINE_DIR/$NAME"

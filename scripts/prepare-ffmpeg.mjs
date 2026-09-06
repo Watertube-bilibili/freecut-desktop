@@ -23,6 +23,14 @@ if(sourceDirectory){
   for(const name of ['FFMPEG-LICENSE.txt','X264-LICENSE.txt','ZLIB-LICENSE.txt','FFMPEG-BUILD.txt','SOURCE-NOTICE.txt','source-manifest.json','configure-command.txt','toolchain.txt','ffmpeg-config.mak','ffmpeg-config.log','x264-config.mak','protocols.txt'])notices.push([name,await fs.readFile(path.join(sourceDirectory,name))]);
   const sourceBundle=path.join(root,'artifacts',manifest.sourceBundle);
   const sourceBundleBytes=await fs.readFile(sourceBundle);
+  if(sha(sourceBundleBytes)!==manifest.sourceBundleSha256||sourceBundleBytes.length!==manifest.sourceBundleBytes)throw Error('The corresponding FFmpeg source archive does not match its manifest.');
+  const archiveDirectory=path.resolve(sourceDirectory,'..','archives');
+  if(!Array.isArray(manifest.sources)||manifest.sources.length!==3)throw Error('The corresponding FFmpeg source input list is incomplete.');
+  for(const source of manifest.sources){
+    if(typeof source.file!=='string'||path.basename(source.file)!==source.file)throw Error('Invalid FFmpeg source archive filename.');
+    const bytes=await fs.readFile(path.join(archiveDirectory,source.file));
+    if(bytes.length!==source.size||sha(bytes)!==source.sha256)throw Error(`FFmpeg source input failed verification: ${source.name}`);
+  }
   metadata={...manifest,sourceBundleSha256:sha(sourceBundleBytes),sourceBundleBytes:sourceBundleBytes.length,sha256BeforePlatformCodeSigning:manifest.sha256};
 }else{
   // Public CI never resolves or copies the npm-supplied executable.

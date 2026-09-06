@@ -34,7 +34,7 @@ import numpy as np
 import torch
 import ChatTTS
 torch.set_num_threads(min(8, max(1, os.cpu_count() or 1)))
-request = json.load(sys.stdin)
+request = json.loads(sys.stdin.buffer.read().decode('utf-8'))
 torch.manual_seed(request['seed'])
 print('FREECUT ' + json.dumps({'phase':'正在载入 ChatTTS 模型','progress':.12}), flush=True)
 chat = ChatTTS.Chat()
@@ -54,6 +54,7 @@ with wave.open(sys.argv[2], 'wb') as output:
     output.setnchannels(1); output.setsampwidth(2); output.setframerate(24000); output.writeframes(pcm.tobytes())
 print('FREECUT_RESULT ' + json.dumps({'duration':audio.size / 24000,'sampleRate':24000,'samples':int(audio.size)}), flush=True)
 `;
+const RUNNER_HASH = crypto.createHash('sha256').update(PYTHON_RUNNER).digest('hex');
 
 function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
   if (typeof userData !== 'string' || !path.isAbsolute(userData)) throw new Error('ChatTTS 数据目录无效。');
@@ -68,6 +69,7 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
   const python = () => inside('venv', process.platform === 'win32' ? 'Scripts' : 'bin', process.platform === 'win32' ? 'python.exe' : 'python');
   const sameLocation = (value) => typeof value === 'string' && (process.platform === 'win32' ? value.toLowerCase() === root.toLowerCase() : value === root);
   const publish = (update) => { state = { ...state, ...update }; emitProgress({ ...state }); };
+  const assertRunning = () => { if (!task || task.abort.signal.aborted) throw new Error('操作已取消。'); };
   async function safeDir(target) {
     inside(path.relative(root, target));
     await fsp.mkdir(root, { recursive: true });
@@ -87,7 +89,11 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
   async function digest(file) { const hash = crypto.createHash('sha256'); for await (const chunk of fs.createReadStream(file)) { if (task?.abort.signal.aborted) throw new Error('操作已取消。'); hash.update(chunk); } return hash.digest('hex'); }
   async function status() {
     let ready = false;
-    try { const marker = JSON.parse(await fsp.readFile(inside('ready.json'), 'utf8')); ready = marker.version === VERSION && marker.revision === REVISION && sameLocation(marker.root) && await regular(python()) && await regular(inside('models', 'asset/gpt/model.safetensors')); } catch {}
+    try {
+      const marker = JSON.parse(await fsp.readFile(inside('ready.json'), 'utf8'));
+      ready = marker.version === VERSION && marker.revision === REVISION && marker.runnerHash === RUNNER_HASH && sameLocation(marker.root) && await regular(python()) && await regular(inside('runner.py'));
+      if (ready) ready = (await Promise.all(MODELS.map(async([name,size]) => await regular(inside('models',name)) && (await fsp.stat(inside('models',name))).size === size))).every(Boolean);
+    } catch {}
     state.ready = ready;
     if (!state.busy && ready && !state.error) state.phase = 'ChatTTS 已就绪，可离线使用';
     return { ...state };
@@ -107,7 +113,7 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
       child.stdout.on('data', chunk => { const text = chunk.toString('utf8'); stdout = (stdout + text).slice(-512_000); buffer += text; const lines = buffer.split(/\r?\n/); buffer = lines.pop(); for (const line of lines) onLine?.(line); });
       child.stderr.on('data', chunk => { stderr = (stderr + chunk.toString('utf8')).slice(-16_000); });
       child.once('error', error => { clearTimeout(timer); reject(error); });
-      child.once('close', code => { clearTimeout(timer); if (task?.child === child) task.child = null; if (timedOut) reject(new Error('ChatTTS 处理超时，请检查网络或缩短文本后重试。')); else if (code === 0) resolve(stdout); else reject(new Error(task?.abort.signal.aborted ? '操作已取消。' : `ChatTTS 子进程失败（${code}）：${stderr.slice(-2500) || stdout.slice(-1000)}`)); });
+      child.once('close', code => { clearTimeout(timer); if (task?.child === child) task.child = null; if (task?.abort.signal.aborted) reject(new Error('操作已取消。')); else if (timedOut) reject(new Error('ChatTTS 处理超时，请检查网络或缩短文本后重试。')); else if (code === 0) resolve(stdout); else reject(new Error(`ChatTTS 子进程失败（${code}）：${stderr.slice(-2500) || stdout.slice(-1000)}`)); });
       child.stdin.on('error', () => {}); child.stdin.end(input ?? '');
     });
   }
@@ -117,32 +123,81 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
     else { try { process.kill(-child.pid, 'SIGTERM'); } catch { child.kill(); } }
   }
   function allowedHost(host) { return ['github.com','release-assets.githubusercontent.com','objects.githubusercontent.com','huggingface.co','cdn-lfs.huggingface.co','cas-bridge.xethub.hf.co'].includes(host) || host.endsWith('.hf.co') || host.endsWith('.huggingface.co'); }
-  async function download(address, destination, hash, expectedSize, progress) {
-    await safeDir(path.dirname(destination));
-    if (await regular(destination) && await digest(destination) === hash) { progress?.(1); return; }
-    const partial = `${destination}.partial`;
-    if (await fsp.lstat(partial).catch(() => null)) await fsp.rm(partial, { force:true });
+  async function officialResponse(address, headers = {}) {
+    assertRunning();
     let response, current = address;
     for (let attempt = 0; attempt < 8; attempt++) {
       const url = new URL(current);
       if (url.protocol !== 'https:' || !allowedHost(url.hostname) || url.username || url.password) throw new Error('模型下载地址不在官方白名单内。');
-      response = await fetch(current, { redirect:'manual', signal:AbortSignal.any([task.abort.signal, task.networkAbort.signal, AbortSignal.timeout(60 * 60 * 1000)]), headers:{'User-Agent':'FreeCut-ChatTTS/0.1'} });
+      response = await fetch(current, { redirect:'manual', signal:AbortSignal.any([task.abort.signal, task.networkAbort.signal, AbortSignal.timeout(60 * 60 * 1000)]), headers:{'User-Agent':'FreeCut-ChatTTS/0.1',...headers} });
       if ([301,302,303,307,308].includes(response.status)) { current = new URL(response.headers.get('location'), current).href; await response.body?.cancel(); continue; }
       break;
     }
     if (!response?.ok || !response.body) throw new Error(`官方文件下载失败（HTTP ${response?.status ?? '?'}），请检查网络后重试。`);
-    const total = expectedSize || Number(response.headers.get('content-length')) || 0, hasher = crypto.createHash('sha256');
-    let bytes = 0, last = 0;
-    const file = await fsp.open(partial, 'wx');
-    try { for await (const chunk of response.body) { bytes += chunk.length; if (bytes > (expectedSize || 100_000_000) + 1024) throw new Error('下载文件超过预期大小。'); hasher.update(chunk); await file.write(chunk); if (Date.now() - last > 150) { progress?.(total ? Math.min(1, bytes / total) : 0); last = Date.now(); } } await file.sync(); }
-    finally { await file.close(); }
-    if (hasher.digest('hex') !== hash || (expectedSize && bytes !== expectedSize)) { await fsp.rm(partial,{force:true}); throw new Error('下载文件校验失败，未启用该文件。请重试。'); }
+    return response;
+  }
+  async function writeAll(file, chunk, position) {
+    let offset = 0;
+    while (offset < chunk.length) { const result = await file.write(chunk,offset,chunk.length-offset,position+offset); if (!result.bytesWritten) throw new Error('无法写入下载文件。'); offset += result.bytesWritten; }
+  }
+  async function scratchSize(file) { const info = await fsp.lstat(file).catch(() => null); if (info && (!info.isFile() || info.isSymbolicLink())) throw new Error('临时下载路径无效。'); return info?.size ?? 0; }
+  async function downloadPart(address, fileName, from, to, totalSize, progress, forceRange = false) {
+    for (let attempt = 0; ; attempt++) {
+      try { return await downloadPartOnce(address,fileName,from,to,totalSize,progress,forceRange); }
+      catch (error) { if (attempt >= 2 || task.abort.signal.aborted || task.networkAbort.signal.aborted) throw error; await new Promise(resolve => setTimeout(resolve,1000 * (attempt + 1))); }
+    }
+  }
+  async function downloadPartOnce(address, fileName, from, to, totalSize, progress, forceRange = false) {
+    const length = totalSize ? to - from + 1 : 0;
+    let existing = await scratchSize(fileName);
+    if ((!length && existing) || (length && existing > length)) { await fsp.rm(fileName,{force:true}); existing = 0; }
+    if (length && existing === length) { progress(existing); return; }
+    const range = forceRange || existing > 0, start = from + existing;
+    const response = await officialResponse(address,range ? {Range:`bytes=${start}-${to}`} : {});
+    if (range && (response.status !== 206 || response.headers.get('content-range') !== `bytes ${start}-${to}/${totalSize}`)) { await response.body.cancel(); throw new Error('官方服务器未按要求返回续传范围，请重试。'); }
+    const file = await fsp.open(fileName, await regular(fileName) ? 'r+' : 'wx'); let bytes = existing, last = 0;
+    try {
+      for await (const chunk of response.body) { assertRunning(); if (bytes + chunk.length > (length || 100_000_000)) throw new Error('下载文件超过预期大小。'); await writeAll(file,chunk,bytes); bytes += chunk.length; if (Date.now() - last > 150) { progress(bytes); last = Date.now(); } }
+      await file.sync();
+    } finally { await file.close(); }
+    if (length && bytes !== length) throw new Error('下载被提前中断，可点击准备继续下载。');
+    progress(bytes);
+  }
+  async function download(address, destination, hash, expectedSize, progress) {
+    await safeDir(path.dirname(destination));
+    if (await regular(destination) && await digest(destination) === hash) { progress?.(1); return; }
+    const partial = `${destination}.partial`, cleanup = [partial];
+    let completedFile = partial;
+    if (expectedSize >= 256 * 1024 ** 2) {
+      const size = Math.ceil(expectedSize / 4), loaded = [0,0,0,0], parts = Array.from({length:4},(_,index) => `${destination}.range-${index}`);
+      const prefixSize = await scratchSize(partial);
+      if (prefixSize > expectedSize) await fsp.rm(partial,{force:true});
+      // Reuse a prefix from an older sequential download without trusting it until final SHA-256.
+      for (let index = 0; index < 4; index++) {
+        const begin = index * size, end = Math.min(expectedSize,begin+size), copied = await scratchSize(parts[index]), available = Math.min(prefixSize,end)-begin;
+        if (available > copied && prefixSize <= expectedSize) {
+          const file = await fsp.open(parts[index],await regular(parts[index]) ? 'r+' : 'wx'); let offset = copied;
+          try { for await (const chunk of fs.createReadStream(partial,{start:begin+copied,end:begin+available-1})) { assertRunning(); await writeAll(file,chunk,offset); offset += chunk.length; } } finally { await file.close(); }
+        }
+      }
+      let partFailure = null;
+      await Promise.allSettled(parts.map((file,index) => downloadPart(address,file,index*size,Math.min(expectedSize,(index+1)*size)-1,expectedSize,bytes => {loaded[index]=bytes;progress?.(loaded.reduce((sum,value) => sum+value,0)/expectedSize);},true).catch(error => { if (!partFailure) partFailure = error; task.networkAbort.abort(); throw error; })));
+      if (partFailure) throw partFailure;
+      completedFile = `${destination}.assembling`; cleanup.push(...parts,completedFile);
+      await scratchSize(completedFile); await fsp.rm(completedFile,{force:true});
+      const output = await fsp.open(completedFile,'wx'); let offset = 0;
+      try { for (const file of parts) for await (const chunk of fs.createReadStream(file)) { assertRunning(); await writeAll(output,chunk,offset); offset += chunk.length; } await output.sync(); } finally { await output.close(); }
+    } else {
+      await downloadPart(address,partial,0,expectedSize-1,expectedSize,bytes => progress?.(expectedSize ? bytes/expectedSize : 0));
+    }
+    assertRunning();
+    if (await digest(completedFile) !== hash || (expectedSize && (await fsp.stat(completedFile)).size !== expectedSize)) { for (const file of cleanup) await fsp.rm(file,{force:true}); throw new Error('下载文件校验失败，未启用该文件。请重试。'); }
     if (await fsp.lstat(destination).catch(() => null)) await fsp.rm(destination, {force:true});
-    await fsp.rename(partial, destination); progress?.(1);
+    await fsp.rename(completedFile,destination); for (const file of cleanup) await fsp.rm(file,{force:true}); progress?.(1);
   }
   async function atomic(file, value) { const temp = `${file}.${crypto.randomUUID()}.tmp`; await fsp.writeFile(temp, value, { flag:'wx' }); await fsp.rename(temp, file); }
   async function doGenerate(request, output, smoke = false) {
-    const result = await run(python(), ['-I', inside('runner.py'), inside('models'), output], { input:JSON.stringify(request), timeout:20 * 60 * 1000, onLine:line => {
+    const result = await run(python(), ['-I', '-X', 'utf8', inside('runner.py'), inside('models'), output], { input:JSON.stringify(request), timeout:20 * 60 * 1000, onLine:line => {
       if (line.startsWith('FREECUT ')) { try { const data = JSON.parse(line.slice(8)); publish({ phase:smoke ? `正在验证模型：${data.phase}` : data.phase, progress:smoke ? .95 + data.progress * .04 : data.progress }); } catch {} }
     } });
     const line = result.split(/\r?\n/).find(line => line.startsWith('FREECUT_RESULT '));
@@ -195,7 +250,7 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
       publish({ phase:'安装固定版本的 ChatTTS 与语音依赖', progress:.24 });
       const constraints = inside('constraints.txt'); await fsp.writeFile(constraints,`torch==${torchSpec}\ntorchaudio==${torchSpec}\nnumpy==1.26.4\n`);
       const source = 'chattts @ https://files.pythonhosted.org/packages/03/82/dea1aceb28926f65b364a70b9e7a98d4b7aae392f3c32b6631e72c030937/chattts-0.2.5.tar.gz#sha256=ee800262c82f15cbdab22bf186abbf884c9c966585a1cc8fcd57793cee168582';
-      await run(uv, ['--no-config','pip','install','--python',python(),'--index-url','https://pypi.org/simple','--constraint',constraints,source,'numpy==1.26.4','transformers==4.46.3','tokenizers==0.20.3','huggingface-hub==0.26.2','safetensors==0.4.5','numba==0.60.0','pybase16384==0.3.8','vector-quantize-pytorch==1.14.24','vocos==0.1.0','einops==0.8.0','tqdm==4.67.1','soundfile==0.12.1','librosa==0.10.2.post1','scipy==1.14.1','torchmetrics==1.6.0']);
+      await run(uv, ['--no-config','pip','install','--python',python(),'--index-url','https://pypi.org/simple','--constraint','constraints.txt',source,'numpy==1.26.4','transformers==4.46.3','tokenizers==0.20.3','huggingface-hub==0.26.2','safetensors==0.4.5','numba==0.60.0','pybase16384==0.3.8','vector-quantize-pytorch==1.14.24','vocos==0.1.0','einops==0.8.0','tqdm==4.67.1','soundfile==0.12.1','librosa==0.10.2.post1','scipy==1.14.1','torchmetrics==1.6.0']);
       const total = MODELS.reduce((sum,file) => sum + file[1],0), loaded = MODELS.map(() => 0); let next = 0, completed = 0, failure = null;
       publish({phase:`并行下载与校验语音模型 0/${MODELS.length}`,progress:.32});
       const worker = async() => {
@@ -213,7 +268,9 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
       await fsp.writeFile(inside('runner.py'),PYTHON_RUNNER,'utf8');
       publish({ phase:'模型下载完成，正在实际合成短句验证', progress:.95 });
       const smoke = await doGenerate({text:'你好，欢迎使用自由剪辑。',seed:42,speed:5},inside('outputs','installation-test.wav'),true);
-      await atomic(inside('ready.json'),JSON.stringify({version:VERSION,revision:REVISION,root,python:'3.11.13',torch:torchSpec,verifiedAt:new Date().toISOString(),smoke}));
+      assertRunning();
+      await atomic(inside('ready.json'),JSON.stringify({version:VERSION,revision:REVISION,runnerHash:RUNNER_HASH,root,python:'3.11.13',torch:torchSpec,verifiedAt:new Date().toISOString(),smoke}));
+      if (task.abort.signal.aborted) { await fsp.rm(inside('ready.json'),{force:true}); throw new Error('操作已取消。'); }
       publish({ready:true,phase:'ChatTTS 已就绪，可离线使用',progress:1,error:undefined});
     });
   }
@@ -224,8 +281,8 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
     return withTask(async() => {
       await safeDir(inside('outputs'));
       const output = inside('outputs',`chattts-${crypto.randomUUID()}.wav`);
-      try { await doGenerate({text:request.text.trim(),seed:request.seed,speed:request.speed},output); const asset = await importPath(output); publish({phase:'配音已生成，可试听或加入时间线',progress:1}); return {...asset,name:`ChatTTS · ${request.text.trim().slice(0,18)}`}; }
-      catch (error) { await fsp.rm(output,{force:true}).catch(() => {}); throw error; }
+      try { await doGenerate({text:request.text.trim(),seed:request.seed,speed:request.speed},output); assertRunning(); const asset = await importPath(output); assertRunning(); publish({phase:'配音已生成，可试听或加入时间线',progress:1}); return {...asset,name:`ChatTTS · ${request.text.trim().slice(0,18)}`}; }
+      catch (error) { await fsp.rm(output,{force:true}).catch(() => {}); if (/模型校验|载入失败|ModuleNotFoundError|ImportError|DLL load failed|No such file/i.test(error.message)) { await fsp.rm(inside('ready.json'),{force:true}); publish({ready:false}); } throw error; }
     });
   }
   async function cancel() { const current = task; if (!current) return; current.abort.abort(); kill(current.child); await current.finished?.catch(() => {}); }

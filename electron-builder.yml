@@ -22,7 +22,7 @@ win:
       arch: [x64]
     - target: portable
       arch: [x64]
-  signAndEditExecutable: false
+  signExecutable: false
 nsis:
   artifactName: FreeCut-${version}-win-${arch}-Setup.${ext}
   oneClick: false

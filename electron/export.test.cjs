@@ -78,6 +78,47 @@ test('export failure/cancel preserves existing output and removes job temporary 
 
 let integrationFFmpeg=process.env.FREECUT_TEST_FFMPEG;
 if(!integrationFFmpeg)try { integrationFFmpeg=require('ffmpeg-static'); } catch {}
+test('real FFmpeg parses 1000 volume keyframes and samples every easing, binary split and held endpoints',{skip:!integrationFFmpeg,timeout:60000},async() => {
+  const directory=await fs.mkdtemp(path.join(os.tmpdir(),'freecut-volume-test-'));
+  const run=promisify(execFile);
+  try {
+    const easings=['linear','ease-in','ease-out','ease-in-out','hold'];
+    const frames=Array.from({length:1000},(_,index) => ({time:Number((0.125+index*0.002).toFixed(3)),value:index%2?0.8:0.2,easing:easings[index%5]}));
+    const expression=volumeExpression(frames,1),filterFile=path.join(directory,'volume-filters.txt');
+    // A constant, lossless signal and 0.5 ms audio frames make the expected gain
+    // directly observable, without AAC quantization or a duplicated evaluator.
+    await fs.writeFile(filterFile,`[0:a]asetnsamples=n=24:p=0,volume='${expression}':eval=frame[test]`);
+    const args=option => ['-hide_banner','-nostdin','-f','lavfi','-i','aevalsrc=0.25:s=48000:d=2.25',option,filterFile,'-map','[test]','-f','f32le','pipe:1'];
+    const execOptions={windowsHide:true,maxBuffer:8*1024*1024,encoding:'buffer'};
+    let output;
+    try { output=await run(integrationFFmpeg,args('-filter_complex_script'),execOptions); }
+    catch(error) {
+      if(!String(error.stderr).includes("Unrecognized option 'filter_complex_script'"))throw error;
+      output=await run(integrationFFmpeg,args('-/filter_complex'),execOptions);
+    }
+    assert.equal(output.stdout.length,Math.round(2.25*48000)*4);
+    const checkpoints=[
+      [0.05,0.05,'before first keyframe'],
+      [0.126,0.125,'linear midpoint'],
+      [0.128,0.1625,'ease-in midpoint'],
+      [0.130,0.1625,'ease-out midpoint'],
+      [0.1315,0.18125,'ease-in-out first quarter'],
+      [0.1325,0.06875,'ease-in-out last quarter'],
+      [0.134,0.05,'hold interval'],
+      // Binary-exact times avoid comparing opposite sides of a discontinuity
+      // because decimal keyframe times and rational audio PTS round differently.
+      [0.375,0.2,'exact keyframe boundary'],
+      [1.124,0.2,'left of central binary split'],
+      [1.125,0.05,'central binary split boundary'],
+      [2.2,0.2,'after final keyframe'],
+    ];
+    for(const [time,expected,label] of checkpoints){
+      const actual=output.stdout.readFloatLE(Math.round(time*48000)*4);
+      assert.ok(Math.abs(actual-expected)<0.0001,`${label}: expected ${expected}, got ${actual}`);
+    }
+  } finally { await fs.rm(directory,{recursive:true,force:true}); }
+});
+
 test('real FFmpeg export renders H264/AAC with trimmed, delayed and faded audio and authorized range streaming',{skip:!integrationFFmpeg,timeout:60000},async() => {
   const directory=await fs.mkdtemp(path.join(os.tmpdir(),'freecut-render-test-'));
   const run=promisify(execFile);

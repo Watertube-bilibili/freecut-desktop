@@ -18,18 +18,21 @@ jobs:
             targets: nsis portable
             engine: win32-x64
             executable: ffmpeg.exe
+            application: release/win-unpacked/FreeCut.exe
           - os: macos-15
             platform: mac
             arch: arm64
             targets: dmg zip
             engine: darwin-arm64
             executable: ffmpeg
+            application: release/mac-arm64/FreeCut.app/Contents/MacOS/FreeCut
           - os: macos-15-intel
             platform: mac
             arch: x64
             targets: dmg zip
             engine: darwin-x64
             executable: ffmpeg
+            application: release/mac/FreeCut.app/Contents/MacOS/FreeCut
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     env:
@@ -42,8 +45,17 @@ jobs:
           node-version: 22
           architecture: ${{ matrix.arch }}
           cache: npm
+      - name: Restore verified FFmpeg source build
+        id: ffmpeg-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            resources/ffmpeg-source/archives
+            resources/ffmpeg-source/engine
+            artifacts/FreeCut-ffmpeg-source-${{ matrix.engine }}.tar.gz
+          key: freecut-ffmpeg-v1-${{ matrix.engine }}-${{ hashFiles('scripts/build-ffmpeg.sh', 'scripts/download-ffmpeg-sources.mjs') }}
       - name: Install native Windows build tools
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && steps.ffmpeg-cache.outputs.cache-hit != 'true'
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -51,19 +63,30 @@ jobs:
           path-type: inherit
           install: make diffutils tar xz mingw-w64-x86_64-gcc mingw-w64-x86_64-nasm mingw-w64-x86_64-pkgconf
       - name: Install native macOS build tools
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && steps.ffmpeg-cache.outputs.cache-hit != 'true'
         run: brew install nasm pkg-config
       - name: Build Windows FFmpeg from pinned source
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && steps.ffmpeg-cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: bash scripts/build-ffmpeg.sh ${{ matrix.engine }}
       - name: Build macOS FFmpeg from pinned source
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && steps.ffmpeg-cache.outputs.cache-hit != 'true'
         run: bash scripts/build-ffmpeg.sh ${{ matrix.engine }}
+      - name: Cache completed FFmpeg engine and corresponding source
+        if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            resources/ffmpeg-source/archives
+            resources/ffmpeg-source/engine
+            artifacts/FreeCut-ffmpeg-source-${{ matrix.engine }}.tar.gz
+          key: ${{ steps.ffmpeg-cache.outputs.cache-primary-key }}
       - run: npm ci
       - run: node scripts/prepare-ffmpeg.mjs
       - run: npm test
       - run: npm run build
+      - name: Verify editor regressions in isolated desktop profile
+        run: node scripts/regression-editor.cjs
       - name: Archive matching application source
         shell: bash
         run: git archive --format=tar.gz --prefix=FreeCut-source/ --output=artifacts/FreeCut-project-source-${{ github.sha }}.tar.gz HEAD
@@ -71,6 +94,9 @@ jobs:
         run: npx electron-builder --${{ matrix.platform }} ${{ matrix.targets }} --${{ matrix.arch }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify packaged desktop with real media
+        timeout-minutes: 10
+        run: node -e "process.env.FREECUT_TEST_EXE=require('path').resolve('${{ matrix.application }}');require('./scripts/smoke-desktop.cjs');"
       - uses: actions/upload-artifact@v4
         with:
           name: FreeCut-${{ matrix.platform }}-${{ matrix.arch }}-unsigned
@@ -79,6 +105,7 @@ jobs:
             release/*.dmg
             release/*.zip
             artifacts/*source*.tar.gz
+            artifacts/smoke/*
             resources/ffmpeg/*.txt
             resources/ffmpeg/*.json
           if-no-files-found: error

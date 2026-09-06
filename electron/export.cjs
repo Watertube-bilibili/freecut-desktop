@@ -54,15 +54,21 @@ function volumeExpression(frames, fallback) {
   if (!frames?.length) return numeric(fallback);
   const sorted = [...frames].sort((a,b) => a.time-b.time);
   const points = sorted.filter((frame,index) => index === sorted.length-1 || frame.time !== sorted[index+1].time);
-  let expression = numeric(points.at(-1).value);
-  for (let i=points.length-2;i>=0;i--) {
+  function interval(i) {
+    if (i === points.length-1) return numeric(points[i].value);
     const a = points[i], b = points[i+1];
     const p = `((t-${numeric(a.time)})/${numeric(b.time-a.time)})`;
     const easing = a.easing === 'hold' ? '0' : a.easing === 'ease-in' ? `(${p}*${p})` : a.easing === 'ease-out' ? `(1-(1-${p})*(1-${p}))` : a.easing === 'ease-in-out' ? `if(lt(${p},0.5),2*${p}*${p},1-pow(-2*${p}+2,2)/2)` : p;
-    const current = `(${numeric(a.value)}+${numeric(b.value-a.value)}*${easing})`;
-    expression = `if(lt(t,${numeric(b.time)}),${current},${expression})`;
+    return `(${numeric(a.value)}+${numeric(b.value-a.value)}*${easing})`;
   }
-  return `if(lt(t,${numeric(points[0].time)}),${numeric(points[0].value)},${expression})`;
+  // FFmpeg limits expression parser nesting. A binary search tree keeps both
+  // parser depth and interval lookup logarithmic, even for thousands of points.
+  function select(begin, end) {
+    if (end-begin === 1) return interval(begin);
+    const middle = Math.floor((begin+end)/2);
+    return `if(lt(t,${numeric(points[middle].time)}),${select(begin,middle)},${select(middle,end)})`;
+  }
+  return `if(lt(t,${numeric(points[0].time)}),${numeric(points[0].value)},${select(0,points.length)})`;
 }
 function atempoChain(speed) {
   const factors = []; let remaining = speed;

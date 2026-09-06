@@ -4,6 +4,8 @@
 
 **当前是 0.1.0 开发预览版，并未完整覆盖剪映。** 本项目独立实现，不包含剪映代码、付费素材或商标资产。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
 
+实际测试范围见 [验证记录](docs/VERIFICATION.md)。
+
 ![专业布局与关键帧面板](docs/screenshots/professional.png)
 
 ![手机风格工作台](docs/screenshots/mobile-style.png)
@@ -48,9 +50,12 @@ npm run dev:desktop
 npm run build
 npm test
 node scripts/smoke-desktop.cjs
+node scripts/regression-editor.cjs
 ```
 
 `smoke-desktop.cjs` 在真实 Electron 窗口中生成本地测试素材，验证布局切换、导入、关键帧、字幕、工程保存 / 重开与实际 MP4 导出，结果保存在不提交的 `artifacts/smoke/`。它会用自己的文件路径替代测试进程中的文件对话框，不修改用户素材。
+
+`regression-editor.cjs` 使用独立临时用户目录，验证手机检查器关闭、轨道锁定、关键帧片段缩短后保存重开，以及缺失素材类型和长度校验。可直接用 `npm run test:desktop` 完成构建和这两组测试。真实语音测试脚本默认禁止下载；命令与模型验收结果见模型文档。
 
 仅看浏览器界面：`npm run dev`。浏览器模式支持编辑预览；本地模型、完整工程媒体重开和 FFmpeg 视频导出需要桌面版。
 
