@@ -146,6 +146,6 @@ Actions artifact 保留 14 天。若将安装包复制到 GitHub Release 或其�
 
 首轮 [CI 运行 34034700514](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34034700514) 中，Windows x64、Mac arm64 与 Mac x64 均完成源码引擎、测试、平台安装包和 artifact 上传。Apple 芯片日志确认 41 个前端测试、23 个宿主测试通过，真实 FFmpeg 集成测试没有跳过。
 
-后续 workflow 还调用 `scripts/smoke-desktop.cjs`，通过 `FREECUT_TEST_EXE` 启动实际打包的应用，执行布局切换、真实视频导入、关键帧、中文文字、工程保存重开和 MP4 导出；截图、工程和成片进入 artifact。这一步与构建成功分别验收，不把尚未运行的测试算作通过。
+最终 [CI 运行 34037318468](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34037318468) 中，三个平台均通过 `scripts/smoke-desktop.cjs`，由 `FREECUT_TEST_EXE` 启动实际打包应用，执行布局切换、真实视频导入、关键帧、中文文字、工程保存重开和 MP4 导出；截图、工程和成片进入 artifact。对应发布源码为 `9a9ac1066134b0ffaebef4dcdc742f048f525f58`。
 
 Windows 语音在实际 Electron 44.2 子进程中已有真实识别与合成记录。Mac 可选模型运行仍需真机检查。不能将 Node 单元测试、构建成功或 Windows 推理成功分别等同于所有操作系统的完整桌面验收。

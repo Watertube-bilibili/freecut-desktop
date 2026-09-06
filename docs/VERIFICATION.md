@@ -31,6 +31,6 @@ ChatTTS 完成独立 Python 和 CPU 依赖准备、全部模型 SHA-256 校验�
 
 最终 [构建 34037318468](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34037318468) 对应 `9a9ac1066134b0ffaebef4dcdc742f048f525f58`，三个平台全部成功，包括 75 项核心/宿主测试、5 组编辑回归及实际打包程序的导入、关键帧、工程保存重开和 MP4 导出。发布工作流核验三平台源码一致性、引擎源码散列及所有上传文件后，已公开 [v0.1.0-preview.1](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.1.0-preview.1)，共 14 份文件。
 
-最终 Windows 便携 EXE 另行下载到本机，实际启动确认随包引擎存在、便携模式启用、旁边的 `FreeCutData` 创建成功，关闭再打开后布局与引导状态均保留。
+最终 Windows 便携 EXE 另行下载到本机，实际启动确认随包引擎存在、便携模式启用、旁边的 `FreeCutData` 创建成功，关闭再打开后布局与引导状态均保留。再从同一便携文件提取应用执行完整桌面烟雾测试，真实导入、关键帧、中文文字、保存重开与 MP4 导出均成功。Windows 两种 EXE 与 Mac 两种 DMG 已下载并匹配公开 SHA-256 清单。
 
 Windows 包未配置代码签名；Mac 包使用临时签名，未配置 Developer ID 和 Apple 公证。尚未完成完整安装/卸载矩阵、4K 长片压力、所有输入编码和所有机器的 GPU/CPU 组合测试。
