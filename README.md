@@ -24,7 +24,9 @@
 
 ## 下载和运行
 
-源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。[GitHub Actions](https://github.com/Watertube-bilibili/freecut-desktop/actions) 构建 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，产物状态以对应工作流结果为准。
+**[下载 0.1.0 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.1.0-preview.1)**：Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP 已发布，并附匹配源码、中文教程和 SHA-256 清单。
+
+源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。发布代码为 `9a9ac1066134b0ffaebef4dcdc742f048f525f58`，[三平台构建与打包应用测试](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34037318468) 和 [发布校验](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34037627220) 均已通过。
 
 - Windows 安装版：`FreeCut-0.1.0-win-x64-Setup.exe`。
 - Windows 便携版：`FreeCut-0.1.0-win-x64-Portable.exe`；设置和下载的模型保存在程序旁的 `FreeCutData`，请放在可写文件夹。

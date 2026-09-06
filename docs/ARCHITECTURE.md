@@ -128,7 +128,9 @@ npm run build
 
 ## CI 产物与再分发
 
-`.github/workflows/build.yml` 原生构建 Windows x64、Mac arm64 和 Mac x64。每个任务先编译固定源码引擎，再安装应用依赖、运行测试、编译界面、归档确切应用 Git 提交并打包。Windows 输出 NSIS 安装程序和便携 EXE，Mac 输出 DMG 和 ZIP。没有自动 Release 发布、证书签名或公证；当前产物为未签名/临时签名验证构建。
+`.github/workflows/build.yml` 原生构建 Windows x64、Mac arm64 和 Mac x64。每个任务先编译固定源码引擎，再安装应用依赖、运行测试、编译界面、归档确切应用 Git 提交并打包。Windows 输出 NSIS 安装程序和便携 EXE，Mac 输出 DMG 和 ZIP。当前产物为未签名/临时签名预览构建，尚未配置正式签名和公证。
+
+`.github/workflows/publish.yml` 仅手动触发，输入成功的构建编号与预发布标签。脚本校验本仓库 main push、工作流成功、三份平台产物、精确版本文件名、引擎源包散列及三份应用源码解压后内容一致性，附匹配提交的许可与教程并生成 SHA-256 清单。上传草稿全部核验后才公开预发布版本；已公开版本和指向其他提交的 Git 标签拒绝覆盖。首次公开版本为 [v0.1.0-preview.1](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.1.0-preview.1)。
 
 Actions cache 仅保存最终引擎、原始源归档/lock 和对应源包，不缓存庞大的 `.o` 中间文件。缓存键包括目标平台架构与构建/下载脚本内容散列，没有跨版本回退键。命中时跳过编译工具安装和引擎编译；资源准备时仍重新核验 manifest、二进制与全部源码散列，应用构建、测试和打包也照常执行。未命中时在引擎构建成功后单独保存缓存，因此后面的 UI 测试失败不会丢失有效引擎。
 
