@@ -1,0 +1,46 @@
+appId: org.freecut.desktop
+productName: FreeCut
+copyright: Copyright © 2026 FreeCut contributors
+asar: true
+directories:
+  output: release
+files:
+  - dist/**/*
+  - electron/**/*.cjs
+  - '!electron/**/*.test.cjs'
+  - package.json
+  - LICENSE
+  - THIRD_PARTY_NOTICES.md
+extraResources:
+  - from: resources/ffmpeg
+    to: ffmpeg
+artifactName: FreeCut-${version}-${os}-${arch}.${ext}
+win:
+  icon: resources/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  signAndEditExecutable: false
+nsis:
+  artifactName: FreeCut-${version}-win-${arch}-Setup.${ext}
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  deleteAppDataOnUninstall: false
+portable:
+  artifactName: FreeCut-${version}-win-${arch}-Portable.${ext}
+  requestExecutionLevel: user
+mac:
+  icon: resources/icon.png
+  target:
+    - dmg
+    - zip
+  category: public.app-category.video
+  identity: '-'
+  hardenedRuntime: false
+  notarize: false
+publish: null

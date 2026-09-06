@@ -1,0 +1,16 @@
+node_modules/
+dist/
+release/
+artifacts/
+.tools/
+.cache/
+test-results/
+playwright-report/
+*.log
+*.freecut
+.DS_Store
+.impeccable/mocks/
+resources/ffmpeg/
+resources/ffmpeg-source/
+*.tsbuildinfo
+.impeccable/cache/

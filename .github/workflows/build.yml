@@ -1,0 +1,85 @@
+name: Build desktop packages
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+            arch: x64
+            targets: nsis portable
+            engine: win32-x64
+            executable: ffmpeg.exe
+          - os: macos-15
+            platform: mac
+            arch: arm64
+            targets: dmg zip
+            engine: darwin-arm64
+            executable: ffmpeg
+          - os: macos-15-intel
+            platform: mac
+            arch: x64
+            targets: dmg zip
+            engine: darwin-x64
+            executable: ffmpeg
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    env:
+      FREECUT_FFMPEG_SOURCE_DIR: ${{ github.workspace }}/resources/ffmpeg-source/engine
+      FFMPEG_BIN: ${{ github.workspace }}/resources/ffmpeg-source/engine/${{ matrix.executable }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          architecture: ${{ matrix.arch }}
+          cache: npm
+      - name: Install native Windows build tools
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          path-type: inherit
+          install: make diffutils tar xz mingw-w64-x86_64-gcc mingw-w64-x86_64-nasm mingw-w64-x86_64-pkgconf
+      - name: Install native macOS build tools
+        if: runner.os == 'macOS'
+        run: brew install nasm pkg-config
+      - name: Build Windows FFmpeg from pinned source
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: bash scripts/build-ffmpeg.sh ${{ matrix.engine }}
+      - name: Build macOS FFmpeg from pinned source
+        if: runner.os == 'macOS'
+        run: bash scripts/build-ffmpeg.sh ${{ matrix.engine }}
+      - run: npm ci
+      - run: node scripts/prepare-ffmpeg.mjs
+      - run: npm test
+      - run: npm run build
+      - name: Archive matching application source
+        shell: bash
+        run: git archive --format=tar.gz --prefix=FreeCut-source/ --output=artifacts/FreeCut-project-source-${{ github.sha }}.tar.gz HEAD
+      - name: Package unsigned test distribution
+        run: npx electron-builder --${{ matrix.platform }} ${{ matrix.targets }} --${{ matrix.arch }} --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FreeCut-${{ matrix.platform }}-${{ matrix.arch }}-unsigned
+          path: |
+            release/*.exe
+            release/*.dmg
+            release/*.zip
+            artifacts/*source*.tar.gz
+            resources/ffmpeg/*.txt
+            resources/ffmpeg/*.json
+          if-no-files-found: error
+          retention-days: 14

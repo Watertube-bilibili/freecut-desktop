@@ -1,0 +1,42 @@
+{
+  "name": "freecut-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "自由剪辑 FreeCut — 开源桌面视频编辑器",
+  "license": "GPL-3.0-or-later",
+  "author": "FreeCut contributors",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "dev:desktop": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron . --dev\"",
+    "build": "tsc -b && vite build",
+    "test": "vitest run src && node --test electron/*.test.cjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "start": "electron .",
+    "package:win": "npm run build && npm run prepare:ffmpeg && electron-builder --win nsis portable --x64 --publish never",
+    "package:mac": "npm run build && npm run prepare:ffmpeg && electron-builder --mac --publish never",
+    "prepare:ffmpeg": "node scripts/prepare-ffmpeg.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "tar": "^7.5.22",
+    "unbzip2-stream": "^1.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.18.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^9.2.1",
+    "electron": "^44.2.0",
+    "electron-builder": "^26.0.12",
+    "ffmpeg-static": "^5.3.0",
+    "typescript": "~5.9.2",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4",
+    "wait-on": "^8.0.4"
+  }
+}
