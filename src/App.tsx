@@ -354,8 +354,10 @@ export default function App() {
     commit((p) => ({ ...p, clips: p.clips.map((c) => (c.id === selected ? update(c) : c)) }));
   };
   const seek = useCallback((value: number) => {
+    playingRef.current = false;
+    timeRef.current = Math.max(0, value);
     setPlaying(false);
-    setTime(Math.max(0, value));
+    setTime(timeRef.current);
   }, []);
   const remove = useCallback(() => {
     const p = projectRef.current,
