@@ -64,10 +64,16 @@ async function main() {
     app.evaluate((_, paths) => {
       globalThis.__regressionDialogs.open.push(paths);
     }, files);
-  const openProject = async (file, name) => {
+  const openProject = async (file, name, discardChanges = false) => {
     await queueOpen([file]);
     await page.getByTitle('打开工程 Ctrl+O', { exact: true }).click();
+    const unsaved = page.getByRole('dialog', { name: '保存未完成的修改', exact: true });
+    if (discardChanges) {
+      await expect(unsaved).toBeVisible();
+      await unsaved.getByRole('button', { name: '不保存并继续', exact: true }).click();
+    }
     await expect(page.getByLabel('工程名称', { exact: true })).toHaveValue(name);
+    await expect(unsaved).toBeHidden();
   };
   const snapshot = async (label) => {
     const file = path.join(directory, `${String(++savedNumber).padStart(2, '0')}-${label}.freecut`);
@@ -113,16 +119,23 @@ async function main() {
         return { canceled: false, filePath };
       };
       dialog.showMessageBox = async (_, options) => {
-        globalThis.__regressionDialogs.warnings.push(options.message);
-        return { response: 0, checkboxChecked: false };
+        // Close is still handled by the real guard and its renderer handshake.
+        if (options.title !== '保存更改')
+          globalThis.__regressionDialogs.warnings.push(options.message);
+        return { response: 1, checkboxChecked: false };
       };
     });
     page = await app.firstWindow();
     page.setDefaultTimeout(15000);
     await page.setViewportSize({ width: 1440, height: 950 });
+    await page.getByRole('button', { name: /^新建项目/ }).click();
     await expect(page.getByTitle('保存工程 Ctrl+S', { exact: true })).toBeVisible();
     const skip = page.getByRole('button', { name: '跳过引导', exact: true });
     if (await skip.count()) await skip.click();
+    const mode = page.getByTitle('切换关键帧操作模式', { exact: true });
+    await expect(mode).toContainText('普通');
+    await mode.click();
+    await expect(mode).toContainText('专业模式');
     await openProject(fixturePath, fixture.name);
 
     await check('keyboard undo and shifted redo preserve clip edits', async () => {
@@ -201,7 +214,7 @@ async function main() {
       async () => {
         // Open a clean fixture so this test cannot accidentally use the new text.
         await page.getByLabel('工程名称', { exact: true }).fill('before-trim-reset');
-        await openProject(fixturePath, fixture.name);
+        await openProject(fixturePath, fixture.name, true);
         await page
           .getByRole('button', { name: `片段 ${fixture.clips[0].name}`, exact: true })
           .click();
@@ -227,7 +240,7 @@ async function main() {
           'Trimmed animation lost its boundary value',
         );
         await page.getByLabel('工程名称', { exact: true }).fill('unsaved-reopen-sentinel');
-        await openProject(saved.file, fixture.name);
+        await openProject(saved.file, fixture.name, true);
         await page
           .getByRole('button', { name: `片段 ${fixture.clips[0].name}`, exact: true })
           .click();

@@ -107,6 +107,25 @@ export interface ExportProgress {
   progress: number;
 }
 export interface DesktopAPI {
+  onCloseRequested: (
+    callback: (request: { requestId: string; reason: 'window' | 'quit' }) => void,
+  ) => () => void;
+  resolveClose: (data: {
+    requestId: string;
+    dirty: boolean;
+    project: Project;
+  }) => Promise<{
+    status: 'ready' | 'cancelled' | 'failed';
+    outcome?: 'saved' | 'discarded' | 'clean';
+    path?: string;
+    error?: string;
+  }>;
+  confirmClose: (data: { requestId: string; unchanged: boolean }) => Promise<boolean>;
+  cancelClose: (requestId: string) => Promise<unknown>;
+  listProjects: () => Promise<ProjectSummary[]>;
+  openRecentProject: (id: string) => Promise<Project>;
+  removeRecentProject: (id: string) => Promise<void>;
+  openExternal: (kind: 'bilibili' | 'github') => Promise<void>;
   importMedia: () => Promise<MediaAsset[]>;
   saveProject: (project: Project) => Promise<string | null>;
   openProject: () => Promise<Project | null>;
@@ -116,7 +135,24 @@ export interface DesktopAPI {
   cancelExport: (jobId: string) => Promise<void>;
   onExportProgress: (callback: (progress: ExportProgress) => void) => () => void;
   showItem: (path: string) => Promise<void>;
-  getInfo: () => Promise<{ version: string; platform: string; ffmpeg: boolean; portable: boolean }>;
+  getInfo: () => Promise<{
+    version: string;
+    platform: string;
+    ffmpeg: boolean;
+    portable: boolean;
+    userData: string;
+  }>;
+}
+export interface ProjectSummary {
+  id: string;
+  name: string;
+  path: string;
+  updatedAt: string;
+  duration: number;
+  width: number;
+  height: number;
+  clipCount: number;
+  missing: boolean;
 }
 declare global {
   interface Window {

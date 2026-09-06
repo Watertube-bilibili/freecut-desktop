@@ -1,0 +1,114 @@
+.inspector .panel-heading {
+  gap: 7px;
+}
+.inspector .inspector-mode {
+  display: inline-flex;
+  margin-left: auto;
+  padding: 2px;
+  background: #101719;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.inspector .inspector-mode button {
+  padding: 4px 7px;
+  min-height: 25px;
+  font-size: 10px;
+  border-radius: 4px;
+  color: var(--muted);
+}
+.inspector .inspector-mode button[aria-pressed='true'] {
+  color: var(--accent);
+  background: #293c35;
+}
+.inspector .easy-keyframe-position {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+  font-size: 10px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.inspector .easy-keyframe-position .recorded {
+  color: var(--accent);
+}
+.inspector .easy-record {
+  width: 100%;
+  min-height: 43px;
+  color: var(--accent-ink);
+  background: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+.inspector .easy-record:enabled:hover {
+  background: #b4f1da;
+}
+.inspector .easy-record:enabled:active {
+  transform: scale(0.98);
+}
+.inspector .easy-help {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.7;
+  margin: 9px 0 10px;
+}
+.inspector .easy-keyframe-navigation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 4px;
+}
+.inspector .easy-keyframe-navigation button {
+  padding: 7px 4px;
+  min-height: 32px;
+  gap: 3px;
+  font-size: 10px;
+  background: #252d30;
+}
+.inspector .easy-slider {
+  display: block;
+  margin: 15px 0 18px;
+}
+.inspector .easy-slider:last-child {
+  margin-bottom: 3px;
+}
+.inspector .easy-slider > span {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #c3d1cd;
+  margin-bottom: 12px;
+}
+.inspector .easy-slider output {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.inspector .easy-slider input[type='range'] {
+  width: 100%;
+  height: 5px;
+}
+.inspector .easy-motion-presets > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.inspector .easy-motion-presets button {
+  min-height: 35px;
+  padding: 7px 5px;
+  border: 1px solid #3b4843;
+  background: #242d29;
+  color: #d6e4df;
+  font-size: 11px;
+}
+.inspector .easy-motion-presets button:enabled:hover {
+  border-color: #78b29d;
+  background: #304239;
+}
+.inspector .easy-motion-presets button:enabled:active {
+  transform: scale(0.98);
+}
+@media (prefers-reduced-motion: reduce) {
+  .inspector .easy-record:enabled:active,
+  .inspector .easy-motion-presets button:enabled:active {
+    transform: none;
+  }
+}

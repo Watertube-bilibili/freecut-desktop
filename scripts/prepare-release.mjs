@@ -46,7 +46,39 @@ if(mode==='verify'){
     assert.equal(assets.length,13);
     const sums=assets.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(asset=>`${asset.sha256}  ${asset.name}`).join('\n')+'\n';
     await fs.writeFile(path.join(out,'SHA256SUMS.txt'),sums);assets.push({name:'SHA256SUMS.txt',size:Buffer.byteLength(sums),sha256:await digest(path.join(out,'SHA256SUMS.txt'))});
-    const notes=`自由剪辑 FreeCut 桌面编辑器预览版。提供多轨剪辑、电脑端关键帧、字幕、滤镜、本地配音和手工透明度叠化等已实现能力；完整范围与限制见对应源码文档，尚未达到剪映全部功能等价。\n\n包含 Windows x64 安装版/便携版，以及 macOS Apple Silicon/Intel 的 DMG/ZIP。Windows 未签名；Mac 使用临时签名、未公证。可选 AI 模型按各自许可单独下载；ChatTTS 模型为 CC BY-NC 4.0，不能视为可商用音色。\n\n发布前本地 75 项自动测试通过；本次选定的三平台构建工作流全部成功，包含构建、回归及打包验证。测试不能保证所有素材、设备及导出效果均无问题。构建记录：https://github.com/${repo}/actions/runs/${runId}\n源码提交：${build.head_sha}\n\n随附该提交的应用源码、三平台 FFmpeg 对应源码、LICENSE、THIRD_PARTY_NOTICES.md、中文使用教程 FreeCut-Quickstart-zh.md 和 SHA256SUMS.txt。\n`;
+    const notes=`自由剪辑 FreeCut ${version} 预览版。新增启动首页，并修复保存退出与时间线预览体验。
+
+## 本次更新
+
+- 首页包含「我的项目」、搜索与排序、新建/打开/继续编辑、设置和关于。最近工程会跨次启动保留；从列表移除会保留原文件。
+- 关于页提供「我的 B站主页」和 GitHub 入口；设置页可记住工作台布局和关键帧模式。
+- 有未保存修改时，关闭窗口/退出应用会询问「保存并退出 / 不保存 / 取消」。取消保存或保存失败会保留工程；返回首页、新建和打开另一个工程也有保存提示。
+- 修复拖动播放头、切换手机布局时画面变黑的问题：新画面准备好后再显示，快速拖动时优先处理最新位置。
+- 关键帧默认「普通（易用）」模式，一键记录当前画面，支持前后跳转、整组删除、常用滑块和一键动画；可随时切换专业模式，继续精确编辑。
+- 保留多轨剪辑、无水印导出，以及按需下载安装的自动字幕、中文朗读和 ChatTTS。
+
+## 该下载哪个文件？
+
+普通用户只需下载下表中适合自己电脑的一份文件。
+
+| 你的电脑 / 使用方式 | 推荐下载 | 说明 |
+| --- | --- | --- |
+| Windows 10/11，日常使用 | FreeCut-${version}-win-x64-Setup.exe | 安装版，有安装向导和快捷方式。 |
+| Windows 10/11，希望免安装或随盘携带 | FreeCut-${version}-win-x64-Portable.exe | 便携版，放到可写文件夹后直接运行。设置、最近列表与模型保存在旁边的 FreeCutData，移动时一起保留。 |
+| Mac，Apple 芯片（M 系列） | FreeCut-${version}-mac-arm64.dmg | 打开 DMG，把 FreeCut 拖到 Applications。 |
+| Mac，Intel 处理器 | FreeCut-${version}-mac-x64.dmg | 适用于 Intel Mac，安装方式同上。 |
+| Mac，需要压缩包形式 | 对应芯片的 mac-arm64.zip 或 mac-x64.zip | 解压得到同一版本的 FreeCut.app；DMG 和 ZIP 任选其一。 |
+
+Mac 可在「 → 关于本机」查看芯片。Windows 当前提供 x64 构建。手机风格是桌面内的布局，不是 Android/iOS 安装包。工程 .freecut 引用源素材，搬迁工程时也要保留媒体文件。
+
+FreeCut-project-source-*.tar.gz 是本次应用源码，FreeCut-ffmpeg-source-*.tar.gz 是视频引擎对应源码；普通使用无需下载它们。FreeCut-Quickstart-zh.md 为中文教程，SHA256SUMS.txt 用于校验下载完整性。
+
+## 发布验证与说明
+
+Windows x64、Mac arm64、Mac x64 的构建均通过核心/宿主测试、实际桌面回归及打包应用的导入、保存重开和 MP4 导出。详见[本次构建记录](https://github.com/${repo}/actions/runs/${runId})与随附源码的 docs/VERIFICATION.md。源码提交：${build.head_sha}。
+
+Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按各自许可另行下载，ChatTTS 官方模型为 CC BY-NC 4.0，仅限非商业用途；Mac 的可选模型推理仍需设备验收。本项目为持续开发的预览版，功能范围与尚未完成能力见 docs/FEATURE-MATRIX.md。
+`;
     await fs.writeFile(path.join(out,'release-notes.md'),notes);await fs.writeFile(path.join(out,'release-manifest.json'),JSON.stringify({runId,tag,head:build.head_sha,assets},null,2));console.log(`Prepared ${assets.length} verified assets`);
   }else if(mode==='publish'){
     const manifest=JSON.parse(await fs.readFile(path.join(out,'release-manifest.json'),'utf8'));assert.equal(manifest.runId,runId);assert.equal(manifest.tag,tag);assert.equal(manifest.head,build.head_sha);assert.equal(manifest.assets.length,14);

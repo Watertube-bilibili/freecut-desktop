@@ -7,7 +7,7 @@ on:
         required: true
         type: string
       tag:
-        description: Prerelease tag (for example v0.1.0-preview.1)
+        description: Prerelease tag (for example v0.2.0-preview.1)
         required: true
         type: string
 permissions:

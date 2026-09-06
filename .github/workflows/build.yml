@@ -87,6 +87,12 @@ jobs:
       - run: npm run build
       - name: Verify editor regressions in isolated desktop profile
         run: node scripts/regression-editor.cjs
+      - name: Verify preview seeking and layout changes with real video
+        run: node scripts/regression-preview.cjs
+      - name: Verify home, recent projects and unsaved exit protection
+        run: node scripts/regression-home.cjs
+      - name: Verify one-click keyframes and professional mode interoperability
+        run: node scripts/regression-keyframes.cjs
       - name: Archive matching application source
         shell: bash
         run: git archive --format=tar.gz --prefix=FreeCut-source/ --output=artifacts/FreeCut-project-source-${{ github.sha }}.tar.gz HEAD

@@ -7,6 +7,19 @@ const audioSources = new Map<string, HTMLAudioElement>();
 const audioGains = new Map<string, GainNode>();
 let audioContext: AudioContext | undefined;
 const canvasIds = new WeakMap<HTMLCanvasElement, string>();
+let cacheEpoch = 0;
+function checkCancelled(signal?: AbortSignal) {
+  if (signal?.aborted) throw new DOMException('预览请求已更新', 'AbortError');
+}
+function cancellable<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  checkCancelled(signal);
+  if (!signal) return promise;
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => reject(new DOMException('预览请求已更新', 'AbortError'));
+    signal.addEventListener('abort', abort, { once: true });
+    promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+  });
+}
 function load(asset: MediaAsset, clipId: string): Promise<Source> {
   const key = `${clipId}:${asset.url}`;
   if (!sources.has(key))
@@ -39,37 +52,77 @@ function load(asset: MediaAsset, clipId: string): Promise<Source> {
         media.src = asset.url;
       }),
     );
-  return sources.get(key)!;
+  const pending = sources.get(key)!;
+  void pending.catch(() => {
+    if (sources.get(key) === pending) sources.delete(key);
+  });
+  return pending;
 }
-async function seek(video: HTMLVideoElement, time: number) {
+async function seek(video: HTMLVideoElement, time: number, signal?: AbortSignal) {
+  checkCancelled(signal);
   const target = Math.min(Math.max(0, time), Math.max(0, video.duration - 0.001));
-  if (Math.abs(video.currentTime - target) < 0.0005 && video.readyState >= 2) return;
+  if (!video.seeking && Math.abs(video.currentTime - target) < 0.0005 && video.readyState >= 2)
+    return;
   await new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => {
+    const cleanup = () => {
+      clearTimeout(timer);
       video.removeEventListener('seeked', done);
+      video.removeEventListener('error', failed);
+      signal?.removeEventListener('abort', aborted);
+    };
+    const timer = setTimeout(() => {
+      cleanup();
       reject(new Error('视频定位超时，请重新导入素材。'));
     }, 12000);
     const done = () => {
-      clearTimeout(timer);
+      if (video.seeking || video.readyState < 2 || Math.abs(video.currentTime - target) > 0.002)
+        return;
+      cleanup();
       resolve();
     };
-    video.addEventListener('seeked', done, { once: true });
-    video.currentTime = target;
+    const failed = () => {
+      cleanup();
+      reject(new Error('视频解码失败，请重新导入素材。'));
+    };
+    const aborted = () => {
+      cleanup();
+      reject(new DOMException('预览请求已更新', 'AbortError'));
+    };
+    video.addEventListener('seeked', done);
+    video.addEventListener('error', failed, { once: true });
+    signal?.addEventListener('abort', aborted, { once: true });
+    try {
+      video.currentTime = target;
+    } catch (error) {
+      cleanup();
+      reject(error);
+    }
   });
 }
 const layer = document.createElement('canvas');
+export interface RenderOptions {
+  width?: number;
+  height?: number;
+  signal?: AbortSignal;
+  /** Stable preview ownership; exports default to their own canvas identity. */
+  sourceScope?: string;
+}
 export async function renderProject(
   canvas: HTMLCanvasElement,
   project: Project,
   time: number,
-  options?: { width?: number; height?: number },
+  options?: RenderOptions,
 ) {
+  checkCancelled(options?.signal);
+  const epoch = cacheEpoch;
   const width = options?.width ?? project.width,
     height = options?.height ?? project.height;
   if (!canvasIds.has(canvas)) canvasIds.set(canvas, crypto.randomUUID());
-  if (canvas.width !== width) canvas.width = width;
-  if (canvas.height !== height) canvas.height = height;
-  const ctx = canvas.getContext('2d')!;
+  // Nothing touches the visible canvas until every source has decoded and sought.
+  const frame = document.createElement('canvas');
+  frame.width = width;
+  frame.height = height;
+  const ctx = frame.getContext('2d')!;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalAlpha = 1;
   ctx.fillStyle = project.background;
@@ -88,15 +141,140 @@ export async function renderProject(
       ),
     );
   for (const clip of ordered) {
+    checkCancelled(options?.signal);
     const asset = project.assets.find((a) => a.id === clip.assetId);
     let source: Source | undefined;
     if (asset) {
       if (asset.missing) throw new Error(`找不到素材 ${asset.name}，请使用“重新链接素材”恢复。`);
-      source = await load(asset, `${canvasIds.get(canvas)}:${clip.id}`);
+      source = await cancellable(
+        load(asset, `${options?.sourceScope ?? canvasIds.get(canvas)}:${clip.id}`),
+        options?.signal,
+      );
       if (source instanceof HTMLVideoElement)
-        await seek(source, clip.inPoint + (time - clip.start) * clip.speed);
+        await seek(source, clip.inPoint + (time - clip.start) * clip.speed, options?.signal);
     }
+    checkCancelled(options?.signal);
     drawClip(ctx, clip, source, time - clip.start, project, width, height);
+  }
+  checkCancelled(options?.signal);
+  if (epoch !== cacheEpoch) throw new DOMException('素材缓存已关闭', 'AbortError');
+  if (canvas.width !== width) canvas.width = width;
+  if (canvas.height !== height) canvas.height = height;
+  const target = canvas.getContext('2d')!;
+  target.save();
+  target.setTransform(1, 0, 0, 1, 0, 0);
+  target.globalAlpha = 1;
+  target.filter = 'none';
+  target.globalCompositeOperation = 'copy';
+  target.drawImage(frame, 0, 0);
+  target.restore();
+}
+
+/** Latest-only interactive preview. renderProject itself remains strict for export. */
+export function createPreviewRenderer() {
+  const sourceScope = crypto.randomUUID();
+  type Request = {
+    canvas: HTMLCanvasElement;
+    project: Project;
+    time: number;
+    width: number;
+    height: number;
+    promise: Promise<boolean>;
+    resolve: (committed: boolean) => void;
+    reject: (reason: unknown) => void;
+  };
+  let pending: Request | undefined,
+    active: AbortController | undefined,
+    desired: Request | undefined;
+  let running = false,
+    disposed = false,
+    lastCanvas: HTMLCanvasElement | undefined;
+  async function pump() {
+    if (running || disposed) return;
+    running = true;
+    try {
+      while (pending && !disposed) {
+        const request = pending;
+        pending = undefined;
+        active = new AbortController();
+        try {
+          await renderProject(request.canvas, request.project, request.time, {
+            width: request.width,
+            height: request.height,
+            sourceScope,
+            signal: active.signal,
+          });
+          lastCanvas = request.canvas;
+          request.resolve(true);
+        } catch (error) {
+          if (active.signal.aborted || disposed) request.resolve(false);
+          else {
+            if (desired === request) desired = undefined;
+            request.reject(error);
+          }
+        } finally {
+          active = undefined;
+        }
+      }
+    } finally {
+      running = false;
+    }
+  }
+  return {
+    request(
+      canvas: HTMLCanvasElement,
+      project: Project,
+      time: number,
+      options?: Pick<RenderOptions, 'width' | 'height'>,
+    ): Promise<boolean> {
+      if (disposed) return Promise.resolve(false);
+      const width = options?.width ?? project.width,
+        height = options?.height ?? project.height;
+      if (
+        desired &&
+        desired.canvas === canvas &&
+        desired.project === project &&
+        desired.time === time &&
+        desired.width === width &&
+        desired.height === height
+      )
+        return desired.promise;
+      // A remounted preview immediately inherits the most recent complete frame.
+      if (lastCanvas && lastCanvas !== canvas) {
+        canvas.width = lastCanvas.width;
+        canvas.height = lastCanvas.height;
+        canvas.getContext('2d')!.drawImage(lastCanvas, 0, 0);
+      }
+      pending?.resolve(false);
+      active?.abort();
+      let resolve!: Request['resolve'], reject!: Request['reject'];
+      const promise = new Promise<boolean>((yes, no) => {
+        resolve = yes;
+        reject = no;
+      });
+      desired = pending = { canvas, project, time, width, height, promise, resolve, reject };
+      void pump();
+      return promise;
+    },
+    dispose() {
+      disposed = true;
+      active?.abort();
+      pending?.resolve(false);
+      pending = undefined;
+      desired = undefined;
+      for (const [key, media] of sources)
+        if (key.startsWith(`${sourceScope}:`)) {
+          sources.delete(key);
+          void media.then(releaseSource).catch(() => {});
+        }
+    },
+  };
+}
+function releaseSource(source: Source) {
+  if (source instanceof HTMLVideoElement) {
+    source.pause();
+    source.removeAttribute('src');
+    source.load();
   }
 }
 function drawClip(
@@ -273,6 +451,7 @@ export function syncAudio(project: Project, time: number, playing: boolean) {
   for (const [id, media] of audioSources) if (!playing || !active.has(id)) media.pause();
 }
 export function clearMediaCache() {
+  cacheEpoch++;
   for (const [, media] of audioSources) {
     media.pause();
     media.removeAttribute('src');
@@ -281,15 +460,6 @@ export function clearMediaCache() {
   audioSources.clear();
   for (const gain of audioGains.values()) gain.disconnect();
   audioGains.clear();
-  for (const pending of sources.values())
-    void pending
-      .then((source) => {
-        if (source instanceof HTMLVideoElement) {
-          source.pause();
-          source.removeAttribute('src');
-          source.load();
-        }
-      })
-      .catch(() => {});
+  for (const pending of sources.values()) void pending.then(releaseSource).catch(() => {});
   sources.clear();
 }

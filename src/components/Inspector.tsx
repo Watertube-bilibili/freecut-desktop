@@ -8,9 +8,13 @@ import {
   Volume2,
   Type,
   ChevronRight,
+  ChevronLeft,
+  Sparkles,
 } from 'lucide-react';
 import type { AnimProperty, Clip, Easing, Effects, Project } from '../types';
 import { defaultEffects, evaluate, trimClip } from '../core/project';
+import { canRecordFrame, frameNavigation, recordFrame, removeFrame } from '../core/easy-keyframes';
+import './inspector-easy.css';
 
 const properties: {
   key: AnimProperty;
@@ -45,6 +49,9 @@ const effectFields: {
   { key: 'sepia', label: '复古', min: 0, max: 1, step: 0.01 },
 ];
 interface Props {
+  mode: 'easy' | 'pro';
+  setMode: (mode: 'easy' | 'pro') => void;
+  applyMotion: (id: string) => void;
   onClose: () => void;
   clip?: Clip;
   project: Project;
@@ -57,6 +64,9 @@ interface Props {
   seek: (time: number) => void;
 }
 export default function Inspector({
+  mode,
+  setMode,
+  applyMotion,
   onClose,
   clip,
   project,
@@ -76,10 +86,170 @@ export default function Inspector({
   const update = (values: Partial<Clip>) => change((c) => ({ ...c, ...values }));
   const effect = (key: keyof Effects, value: Effects[keyof Effects]) =>
     change((c) => ({ ...c, effects: { ...c.effects, [key]: value } }));
+  const locked = !!project.tracks.find((track) => track.id === clip?.trackId)?.locked;
+  const navigation = clip ? frameNavigation(clip, local, project.fps) : undefined;
+  const easyControls = clip && navigation && (
+    <>
+      <section className="easy-keyframes" aria-label="一键关键帧">
+        <div className="easy-keyframe-position">
+          <span>片段内 {local.toFixed(2)} 秒</span>
+          <span className={navigation.current !== undefined ? 'recorded' : ''}>
+            {navigation.current !== undefined
+              ? '此处已记录'
+              : `${navigation.times.length} 处关键帧`}
+          </span>
+        </div>
+        <button
+          className="easy-record"
+          disabled={locked || !canRecordFrame(clip, local, project.fps)}
+          onClick={() => change((c) => recordFrame(c, local, project.fps))}
+        >
+          <Diamond size={19} fill={navigation.current !== undefined ? 'currentColor' : 'none'} />
+          {clip.kind === 'audio' ? '记录当前音量' : '记录当前画面'}
+        </button>
+        <p className="easy-help">
+          {locked ? '轨道已锁定，请先解锁。' : '记录起点，移动播放头，调整后再记录。'}
+        </p>
+        <div className="easy-keyframe-navigation">
+          <button
+            title="上一个关键帧"
+            aria-label="上一个关键帧"
+            disabled={navigation.previous === undefined}
+            onClick={() =>
+              navigation.previous !== undefined && seek(clip.start + navigation.previous)
+            }
+          >
+            <ChevronLeft size={15} />
+            上一处
+          </button>
+          <button
+            title="删除当前整组关键帧"
+            aria-label="删除当前整组关键帧"
+            disabled={locked || navigation.current === undefined}
+            onClick={() => change((c) => removeFrame(c, local, project.fps))}
+          >
+            <Trash2 size={14} />
+            删除此处
+          </button>
+          <button
+            title="下一个关键帧"
+            aria-label="下一个关键帧"
+            disabled={navigation.next === undefined}
+            onClick={() => navigation.next !== undefined && seek(clip.start + navigation.next)}
+          >
+            下一处
+            <ChevronRight size={15} />
+          </button>
+        </div>
+      </section>
+      <section className="easy-adjustments">
+        <h3>{clip.kind === 'audio' ? '调整声音' : '调整画面'}</h3>
+        {[
+          ...(clip.kind === 'audio'
+            ? []
+            : [
+                {
+                  prop: 'scale' as const,
+                  label: '画面大小',
+                  min: 10,
+                  max: 400,
+                  factor: 100,
+                  unit: '%',
+                },
+                {
+                  prop: 'x' as const,
+                  label: '左右移动',
+                  min: -project.width,
+                  max: project.width,
+                  factor: 1,
+                  unit: ' px',
+                },
+                {
+                  prop: 'y' as const,
+                  label: '上下移动',
+                  min: -project.height,
+                  max: project.height,
+                  factor: 1,
+                  unit: ' px',
+                },
+                {
+                  prop: 'opacity' as const,
+                  label: '不透明度',
+                  min: 0,
+                  max: 100,
+                  factor: 100,
+                  unit: '%',
+                },
+              ]),
+          ...(['audio', 'video'].includes(clip.kind)
+            ? [
+                {
+                  prop: 'volume' as const,
+                  label: '声音大小',
+                  min: 0,
+                  max: 400,
+                  factor: 100,
+                  unit: '%',
+                },
+              ]
+            : []),
+        ].map((control) => (
+          <label className="easy-slider" key={control.prop}>
+            <span>
+              {control.label}
+              <output>
+                {Math.round(evaluate(clip, control.prop, local) * control.factor)}
+                {control.unit}
+              </output>
+            </span>
+            <input
+              aria-label={control.label}
+              type="range"
+              min={control.min}
+              max={control.max}
+              step={1}
+              disabled={locked}
+              value={evaluate(clip, control.prop, local) * control.factor}
+              onChange={(event) => setAnim(control.prop, +event.target.value / control.factor)}
+            />
+          </label>
+        ))}
+      </section>
+      <section className="easy-motion-presets">
+        <h3>
+          <Sparkles size={14} />
+          一键动画
+        </h3>
+        <div>
+          {(clip.kind === 'audio'
+            ? [{ id: 'fade', label: '音量淡入淡出' }]
+            : [
+                { id: 'zoom', label: '缓慢放大' },
+                { id: 'slide', label: '从左移入' },
+                { id: 'fade', label: '淡入淡出' },
+                { id: 'pop', label: '缩放出现' },
+              ]
+          ).map((preset) => (
+            <button key={preset.id} disabled={locked} onClick={() => applyMotion(preset.id)}>
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </section>
+    </>
+  );
   return (
-    <aside className="inspector">
+    <aside className={`inspector inspector-${mode}`}>
       <div className="panel-heading">
         <span>属性检查器</span>
+        <div className="inspector-mode" role="group" aria-label="属性检查器模式">
+          <button aria-pressed={mode === 'easy'} onClick={() => setMode('easy')}>
+            普通
+          </button>
+          <button aria-pressed={mode === 'pro'} onClick={() => setMode('pro')}>
+            专业
+          </button>
+        </div>
         <button className="icon-button" title="关闭属性检查器" onClick={onClose}>
           <X size={15} />
         </button>
@@ -117,48 +287,51 @@ export default function Inspector({
             <span className={`kind-dot ${clip.kind}`} />
             <strong>{clip.name}</strong>
           </div>
+          {mode === 'easy' && (tab === 'basic' || tab === 'keyframes') && easyControls}
           {tab === 'basic' && (
             <>
-              <section>
-                <h3>
-                  <Move size={14} /> 变换 <small>点击菱形添加关键帧</small>
-                </h3>
-                {visibleProperties.map((p) => {
-                  const value = evaluate(clip, p.key, local),
-                    exists = clip.keyframes[p.key]?.some(
-                      (k) => Math.abs(k.time - local) < 0.5 / project.fps,
+              {mode === 'pro' && (
+                <section>
+                  <h3>
+                    <Move size={14} /> 变换 <small>点击菱形添加关键帧</small>
+                  </h3>
+                  {visibleProperties.map((p) => {
+                    const value = evaluate(clip, p.key, local),
+                      exists = clip.keyframes[p.key]?.some(
+                        (k) => Math.abs(k.time - local) < 0.5 / project.fps,
+                      );
+                    return (
+                      <div className="anim-control" key={p.key}>
+                        <label htmlFor={`prop-${p.key}`}>{p.label}</label>
+                        <input
+                          aria-label={p.label}
+                          id={`prop-${p.key}`}
+                          type="number"
+                          step={p.step}
+                          min={p.min}
+                          max={p.max}
+                          value={Number(value.toFixed(3))}
+                          onChange={(e) => {
+                            if (e.target.value !== '')
+                              setAnim(
+                                p.key,
+                                Math.max(p.min, Math.min(p.max, Number(e.target.value))),
+                              );
+                          }}
+                        />
+                        <span className="unit">{p.unit}</span>
+                        <button
+                          className={`icon-button key-button ${exists ? 'keyed' : ''}`}
+                          title={`${exists ? '删除' : '添加'}${p.label}关键帧`}
+                          onClick={() => toggleKey(p.key)}
+                        >
+                          <Diamond size={14} fill={exists ? 'currentColor' : 'none'} />
+                        </button>
+                      </div>
                     );
-                  return (
-                    <div className="anim-control" key={p.key}>
-                      <label htmlFor={`prop-${p.key}`}>{p.label}</label>
-                      <input
-                        aria-label={p.label}
-                        id={`prop-${p.key}`}
-                        type="number"
-                        step={p.step}
-                        min={p.min}
-                        max={p.max}
-                        value={Number(value.toFixed(3))}
-                        onChange={(e) => {
-                          if (e.target.value !== '')
-                            setAnim(
-                              p.key,
-                              Math.max(p.min, Math.min(p.max, Number(e.target.value))),
-                            );
-                        }}
-                      />
-                      <span className="unit">{p.unit}</span>
-                      <button
-                        className={`icon-button key-button ${exists ? 'keyed' : ''}`}
-                        title={`${exists ? '删除' : '添加'}${p.label}关键帧`}
-                        onClick={() => toggleKey(p.key)}
-                      >
-                        <Diamond size={14} fill={exists ? 'currentColor' : 'none'} />
-                      </button>
-                    </div>
-                  );
-                })}
-              </section>
+                  })}
+                </section>
+              )}
               {clip.kind === 'text' && clip.text && (
                 <section>
                   <h3>
@@ -257,112 +430,118 @@ export default function Inspector({
                   </label>
                 </section>
               )}
-              <section>
-                <h3>时间与速度</h3>
-                <label className="inline-field">
-                  所在轨道
-                  <select
-                    aria-label="所在轨道"
-                    value={clip.trackId}
-                    onChange={(e) => update({ trackId: e.target.value })}
-                  >
-                    {project.tracks.map((track) => (
-                      <option
-                        key={track.id}
-                        value={track.id}
-                        disabled={track.locked || (track.kind === 'audio' && clip.kind !== 'audio')}
-                      >
-                        {track.name}
-                        {track.locked ? '（已锁定）' : ''}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="inline-field">
-                  开始时间
-                  <input
-                    aria-label="开始时间"
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={Number(clip.start.toFixed(3))}
-                    onChange={(e) => update({ start: Math.max(0, +e.target.value) })}
-                  />
-                  <span>秒</span>
-                </label>
-                <label className="inline-field">
-                  片段时长
-                  <input
-                    aria-label="片段时长"
-                    type="number"
-                    min={0.1}
-                    step={0.1}
-                    value={Number(clip.duration.toFixed(3))}
-                    onChange={(e) => {
-                      const asset = project.assets.find((a) => a.id === clip.assetId);
-                      const max =
-                        asset && asset.kind !== 'image'
-                          ? (asset.duration - clip.inPoint) / clip.speed
-                          : 3600;
-                      const duration = Math.max(0.1, Math.min(max, +e.target.value));
-                      change((c) => trimClip(c, 0, c.duration - duration));
-                    }}
-                  />
-                  <span>秒</span>
-                </label>
-                {['video', 'audio'].includes(clip.kind) && (
+              {mode === 'pro' && (
+                <section>
+                  <h3>时间与速度</h3>
                   <label className="inline-field">
-                    常规变速
+                    所在轨道
                     <select
-                      value={clip.speed}
-                      onChange={(e) => {
-                        const speed = +e.target.value,
-                          ratio = clip.speed / speed;
-                        update({
-                          speed,
-                          duration: clip.duration * ratio,
-                          keyframes: Object.fromEntries(
-                            Object.entries(clip.keyframes).map(([k, v]) => [
-                              k,
-                              v?.map((frame) => ({ ...frame, time: frame.time * ratio })),
-                            ]),
-                          ),
-                          fadeIn: clip.fadeIn * ratio,
-                          fadeOut: clip.fadeOut * ratio,
-                        });
-                      }}
+                      aria-label="所在轨道"
+                      value={clip.trackId}
+                      onChange={(e) => update({ trackId: e.target.value })}
                     >
-                      {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4].map((s) => (
-                        <option key={s} value={s}>
-                          {s}×
+                      {project.tracks.map((track) => (
+                        <option
+                          key={track.id}
+                          value={track.id}
+                          disabled={
+                            track.locked || (track.kind === 'audio' && clip.kind !== 'audio')
+                          }
+                        >
+                          {track.name}
+                          {track.locked ? '（已锁定）' : ''}
                         </option>
                       ))}
                     </select>
                   </label>
-                )}
-              </section>
-              <section>
-                <h3>
-                  <Volume2 size={14} /> 淡入淡出
-                </h3>
-                {(['fadeIn', 'fadeOut'] as const).map((key, i) => (
-                  <label className="inline-field" key={key}>
-                    {i === 0 ? '淡入' : '淡出'}
+                  <label className="inline-field">
+                    开始时间
                     <input
-                      aria-label={i === 0 ? '淡入' : '淡出'}
+                      aria-label="开始时间"
                       type="number"
                       min={0}
-                      max={clip.duration}
                       step={0.1}
-                      value={clip[key]}
-                      onChange={(e) =>
-                        update({ [key]: Math.max(0, Math.min(clip.duration, +e.target.value)) })
-                      }
+                      value={Number(clip.start.toFixed(3))}
+                      onChange={(e) => update({ start: Math.max(0, +e.target.value) })}
                     />
                     <span>秒</span>
                   </label>
-                ))}
-              </section>
+                  <label className="inline-field">
+                    片段时长
+                    <input
+                      aria-label="片段时长"
+                      type="number"
+                      min={0.1}
+                      step={0.1}
+                      value={Number(clip.duration.toFixed(3))}
+                      onChange={(e) => {
+                        const asset = project.assets.find((a) => a.id === clip.assetId);
+                        const max =
+                          asset && asset.kind !== 'image'
+                            ? (asset.duration - clip.inPoint) / clip.speed
+                            : 3600;
+                        const duration = Math.max(0.1, Math.min(max, +e.target.value));
+                        change((c) => trimClip(c, 0, c.duration - duration));
+                      }}
+                    />
+                    <span>秒</span>
+                  </label>
+                  {['video', 'audio'].includes(clip.kind) && (
+                    <label className="inline-field">
+                      常规变速
+                      <select
+                        value={clip.speed}
+                        onChange={(e) => {
+                          const speed = +e.target.value,
+                            ratio = clip.speed / speed;
+                          update({
+                            speed,
+                            duration: clip.duration * ratio,
+                            keyframes: Object.fromEntries(
+                              Object.entries(clip.keyframes).map(([k, v]) => [
+                                k,
+                                v?.map((frame) => ({ ...frame, time: frame.time * ratio })),
+                              ]),
+                            ),
+                            fadeIn: clip.fadeIn * ratio,
+                            fadeOut: clip.fadeOut * ratio,
+                          });
+                        }}
+                      >
+                        {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4].map((s) => (
+                          <option key={s} value={s}>
+                            {s}×
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                </section>
+              )}
+              {mode === 'pro' && (
+                <section>
+                  <h3>
+                    <Volume2 size={14} /> 淡入淡出
+                  </h3>
+                  {(['fadeIn', 'fadeOut'] as const).map((key, i) => (
+                    <label className="inline-field" key={key}>
+                      {i === 0 ? '淡入' : '淡出'}
+                      <input
+                        aria-label={i === 0 ? '淡入' : '淡出'}
+                        type="number"
+                        min={0}
+                        max={clip.duration}
+                        step={0.1}
+                        value={clip[key]}
+                        onChange={(e) =>
+                          update({ [key]: Math.max(0, Math.min(clip.duration, +e.target.value)) })
+                        }
+                      />
+                      <span>秒</span>
+                    </label>
+                  ))}
+                </section>
+              )}
             </>
           )}
           {tab === 'effects' && clip.kind === 'audio' && (
@@ -484,7 +663,7 @@ export default function Inspector({
               )}
             </>
           )}
-          {tab === 'keyframes' && (
+          {tab === 'keyframes' && mode === 'pro' && (
             <>
               <div className="keyframe-intro">
                 <Diamond size={20} />

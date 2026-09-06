@@ -7,6 +7,9 @@ const crypto = require('node:crypto');
 const { pathToFileURL } = require('node:url');
 const { createMediaLibrary, MEDIA_EXTENSIONS, assertTrustedSender } = require('./media.cjs');
 const { createExporter, validateProject, validateOptions } = require('./export.cjs');
+const { createCloseGuard } = require('./close-guard.cjs');
+const { createRecentProjects } = require('./recent-projects.cjs');
+const appVersion = require('../package.json').version;
 
 const portable = process.platform === 'win32' && Boolean(process.env.PORTABLE_EXECUTABLE_DIR);
 if (portable) {
@@ -21,7 +24,7 @@ const entry = path.join(__dirname,'..','dist','index.html');
 const ffmpegPath = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname,'..','resources'),'ffmpeg',process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
 const media = createMediaLibrary(ffmpegPath);
 const selectedPaths = new Set();
-let window = null, exporter = null, chattts = null, quitting = false;
+let window = null, exporter = null, chattts = null, ai = null, recentProjects = null, closeGuard = null, quitting = false, shutdown = null, disposing = null;
 function validateSender(event) {
   return assertTrustedSender(event,window?.webContents,dev ? 'http://127.0.0.1:5173/' : pathToFileURL(entry).href);
 }
@@ -33,8 +36,45 @@ async function atomicWrite(destination, data) {
   finally { await fsp.rm(temporary,{force:true}).catch(() => {}); }
 }
 async function importPath(input) { const asset=await media.importPath(input); selectedPaths.add(asset.path); return asset; }
+async function rememberProject(project,file) {
+  try{await recentProjects.remember(project,file);}
+  catch(error){console.error('最近工程列表未能更新：',error.message);}
+}
+async function saveProject(project) {
+  validateProject(project);
+  const result=await dialog.showSaveDialog(window,{title:'保存 FreeCut 工程',defaultPath:`${safeName(project.name)}.freecut`,filters:[{name:'FreeCut 工程',extensions:['freecut']}]});
+  if(result.canceled || !result.filePath)return null;
+  const saved=structuredClone(project);
+  // Session access tokens and thumbnails are recreated from media references.
+  for(const asset of saved.assets) { asset.url=''; delete asset.thumbnail; }
+  await atomicWrite(result.filePath,JSON.stringify(saved,null,2));
+  selectedPaths.add(result.filePath);await rememberProject(saved,result.filePath);return result.filePath;
+}
+async function openProjectPath(file) {
+  let stat;
+  try{stat=await fsp.stat(file);}catch{throw Error('工程文件已移动或删除，请使用“打开工程”重新选择。');}
+  if(!stat.isFile() || stat.size>64*1024*1024)throw new Error('工程文件无效或超过 64 MB。');
+  let project;try{project=JSON.parse(await fsp.readFile(file,'utf8'));}catch{throw new Error('工程文件不是有效的 JSON。');}
+  validateProject(project);
+  for(const asset of project.assets) {
+    const id=asset.id;asset.url='';delete asset.thumbnail;
+    if(!asset.path){asset.missing=true;continue;}
+    try{const restored=await importPath(asset.path);Object.assign(asset,restored,{id,missing:false});}
+    catch{asset.missing=true;}
+  }
+  selectedPaths.add(file);await rememberProject(project,file);return project;
+}
+function disposeResources() {
+  if(!disposing)disposing=Promise.allSettled([exporter?.dispose(),chattts?.dispose?.(),ai?.cancel?.()]).finally(()=>{disposing=null;});
+  return disposing;
+}
+function completeQuit() {
+  if(shutdown)return;
+  shutdown=disposeResources().finally(()=>{quitting=true;app.quit();});
+}
 
 function installIPC() {
+  recentProjects=createRecentProjects({userData:app.getPath('userData')});
   exporter=createExporter({ffmpegPath,resolveAsset:media.resolveAsset,temporaryRoot:app.getPath('temp'),emitProgress:(data) => { if(window && !window.isDestroyed())window.webContents.send('freecut:export-progress',data); }});
   handle('freecut:import-media',async() => {
     const result=await dialog.showOpenDialog(window,{ title:'导入视频、音频或图片',properties:['openFile','multiSelections'],filters:[{name:'媒体文件',extensions:[...MEDIA_EXTENSIONS].map((ext) => ext.slice(1))}] });
@@ -44,29 +84,22 @@ function installIPC() {
     if(errors.length)await dialog.showMessageBox(window,{type:'warning',title:'部分素材未能导入',message:errors.slice(0,10).join('\n')});
     return assets;
   });
-  handle('freecut:save-project',async(project) => {
-    validateProject(project);
-    const result=await dialog.showSaveDialog(window,{title:'保存 FreeCut 工程',defaultPath:`${safeName(project.name)}.freecut`,filters:[{name:'FreeCut 工程',extensions:['freecut']}]});
-    if(result.canceled || !result.filePath)return null;
-    const saved=structuredClone(project);
-    // Blob URLs and temporary access tokens are restored from verified file references on open.
-    for(const asset of saved.assets) { asset.url=''; delete asset.thumbnail; }
-    await atomicWrite(result.filePath,JSON.stringify(saved,null,2)); selectedPaths.add(result.filePath); return result.filePath;
-  });
+  handle('freecut:save-project',saveProject);
   handle('freecut:open-project',async() => {
     const result=await dialog.showOpenDialog(window,{title:'打开 FreeCut 工程',properties:['openFile'],filters:[{name:'FreeCut 工程',extensions:['freecut','json']}]});
     if(result.canceled || !result.filePaths[0])return null;
-    const file=result.filePaths[0], stat=await fsp.stat(file);
-    if(!stat.isFile() || stat.size>64*1024*1024)throw new Error('工程文件无效或超过 64 MB。');
-    let project; try { project=JSON.parse(await fsp.readFile(file,'utf8')); } catch { throw new Error('工程文件不是有效的 JSON。'); }
-    validateProject(project);
-    for(const asset of project.assets) {
-      const id=asset.id; asset.url=''; delete asset.thumbnail;
-      if(!asset.path) { asset.missing=true; continue; }
-      try { const restored=await importPath(asset.path); Object.assign(asset,restored,{id,missing:false}); }
-      catch { asset.missing=true; }
-    }
-    selectedPaths.add(file); return project;
+    return openProjectPath(result.filePaths[0]);
+  });
+  handle('freecut:list-projects',()=>recentProjects.list());
+  handle('freecut:open-recent-project',async(id)=>openProjectPath(await recentProjects.getPath(id)));
+  handle('freecut:remove-recent-project',(id)=>recentProjects.remove(id));
+  handle('freecut:resolve-close',(data)=>closeGuard?.resolve(data)??{status:'failed',error:'窗口已关闭。'});
+  handle('freecut:confirm-close',(data)=>closeGuard?.confirm(data)??false);
+  handle('freecut:cancel-close',(requestId)=>closeGuard?.cancel(requestId));
+  handle('freecut:open-external',async(kind)=>{
+    const urls={bilibili:'https://space.bilibili.com/390310418?spm_id_from=333.1007.0.0',github:'https://github.com/Watertube-bilibili/freecut-desktop'};
+    if(typeof kind!=='string'||!Object.hasOwn(urls,kind))throw Error('外部链接不在允许列表中。');
+    await shell.openExternal(urls[kind]);
   });
   handle('freecut:begin-export',async(options) => {
     validateOptions(options);
@@ -81,9 +114,17 @@ function installIPC() {
   handle('freecut:write-frame',(data) => exporter.writeFrame(data));
   handle('freecut:finish-export',(id) => exporter.finish(id));
   handle('freecut:cancel-export',(id) => exporter.cancel(id));
-  handle('freecut:show-item',async(file) => { if(typeof file!=='string' || !selectedPaths.has(file))throw new Error('只能定位用户已选择的文件。'); shell.showItemInFolder(file); });
-  handle('freecut:get-info',async() => ({version:app.getVersion(),platform:process.platform,ffmpeg:fs.existsSync(ffmpegPath),portable}));
-  if(fs.existsSync(path.join(__dirname,'ai.cjs')))require('./ai.cjs').registerAI({ipcMain,app,dialog,ffmpegPath,importPath,validateSender,validateMediaPath:media.validateMediaPath});
+  handle('freecut:show-item',async(file) => {
+    if(typeof file!=='string')throw new Error('只能定位用户已选择的文件。');
+    const allowed=selectedPaths.has(file)?file:await recentProjects.findPath(file);
+    if(!allowed)throw new Error('只能定位用户已选择的文件。');
+    if(!await fsp.stat(allowed).then(stat=>stat.isFile(),()=>false))throw new Error('文件已移动或删除，请重新打开项目。');
+    shell.showItemInFolder(allowed);
+  });
+  handle('freecut:get-info',async() => ({version:appVersion,platform:process.platform,ffmpeg:fs.existsSync(ffmpegPath),portable,userData:app.getPath('userData')}));
+  // Main owns shutdown after close approval. Do not let AI's optional legacy
+  // before-quit listener cancel a job while the user is still deciding to quit.
+  if(fs.existsSync(path.join(__dirname,'ai.cjs')))ai=require('./ai.cjs').registerAI({ipcMain,app:{getPath:name=>app.getPath(name)},dialog,ffmpegPath,importPath,validateSender,validateMediaPath:media.validateMediaPath});
   if(fs.existsSync(path.join(__dirname,'chattts.cjs')))chattts=require('./chattts.cjs').registerChatTTS({ipcMain,app,importPath,validateSender});
 }
 
@@ -93,7 +134,20 @@ function createWindow() {
   window.webContents.on('will-navigate',(event,url) => { if(url !== (dev ? 'http://127.0.0.1:5173/' : pathToFileURL(entry).href))event.preventDefault(); });
   window.webContents.on('will-attach-webview',(event) => event.preventDefault());
   window.once('ready-to-show',() => window.show());
-  window.on('closed',() => { window=null; void exporter?.dispose(); });
+  const target=window;
+  const guard=createCloseGuard({
+    requestSnapshot:request=>target.webContents.send('freecut:request-close',request),
+    validateProject,saveProject,
+    chooseAction:async(project)=>{
+      const result=await dialog.showMessageBox(target,{type:'question',title:'保存更改',message:`是否保存对“${project.name}”的更改？`,detail:'未保存的更改会丢失。',buttons:['保存并退出','不保存','取消'],defaultId:0,cancelId:2,noLink:true});
+      return ['save','discard','cancel'][result.response]??'cancel';
+    },
+    approve:reason=>setImmediate(()=>{if(reason==='quit')completeQuit();else if(!target.isDestroyed())target.close();}),
+    reportError:message=>{if(!target.isDestroyed())void dialog.showMessageBox(target,{type:'error',title:'暂时无法关闭',message});},
+  });
+  closeGuard=guard;
+  target.on('close',event=>{if(!guard.request('window'))event.preventDefault();});
+  target.on('closed',()=>{guard.dispose();if(window===target){window=null;closeGuard=null;}if(!shutdown)void disposeResources();});
   if(dev)void window.loadURL('http://127.0.0.1:5173/'); else void window.loadFile(entry);
 }
 
@@ -104,7 +158,12 @@ app.whenReady().then(() => {
   const csp=`default-src 'self'; script-src 'self'${dev ? " 'unsafe-inline'" : ''}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: freecut-media:; media-src 'self' blob: freecut-media:; connect-src 'self' freecut-media:${dev ? ' ws://127.0.0.1:5173 http://127.0.0.1:5173' : ''}; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; frame-src 'none'`;
   session.defaultSession.webRequest.onHeadersReceived((details,callback) => callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':[csp]}}));
   installIPC(); createWindow();
-  app.on('activate',() => { if(BrowserWindow.getAllWindows().length===0)createWindow(); });
+  app.on('activate',() => { if(!shutdown&&BrowserWindow.getAllWindows().length===0)createWindow(); });
 });
 app.on('window-all-closed',() => { if(process.platform!=='darwin')app.quit(); });
-app.on('before-quit',(event) => { if(quitting || !exporter)return; event.preventDefault(); quitting=true; void Promise.allSettled([exporter.dispose(),chattts?.dispose?.()]).finally(() => app.quit()); });
+app.on('before-quit',event=>{
+  if(quitting)return;
+  event.preventDefault();
+  if(window&&!window.isDestroyed()&&closeGuard){if(closeGuard.request('quit'))completeQuit();}
+  else completeQuit();
+});

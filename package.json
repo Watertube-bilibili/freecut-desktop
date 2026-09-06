@@ -1,6 +1,6 @@
 {
   "name": "freecut-desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "自由剪辑 FreeCut — 开源桌面视频编辑器",
   "license": "GPL-3.0-or-later",
@@ -11,7 +11,7 @@
     "dev:desktop": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron . --dev\"",
     "build": "tsc -b && vite build",
     "test": "vitest run src && node --test electron/*.test.cjs",
-    "test:desktop": "npm run build && node scripts/smoke-desktop.cjs && node scripts/regression-editor.cjs",
+    "test:desktop": "npm run build && node scripts/smoke-desktop.cjs && node scripts/regression-editor.cjs && node scripts/regression-preview.cjs && node scripts/regression-home.cjs && node scripts/regression-keyframes.cjs",
     "test:ai": "node scripts/smoke-ai.cjs",
     "preview": "vite preview --host 127.0.0.1",
     "start": "electron .",

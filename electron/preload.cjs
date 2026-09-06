@@ -1,5 +1,17 @@
 'use strict';
 const { contextBridge, ipcRenderer }=require('electron');
+const closeListeners=new Set();
+let pendingClose=null;
+ipcRenderer.on('freecut:request-close',(_event,request)=>{
+  pendingClose=request;
+  if(closeListeners.size){pendingClose=null;for(const callback of closeListeners)callback(request);}
+});
+function onCloseRequested(callback){
+  if(typeof callback!=='function')throw TypeError('回调必须是函数。');
+  closeListeners.add(callback);
+  if(pendingClose)queueMicrotask(()=>{if(closeListeners.has(callback)&&pendingClose){const request=pendingClose;pendingClose=null;callback(request);}});
+  return ()=>closeListeners.delete(callback);
+}
 function subscribe(channel, callback) {
   if(typeof callback!=='function')throw new TypeError('回调必须是函数。');
   const listener=(_event,value) => callback(value);
@@ -10,6 +22,14 @@ contextBridge.exposeInMainWorld('freecut',Object.freeze({
   importMedia:() => ipcRenderer.invoke('freecut:import-media'),
   saveProject:(project) => ipcRenderer.invoke('freecut:save-project',project),
   openProject:() => ipcRenderer.invoke('freecut:open-project'),
+  listProjects:() => ipcRenderer.invoke('freecut:list-projects'),
+  openRecentProject:(id) => ipcRenderer.invoke('freecut:open-recent-project',id),
+  removeRecentProject:(id) => ipcRenderer.invoke('freecut:remove-recent-project',id),
+  openExternal:(kind) => ipcRenderer.invoke('freecut:open-external',kind),
+  onCloseRequested,
+  resolveClose:(data) => ipcRenderer.invoke('freecut:resolve-close',data),
+  confirmClose:(data) => ipcRenderer.invoke('freecut:confirm-close',data),
+  cancelClose:(requestId) => ipcRenderer.invoke('freecut:cancel-close',requestId),
   beginExport:(options) => ipcRenderer.invoke('freecut:begin-export',options),
   writeFrame:(data) => ipcRenderer.invoke('freecut:write-frame',data),
   finishExport:(jobId) => ipcRenderer.invoke('freecut:finish-export',jobId),
