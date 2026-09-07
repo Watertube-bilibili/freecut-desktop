@@ -14,15 +14,15 @@
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-当前源码版本为 **0.3.2 开发预览版**，本次更新导出架构，并修复带专辑封面的音频识别和 Windows 旧快捷方式图标。发布状态以对应 Release 为准。软件并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
+当前版本为已发布的 **0.3.2 开发预览版**，本次更新导出架构，并修复带专辑封面的音频识别和 Windows 旧快捷方式图标。软件并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
 
-上一版 0.3.1 的中英文界面、右键剪辑、保存退出与覆盖安装检查已通过；其[三平台构建](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130)及[发布校验](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194)均成功。0.3.2 的验证与下载以本次 Release 记录为准。
+0.3.2 的 [Windows / Mac 三平台构建](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722)及[发布校验](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34141085758)均成功，发布源码提交为 `aba5cac`。新增导出路径、音频封面修复和快捷方式检查的具体范围见[本次验证记录](docs/VERIFICATION-032.md)。
 
 0.3.2 安装器会更新已核实归属的旧版 FreeCut 桌面和开始菜单入口，安装位置改变也能迁移；使用独立图标文件并通知 Windows 刷新，解决升级后仍显示旧图标的问题。首次安装同样创建新图标，用户自行修改过的快捷方式会保留。
 
-导出会自动选择合适的处理路径：符合条件的常规裁剪、拼接、图片和变速直接由 FFmpeg 处理；文字、关键帧、蒙版等复杂画面继续使用预览共用的合成器，将 RGBA 画面直接送入编码器，边渲染边编码，不再逐帧生成临时 PNG。无需额外选择模式。复杂效果仍有逐帧解码和合成耗时，实际提速取决于工程与设备；本次[验证记录](docs/VERIFICATION-032.md)会区分正确性检查和同工程性能测试。
+导出会自动选择合适的处理路径：符合条件的常规裁剪、拼接、图片和变速直接由 FFmpeg 处理；文字、关键帧、蒙版等复杂画面继续使用预览共用的合成器，将 RGBA 画面直接送入编码器，边渲染边编码，不再逐帧生成临时 PNG。无需额外选择模式。复杂效果仍有逐帧解码和合成耗时，实际提速取决于工程与设备；本次[验证记录](docs/VERIFICATION-032.md)区分正确性检查和同工程性能测试。
 
-带专辑封面的 FLAC 等音频现在按音频导入，不再把封面当成视频。打开或重新链接旧工程中的相关素材时，会修正原先误识别的类型，保留片段位置、时长和音量动画。
+带专辑封面的 FLAC 等音频现在按音频导入，不再把封面当成视频。重新打开旧工程时，会重新读取可用的相关素材并修正原先误识别的类型，保留片段位置、时长和音量动画。
 
 新版采用原创 3D 图标，以“水管剪辑”为中文主名称。FreeCut 保留为英文名，仓库名、安装文件名和 `.freecut` 工程格式继续兼容。品牌来源与发布前排查见 [品牌说明](docs/BRAND.md) 和 [来源及许可核查](docs/RELEASE-REVIEW-030.md)。
 
@@ -62,7 +62,7 @@
 
 ## 下载和运行
 
-[查看 0.3.2 预览版发布页](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.2-preview.1)，下表为本次版本对应文件名；仅在 Release 附件出现后提供下载。此前已发布的 [0.3.1 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1)仍可下载。发布包包含 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中英文教程和 SHA-256 清单。中英文共用同一份应用包，首次启动默认简体中文。
+[下载 0.3.2 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.2-preview.1)：已提供 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中英文教程和 SHA-256 清单。按下表选择适合自己电脑的一份应用包。中英文共用同一份应用包，首次启动默认简体中文。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 
@@ -118,7 +118,9 @@ node installer/smoke.cjs
 
 桌面回归覆盖保存退出、真实视频定位、普通关键帧、预览拖拽、蒙版像素、短窗口滚动、立体声预览与导出，以及更新时的保存/取消/失败路径。脚本使用独立临时用户目录；更新回归仅替换网络响应和最后的安装启动器，不改用户安装。`npm run test:desktop` 完成构建和桌面回归。真实语音测试脚本默认禁止下载；命令与模型验收结果见模型文档。
 
-0.3.1 发布构建对应 `bc68dc5`，Windows x64、Mac Intel 和 Apple 芯片均通过上述回归和打包后媒体验收。详细范围见[验证记录](docs/VERIFICATION.md)和[对应 CI](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130)；这些结果不代表所有硬件、素材和长工程均已验证。
+0.3.2 发布构建对应 `aba5cac`，Windows x64、Mac Intel 和 Apple 芯片均通过本次 CI 的回归和打包后媒体验收。详细范围见[本次验证记录](docs/VERIFICATION-032.md)和[对应 CI](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722)；这些结果不代表所有硬件、素材和长工程均已验证。
+
+同工程导出对照中，普通剪辑样本从 **18.025 秒降至 3.070 秒**；带叠加画面的复杂样本从 **15.170 秒变为 15.761 秒，没有提速**。这些是指定设备和样本的实测结果，不能推算所有项目的加速倍数；测试方法与范围见[导出验证记录](docs/VERIFICATION-032.md)。
 
 仅看浏览器界面：`npm run dev`。浏览器模式支持编辑预览；本地模型、完整工程媒体重开和 FFmpeg 视频导出需要桌面版。
 

@@ -12,15 +12,15 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
-The current source version is the **0.3.2 development preview**, with a revised export pipeline, fixes for audio files containing album artwork, and Windows shortcut icon repairs. Check its Release page for publication status. It does not yet cover every feature of Jianying or CapCut. The project aims to make everyday editing, desktop keyframes, captions, and local voice tools easier to reach. See the [feature matrix](docs/FEATURE-MATRIX.md) and [verification record](docs/VERIFICATION.md) for the implemented scope and actual tests; these documents are currently in Chinese.
+The current published release is the **0.3.2 development preview**, with a revised export pipeline, fixes for audio files containing album artwork, and Windows shortcut icon repairs. It does not yet cover every feature of Jianying or CapCut. The project aims to make everyday editing, desktop keyframes, captions, and local voice tools easier to reach. See the [feature matrix](docs/FEATURE-MATRIX.md) and [verification record](docs/VERIFICATION.md) for the implemented scope and actual tests; these documents are currently in Chinese.
 
-In the previous 0.3.1 release, both interface languages, context-menu editing, save/quit protection and legacy installation upgrades passed their checks. Its [three-platform build](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130) and [verified release workflow](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194) both succeeded. Refer to the 0.3.2 Release for this patch's verification and downloads.
+The 0.3.2 [Windows/macOS three-platform build](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722) and [verified release workflow](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34141085758) both succeeded, publishing source commit `aba5cac`. See the [0.3.2 verification record](docs/VERIFICATION-032.md) for the tested scope of export paths, album-artwork handling, and shortcut repairs.
 
 The 0.3.2 installer updates verified old FreeCut desktop and Start menu shortcuts, including when the install location changes. A separate icon file and Windows refresh notification address stale icons after upgrades. Fresh installations use the same new icon. User-customized shortcuts are preserved.
 
 Export automatically chooses the appropriate path. Eligible everyday cuts, joins, still images, and constant-speed edits run directly through FFmpeg. Complex visuals such as text, keyframes, and masks use the preview's compositor and send RGBA frames straight to the encoder, rendering and encoding together without creating a temporary PNG for every frame. There is no additional mode to select. Complex effects still require frame-by-frame decoding and composition; results depend on the project and computer. The [0.3.2 verification record](docs/VERIFICATION-032.md) distinguishes correctness checks from measurements of the same project before and after the change.
 
-FLAC and other audio files with embedded album artwork are recognized as audio instead of treating the cover as video. Opening or relinking affected media in an older project repairs the mistaken type while preserving clip position, timing, and volume animation.
+FLAC and other audio files with embedded album artwork are recognized as audio instead of treating the cover as video. Reopening an older project rereads available affected media and repairs the mistaken type while preserving clip position, timing, and volume animation.
 
 ## Preview
 
@@ -56,7 +56,7 @@ The second layout runs in the same desktop application. It is not an Android or 
 
 ## Download and install
 
-[Check the 0.3.2 preview Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.2-preview.1). The table below lists this version's filenames; downloads are available only after the assets appear on that Release. The previously published [0.3.1 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1) remains available. Release packages include Windows setup and portable builds, macOS Intel and Apple Silicon DMG/ZIP builds, corresponding source archives, English and Chinese guides, and SHA-256 checksums. One application package supports both languages and starts in Simplified Chinese.
+[Download the 0.3.2 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.2-preview.1). Windows setup and portable builds, macOS Intel and Apple Silicon DMG/ZIP builds, corresponding source archives, English and Chinese guides, and SHA-256 checksums are available. Choose one application package for your computer from the table below. One package supports both languages and starts in Simplified Chinese.
 
 | Computer or use | Download | How to use it |
 | --- | --- | --- |
@@ -134,7 +134,9 @@ The desktop smoke test generates original local media and exercises the actual E
 
 Regression coverage includes save/close protection, real video seeks, keyframe controls, preview transforms, mask pixels, short-window scrolling, stereo preview/export, and update cancellation or failure. These tests establish the behavior of their tested fixtures, not the quality of every possible media file or model output.
 
-Release 0.3.1 was built from `bc68dc5`. Windows x64, macOS Intel and Apple Silicon passed the regressions and packaged-app media checks in the [matching CI run](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130). These results cover the tested fixtures, not every hardware configuration, recording or long project.
+Release 0.3.2 was built from `aba5cac`. Windows x64, macOS Intel and Apple Silicon passed this release's regressions and packaged-app media checks in the [matching CI run](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722). See the [0.3.2 verification record](docs/VERIFICATION-032.md) for details. These results cover the tested fixtures, not every hardware configuration, recording or long project.
+
+In comparisons using the same projects, the ordinary-cut sample went from **18.025 seconds to 3.070 seconds**. The complex sample with overlays went from **15.170 seconds to 15.761 seconds, with no speed improvement**. These measurements apply to the specified computer and samples, not a universal speedup. The [export verification record](docs/VERIFICATION-032.md) describes the method and scope.
 
 `npm run test:desktop` runs the build and desktop regressions. Real AI smoke tests disable downloads by default; the model documents explain how to explicitly prepare their dependencies.
 
