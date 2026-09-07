@@ -24,6 +24,10 @@ extraResources:
       - preload.cjs
       - backend.cjs
       - legacy.cjs
+      - shortcuts.cjs
+      - refresh-icons.ps1
+      - icon.json
+      - icons/*.ico
       - i18n.js
       - index.html
       - styles.css

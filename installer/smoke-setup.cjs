@@ -1,7 +1,7 @@
 'use strict';
 // Windows only: execute the actual generated Setup, install to a fresh workspace
 // cache, launch the installed product normally, then use its real uninstaller.
-// Existing user installations and same-name shortcuts are never replaced.
+// --no-shortcuts keeps this package smoke test from migrating real user links.
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const net = require('node:net');
@@ -219,6 +219,7 @@ async function main() {
   try {
     const port = await freePort();
     const setupArguments = [
+      '--no-shortcuts',
       `--remote-debugging-port=${port}`,
       '--enable-automation',
       `--user-data-dir=${profile}`,

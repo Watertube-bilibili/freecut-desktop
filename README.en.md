@@ -12,9 +12,11 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
-The current release is the **0.3.1 development preview**. It does not yet cover every feature of Jianying or CapCut. The project aims to make everyday editing, desktop keyframes, captions, and local voice tools easier to reach. See the [feature matrix](docs/FEATURE-MATRIX.md) and [verification record](docs/VERIFICATION.md) for the implemented scope and actual tests; these documents are currently in Chinese.
+The current source version is the **0.3.2 development preview**, focused on Windows shortcut and stale-icon fixes after upgrades. Check its Release page for publication status. It does not yet cover every feature of Jianying or CapCut. The project aims to make everyday editing, desktop keyframes, captions, and local voice tools easier to reach. See the [feature matrix](docs/FEATURE-MATRIX.md) and [verification record](docs/VERIFICATION.md) for the implemented scope and actual tests; these documents are currently in Chinese.
 
-Both interface languages, context-menu editing, save/quit protection and legacy installation upgrades passed their checks. The [three-platform build](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130) and [verified release workflow](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194) both succeeded.
+In the previous 0.3.1 release, both interface languages, context-menu editing, save/quit protection and legacy installation upgrades passed their checks. Its [three-platform build](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130) and [verified release workflow](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194) both succeeded. Refer to the 0.3.2 Release for this patch's verification and downloads.
+
+The 0.3.2 installer updates verified old FreeCut desktop and Start menu shortcuts, including when the install location changes. A separate icon file and Windows refresh notification address stale icons after upgrades. Fresh installations use the same new icon. User-customized shortcuts are preserved.
 
 ## Preview
 
@@ -49,21 +51,23 @@ The second layout runs in the same desktop application. It is not an Android or 
 
 ## Download and install
 
-[Download the 0.3.1 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1). Windows setup and portable builds, macOS Intel and Apple Silicon DMG/ZIP builds, corresponding source archives, English and Chinese guides, and SHA-256 checksums are available. One application package supports both languages and starts in Simplified Chinese.
+[Check the 0.3.2 preview Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.2-preview.1). The table below lists this version's filenames; downloads are available only after the assets appear on that Release. The previously published [0.3.1 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1) remains available. Release packages include Windows setup and portable builds, macOS Intel and Apple Silicon DMG/ZIP builds, corresponding source archives, English and Chinese guides, and SHA-256 checksums. One application package supports both languages and starts in Simplified Chinese.
 
 | Computer or use | Download | How to use it |
 | --- | --- | --- |
-| Windows 10/11 x64, regular installation | `FreeCut-0.3.1-win-x64-Setup.exe` | Choose your install drive or folder in the setup interface. C: is not preselected. |
-| Windows 10/11 x64, no installation | `FreeCut-0.3.1-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder when moving the app; it stores settings, recent projects, and models. |
-| Mac with Apple Silicon | `FreeCut-0.3.1-mac-arm64.dmg` | Open the DMG and drag FreeCut into Applications. |
-| Mac with an Intel processor | `FreeCut-0.3.1-mac-x64.dmg` | Install the same way. |
-| Mac, ZIP format preferred | `FreeCut-0.3.1-mac-arm64.zip` or `FreeCut-0.3.1-mac-x64.zip` | Extract the app for your processor. DMG and ZIP contain the same application; choose one. |
+| Windows 10/11 x64, regular installation | `FreeCut-0.3.2-win-x64-Setup.exe` | Choose your drive or folder; C: is not preselected. Upgrades repair eligible old shortcuts and their icons. |
+| Windows 10/11 x64, no installation | `FreeCut-0.3.2-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder when moving the app; it stores settings, recent projects, and models. |
+| Mac with Apple Silicon | `FreeCut-0.3.2-mac-arm64.dmg` | Open the DMG and drag FreeCut into Applications. |
+| Mac with an Intel processor | `FreeCut-0.3.2-mac-x64.dmg` | Install the same way. |
+| Mac, ZIP format preferred | `FreeCut-0.3.2-mac-arm64.zip` or `FreeCut-0.3.2-mac-x64.zip` | Extract the app for your processor. DMG and ZIP contain the same application; choose one. |
 
 You need only one application download for normal use; the source archives are for developers and license compliance. On macOS, **Apple menu → About This Mac** identifies your processor.
 
 Windows builds are unsigned. Mac builds use ad-hoc signing and are not yet signed with a Developer ID or notarized by Apple. Each Release identifies its source commit and platform build records. The publishing workflow checks the application artifacts, matching source, and uploaded file hashes.
 
 You can upgrade a verified legacy FreeCut installation, including 0.2.0, in its existing directory without uninstalling first. The installer checks the old application's identity and replaces only incoming program paths, preserving projects, models and unrelated files. Unknown programs are not overwritten. Missing parent and installation folders are created automatically. After upgrading, use the new uninstaller; do not run a preserved legacy uninstaller against the new directory. On macOS, place the app in a writable location such as Applications before updating; updating from inside a read-only DMG is not supported.
+
+For a stale Windows desktop icon, upgrade using the **Setup installer**. Version 0.3.2 gives shortcuts a separate ICO file named by its SHA-256 content hash and sends Windows Shell an update notification. Clearing the entire system icon cache is unnecessary. The installer replaces only shortcuts confirmed to belong to FreeCut without user customizations. Portable builds do not change desktop shortcuts.
 
 ## Start editing
 
@@ -72,7 +76,7 @@ You can upgrade a verified legacy FreeCut installation, including 0.2.0, in its 
 3. Select a clip to adjust its properties. Use Easy mode for one-click keyframe snapshots, or Pro mode for precise control.
 4. Save the project, then export an MP4. Keep the original media files alongside your work. If you move them, use **Relink media** to locate them again.
 
-Read the detailed [English quick-start guide](docs/QUICKSTART.en.md), also available as [FreeCut-Quickstart-en.md in the Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/FreeCut-Quickstart-en.md).
+Read the detailed [English quick-start guide](docs/QUICKSTART.en.md). Published Releases also include this guide as `FreeCut-Quickstart-en.md`.
 
 ## Optional local AI
 

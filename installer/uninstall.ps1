@@ -203,7 +203,34 @@ try {
       $detail.canonicalWorkingDirectory = Get-CanonicalLocalPath ([string]$shortcut.WorkingDirectory)
       if ($detail.canonicalWorkingDirectory -ne [IO.Path]::GetDirectoryName($canonicalExecutable)) { throw 'Shortcut working directory changed.' }
       $detail.phase = 'icon'
-      if ($shortcut.IconIndex -ne 0 -or (Get-CanonicalLocalPath ([string]$shortcut.IconPath)) -ne $canonicalExecutable) { throw 'Shortcut icon changed.' }
+      if ($shortcut.IconIndex -ne 0) { throw 'Shortcut icon changed.' }
+      $shortcutIconPath = [string]$shortcut.IconPath
+      if ($shortcutIconPath -notmatch '^[a-zA-Z]:[\\/]') { throw 'Shortcut icon changed.' }
+      Assert-ActualPath $shortcutIconPath
+      $iconExists = Test-Path -LiteralPath $shortcutIconPath -PathType Leaf
+      $canonicalIcon = if ($iconExists) { Get-CanonicalLocalPath $shortcutIconPath } else { [IO.Path]::GetFullPath($shortcutIconPath) }
+      if ($canonicalIcon -ne $canonicalExecutable) {
+        # New shortcuts use a content-addressed ICO to bypass stale Explorer
+        # icon caches. It must be a current, unchanged installation-owned file;
+        # arbitrary/custom icons still preserve their shortcuts on uninstall.
+        $iconLeaf = [IO.Path]::GetFileName($canonicalIcon)
+        if ($iconLeaf -notmatch '^FreeCut-([a-fA-F0-9]{64})\.ico$') { throw 'Shortcut icon changed.' }
+        $iconHash = $Matches[1].ToLowerInvariant()
+        $repairIconDirectory = Join-Path (Get-CanonicalLocalPath $env:LOCALAPPDATA) 'FreeCut\icons'
+        if ([IO.Path]::GetDirectoryName($canonicalIcon) -eq $repairIconDirectory) {
+          # A repair of an already published installation keeps its manifest
+          # intact by using this one fixed application cache. Never remove the
+          # shared cache itself; only this installation's default link qualifies.
+          if ($iconExists -and ((Get-Item -LiteralPath $canonicalIcon -Force).Length -gt 8388608 -or (Get-Sha256 $canonicalIcon) -ne $iconHash)) { throw 'Shortcut icon changed.' }
+        } else {
+          $expectedIconDirectory = Get-CanonicalLocalPath (Join-Path ([IO.Path]::GetDirectoryName($canonicalExecutable)) 'resources\freecut-installer\icons')
+          if ([IO.Path]::GetDirectoryName($canonicalIcon) -ne $expectedIconDirectory) { throw 'Shortcut icon changed.' }
+          $iconRelative = 'resources/freecut-installer/icons/' + $iconLeaf
+          $ownedIcon = @($installed.files | Where-Object { $_.path -eq $iconRelative -and $_.sha256 -eq $iconHash })
+          if ($ownedIcon.Count -ne 1 -or -not $iconExists) { throw 'Shortcut icon is not owned by this installation.' }
+          if ((Get-Item -LiteralPath $canonicalIcon -Force).Length -ne $ownedIcon[0].size -or (Get-Sha256 $canonicalIcon) -ne $iconHash) { throw 'Shortcut icon changed.' }
+        }
+      }
       $detail.phase = 'snapshot-hash'
       Assert-ActualPath $shortcutPath
       if ((Get-Sha256 $shortcutPath) -ne $beforeHash) { throw 'Shortcut changed during inspection.' }

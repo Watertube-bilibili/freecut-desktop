@@ -51,18 +51,20 @@ if(mode==='verify'){
 
 ## 本次更新
 
-- 新增片段、轨道、预览、素材库和时间线右键菜单，支持复制、剪切、粘贴、分割、删除、翻转与轨道操作；复制和粘贴保留动画数据，锁轨限制继续生效。
-- 新增英文界面与英文安装页面，首次默认简体中文，可切换并记住选择。工程中的用户文字、素材名不会被自动翻译。英文界面只引导 GitHub Star。
-- 修复可验证的旧版 FreeCut 安装目录被误报为未知文件：允许覆盖升级，仅替换新包对应程序文件，保留工程、模型和其他个人文件；无法确认归属的程序仍拒绝覆盖。
-- 自动创建不存在的安装目录及父目录，区分磁盘不存在、无写入权限和安装包文件缺失。选根目录自动补 FreeCut 子目录，后端禁止直接安装到根目录。
-- 同步中英文 README、版本选择说明与英文宣传片。全部功能永久免费，不设会员、不设付费解锁，导出无水印。
-- 保留双布局、直接拖动/缩放/旋转、易用关键帧、7 种几何蒙版、19 种原创调色、16 种原创音效、左右声道、自动字幕和语音朗读。
+- 修复 Windows 覆盖安装后仍显示旧桌面图标的问题：快捷方式改用按 SHA-256 内容命名的独立 ICO 文件，并通知 Windows Shell 刷新，不需要清空整个系统图标缓存。
+- 安装器识别经过验证的旧版 FreeCut 桌面和开始菜单入口；即使安装目录改变，也会迁移至本次安装，避免继续打开旧版。
+- 首次安装同样创建新图标。用户自行修改过的快捷方式和其他程序的同名入口会保留。
+- 同步中英文 README 与安装包版本选择说明。Windows 用户需要修复旧桌面入口时，请下载 Setup 安装版并覆盖安装；便携版不会改写桌面快捷方式。
+- 保留中英文界面、右键剪辑、双布局、直接拖动/缩放/旋转、易用关键帧、蒙版、原创滤镜与音效、左右声道、自动字幕和语音朗读。首次启动默认简体中文，可切换并记住 English。
+- 全部功能永久免费，不设会员、不设付费解锁，导出无水印。
 
 ## English
 
 FreeCut is a free, open-source desktop video editor created by a junior high school student using GPT-6 and Codex. All features are free forever, with no membership, paid unlocks or export watermark.
 
-This update adds context menus, clip copy/cut/paste, a persistent English interface, a bilingual custom Windows installer, and verified legacy-install upgrades that preserve personal files. The first launch defaults to Simplified Chinese: choose English in Home → Settings → Language, or the editor's language selector. Your project text is never translated automatically.
+This patch fixes stale Windows desktop icons after upgrades. Setup uses a separate ICO file named by its SHA-256 content hash and notifies Windows Shell to refresh. Verified old FreeCut desktop and Start menu shortcuts are updated even when the installation moves to a different folder. User-customized shortcuts and unrelated programs' shortcuts are preserved; fresh installs also receive the new icon. Use the Setup installer to repair an existing desktop shortcut. Portable builds do not change shortcuts.
+
+The first launch still defaults to Simplified Chinese: choose English in Home → Settings → Language, or the editor's language selector. The choice persists, and your project text is never translated automatically. Context menus, dual layouts, Easy keyframes, preview transforms, masks, color presets, sound effects, stereo routing, captions and local voice tools remain available.
 
 Download one app package below. Windows: Setup for installation, Portable for a writable folder without installation. Mac: arm64 for Apple silicon, x64 for Intel; choose either DMG or ZIP. Read FreeCut-Quickstart-en.md and [English README](https://github.com/${repo}/blob/main/README.en.md). If FreeCut helps you, please give the repository a Star.
 

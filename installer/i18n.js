@@ -8,6 +8,8 @@
     '快捷方式和卸载注册仅适用于 Windows。':
       'Shortcuts and uninstall registration are available on Windows only.',
     快捷方式写入失败: 'Could not write the shortcut',
+    安装图标清单无效: 'Invalid installation icon manifest',
+    安装图标校验失败: 'Installation icon verification failed',
     '隔离测试：未修改系统卸载注册表。':
       'Isolated test: Windows uninstall registration was not modified.',
     '安装包未包含卸载入口组件；可重新运行 Setup 并使用 --uninstall --install-dir 指定此目录。':
@@ -191,6 +193,7 @@
         `Cannot write application files. Close FreeCut and check that you can write to this folder.\n${details}`,
     ],
     [/^保留已有快捷方式：(.+)$/, (_, file) => `Kept the existing shortcut: ${file}`],
+    [/^图标刷新未完成：(.+)$/, (_, detail) => `Could not refresh the icon: ${detail}`],
     [
       /^Windows 卸载入口未创建：(.+)$/,
       (_, details) => `Could not register the Windows uninstall entry: ${details}`,

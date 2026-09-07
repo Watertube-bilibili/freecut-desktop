@@ -14,9 +14,11 @@
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-当前版本为已发布的 **0.3.1 开发预览版**，并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
+当前源码版本为 **0.3.2 开发预览版**，本次集中修复 Windows 覆盖安装后的快捷方式与旧图标残留，发布状态以对应 Release 为准。软件并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
 
-中英文界面、右键剪辑、保存退出与覆盖安装检查已通过；[三平台构建](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130)及[发布校验](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194)均成功。
+上一版 0.3.1 的中英文界面、右键剪辑、保存退出与覆盖安装检查已通过；其[三平台构建](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130)及[发布校验](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194)均成功。0.3.2 的验证与下载以本次 Release 记录为准。
+
+0.3.2 安装器会更新已核实归属的旧版 FreeCut 桌面和开始菜单入口，安装位置改变也能迁移；使用独立图标文件并通知 Windows 刷新，解决升级后仍显示旧图标的问题。首次安装同样创建新图标，用户自行修改过的快捷方式会保留。
 
 新版采用原创 3D 图标，以“水管剪辑”为中文主名称。FreeCut 保留为英文名，仓库名、安装文件名和 `.freecut` 工程格式继续兼容。品牌来源与发布前排查见 [品牌说明](docs/BRAND.md) 和 [来源及许可核查](docs/RELEASE-REVIEW-030.md)。
 
@@ -55,21 +57,23 @@
 
 ## 下载和运行
 
-[下载 0.3.1 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1)：已提供 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中英文教程和 SHA-256 清单。中英文共用同一份应用包，首次启动默认简体中文。
+[查看 0.3.2 预览版发布页](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.2-preview.1)，下表为本次版本对应文件名；仅在 Release 附件出现后提供下载。此前已发布的 [0.3.1 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1)仍可下载。发布包包含 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中英文教程和 SHA-256 清单。中英文共用同一份应用包，首次启动默认简体中文。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 
 | 你的电脑 / 用途 | 推荐下载 | 说明 |
 | --- | --- | --- |
-| Windows 10/11 x64，日常使用 | `FreeCut-0.3.1-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘。 |
-| Windows 10/11 x64，免安装 | `FreeCut-0.3.1-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表与模型，移动时一起保留。 |
-| Mac M 系列芯片 | `FreeCut-0.3.1-mac-arm64.dmg` | 打开后拖入 Applications。 |
-| Mac Intel 处理器 | `FreeCut-0.3.1-mac-x64.dmg` | 安装方法同上。 |
+| Windows 10/11 x64，日常使用 | `FreeCut-0.3.2-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘；覆盖安装会修复符合条件的旧快捷方式与图标。 |
+| Windows 10/11 x64，免安装 | `FreeCut-0.3.2-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表与模型，移动时一起保留。 |
+| Mac M 系列芯片 | `FreeCut-0.3.2-mac-arm64.dmg` | 打开后拖入 Applications。 |
+| Mac Intel 处理器 | `FreeCut-0.3.2-mac-x64.dmg` | 安装方法同上。 |
 | Mac 需要 ZIP | 对应芯片的 `mac-arm64.zip` / `mac-x64.zip` | 解压得到同一应用；DMG、ZIP 任选一种。 |
 
 普通使用只需一份应用包，无需下载 `source` 源码包。Mac 可在「 → 关于本机」查看芯片。Windows 未签名；Mac 使用临时签名，尚未配置正式 Developer ID 和 Apple 公证。
 
 从可验证的 0.2.0 FreeCut 旧安装迁移时，可以直接选择原目录覆盖升级，无需先卸载。新版核对旧程序身份，仅替换新包对应的程序路径，保留工程、模型和未知文件；无法确认归属的程序不会被覆盖。不存在的安装目录及父目录会自动创建。升级后使用新版卸载入口，不要对新目录运行保留下来的旧卸载器。Mac 自动更新需先将应用放到可写的 Applications 等目录，不能从只读 DMG 内更新。
+
+Windows 旧桌面图标没有变化时，使用 **Setup 安装版覆盖安装**。0.3.2 为快捷方式使用按 SHA-256 内容命名的独立 ICO 文件，并通知 Windows Shell 更新；不需要手动删除整个系统图标缓存。安装器只有确认入口属于 FreeCut 且未被用户自定义后才会替换，便携版不会改写桌面快捷方式。
 
 语音模型不放入安装包。首次打开“自动字幕 / 语音朗读”，选择模型，再点“一键下载安装”。下载页面会显示大小、许可、进度、取消和重试。详细说明见 [语音模型](docs/AI-MODELS.md)、[ChatTTS](docs/CHAT-TTS.md)。ChatTTS 的模型采用 CC BY-NC 4.0，**仅用于非商业用途**；不能将“代码开源”当成模型无限制商用授权。
 

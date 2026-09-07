@@ -84,10 +84,16 @@ async function main() {
     'resources/app.asar': 'TEST FIXTURE APPLICATION',
     'LICENSE.txt': 'TEST FIXTURE NOTICE',
   };
+  const iconMetadata = JSON.parse(await fs.readFile(path.join(__dirname, 'icon.json'), 'utf8'));
+  entries['resources/freecut-installer/icon.json'] = JSON.stringify(iconMetadata);
+  entries[`resources/freecut-installer/${iconMetadata.file}`] = await fs.readFile(
+    path.join(__dirname, iconMetadata.file),
+  );
   async function writePayload(version) {
     const files = [];
     for (const [relative, content] of Object.entries(entries)) {
       const file = path.join(payloadRoot, 'application', relative);
+      await fs.mkdir(path.dirname(file), { recursive: true });
       await fs.writeFile(file, content);
       files.push({
         path: relative,
@@ -320,6 +326,11 @@ async function main() {
             await fs.realpath(shortcut.target),
             await fs.realpath(path.join(target, 'FreeCut.exe')),
           );
+          assert.equal(
+            await fs.realpath(shortcut.icon),
+            await fs.realpath(path.join(target, 'resources/freecut-installer', iconMetadata.file)),
+          );
+          assert.equal(await backend.sha256(shortcut.icon), iconMetadata.sha256);
         }
         await expect(page.locator('#primary')).toHaveText('启动水管剪辑 →');
         await page.screenshot({ path: path.join(directory, 'installer-complete.png') });
@@ -524,7 +535,7 @@ async function main() {
           assert.equal(candidate.data.WorkingDirectory, target);
           assert.equal(
             await fs.realpath(candidate.data.IconPath),
-            await fs.realpath(ownedExecutable),
+            await fs.realpath(before.metadata.icon),
           );
         }
         assert(

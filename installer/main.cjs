@@ -9,6 +9,7 @@ const { pathToFileURL } = require('node:url');
 const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
 const backend = require('./backend.cjs');
+const { shortcutDecision } = require('./shortcuts.cjs');
 const { translate } = require('./i18n.js');
 
 const args = process.argv.slice(1);
@@ -23,6 +24,7 @@ const embeddedInstall = app.isPackaged && args.includes('--installer');
 const updateMode = args.includes('--update');
 const silent = args.includes('--silent');
 const autoRun = args.includes('--auto-run');
+const noShortcuts = args.includes('--no-shortcuts');
 const explicitTarget = option('--install-dir');
 const waitPidValue = option('--wait-pid');
 const testHome =
@@ -45,7 +47,7 @@ let window,
 const state = {
   language: 'zh-CN',
   mode: uninstallMode ? 'uninstall' : updateMode ? 'update' : 'install',
-  version: '0.3.1',
+  version: '0.3.2',
   target: '',
   busy: false,
   phase: 'ready',
@@ -92,7 +94,13 @@ function registryKey(target) {
 }
 const run = (exe, argv) =>
   new Promise((resolve, reject) => {
+    const env = { ...process.env };
+    if (path.basename(exe).toLowerCase() === 'powershell.exe') {
+      for (const key of Object.keys(env)) if (key.toLowerCase() === 'psmodulepath') delete env[key];
+      env.PSModulePath = path.join(path.dirname(exe), 'Modules');
+    }
     const child = spawn(exe, argv, {
+      env,
       windowsHide: true,
       shell: false,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -113,39 +121,83 @@ async function installIntegrations(result) {
   const programs = testHome
     ? path.join(testHome, 'StartMenu')
     : path.join(app.getPath('appData'), 'Microsoft', 'Windows', 'Start Menu', 'Programs');
-  for (const directory of [desktop, programs]) {
+  const refreshed = [];
+  let icon;
+  if (!noShortcuts) {
+    try {
+      const iconRoot = path.join(result.target, 'resources', 'freecut-installer');
+      const metadata = JSON.parse(await fs.readFile(path.join(iconRoot, 'icon.json'), 'utf8'));
+      if (
+        !/^[a-f0-9]{64}$/.test(metadata.sha256) ||
+        metadata.file !== `icons/FreeCut-${metadata.sha256}.ico`
+      )
+        throw Error('安装图标清单无效');
+      icon = path.join(iconRoot, metadata.file);
+      await backend.assertNoLinks(icon);
+      if ((await backend.sha256(icon)) !== metadata.sha256) throw Error('安装图标校验失败');
+    } catch (error) {
+      icon = undefined;
+      warnings.push(error.message);
+    }
+  }
+  for (const directory of !noShortcuts && icon ? [desktop, programs] : []) {
     try {
       await fs.mkdir(directory, { recursive: true });
       const file = path.join(directory, 'FreeCut.lnk');
-      let operation = 'create';
-      if (
-        await fs.stat(file).then(
-          () => true,
-          () => false,
-        )
-      ) {
-        const previous = shell.readShortcutLink(file);
-        if (
-          path.resolve(previous.target).toLowerCase() !==
-          path.resolve(result.executable).toLowerCase()
-        ) {
-          warnings.push(`保留已有快捷方式：${file}`);
-          continue;
-        }
-        operation = 'replace';
+      const decision = await shortcutDecision({
+        file,
+        executable: result.executable,
+        target: result.target,
+        readShortcut: (shortcut) => shell.readShortcutLink(shortcut),
+      });
+      if (decision.operation === 'preserve') {
+        warnings.push(`保留已有快捷方式：${file}`);
+        continue;
       }
       if (
-        !shell.writeShortcutLink(file, operation, {
+        !shell.writeShortcutLink(file, decision.operation, {
           target: result.executable,
           cwd: result.target,
-          icon: result.executable,
+          icon,
           iconIndex: 0,
           description: '水管剪辑 FreeCut',
         })
       )
         throw Error('快捷方式写入失败');
+      refreshed.push({ path: file, created: decision.operation === 'create' });
     } catch (error) {
       warnings.push(error.message);
+    }
+  }
+  if (refreshed.length) {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'freecut-icon-refresh-'));
+    const planFile = path.join(directory, 'plan.json');
+    try {
+      await fs.writeFile(planFile, JSON.stringify({ items: refreshed }));
+      await run(
+        path.join(
+          process.env.SystemRoot ?? 'C:\\Windows',
+          'System32',
+          'WindowsPowerShell',
+          'v1.0',
+          'powershell.exe',
+        ),
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-File',
+          path.join(__dirname, 'refresh-icons.ps1'),
+          '-PlanPath',
+          planFile,
+        ],
+      );
+    } catch (error) {
+      warnings.push(`图标刷新未完成：${error.message}`);
+    } finally {
+      await fs.unlink(planFile).catch(() => {});
+      await fs.rmdir(directory).catch(() => {});
     }
   }
   if (testHome) return [...warnings, '隔离测试：未修改系统卸载注册表。'];
