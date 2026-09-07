@@ -31,4 +31,4 @@ node <skill-dir>/scripts/shuiguan-cut.cjs edit-render --repo <repo-dir> --recipe
 
 脚本使用独立应用配置，不接管用户已有窗口，不覆盖旧输出，不自行下载模型。导出由水管剪辑自己的 Canvas / FFmpeg 流程完成；外部 FFmpeg 仅用于生成自检输入与分析输出。Skill 不会给普通用户的作品强制添加作者水印或宣传语。
 
-首支软件宣传片使用 HyperFrames 制作。最新的 [55 秒无声版](../videos/shuiguan-launch-silent-edit) 已使用这个 Skill，经水管剪辑 0.3.0 真实导入、分成七段、保存工程并导出；视觉动画来自去除音频和逐句字幕后重新渲染的 HyperFrames 源工程。之后本项目的宣传片继续优先使用水管剪辑和这个 Skill，遇到桥接尚不支持的效果时明确说明实际制作方式。
+首支软件宣传片使用 HyperFrames 制作。[55 秒中文无声版](../videos/shuiguan-launch-silent-edit) 已使用这个 Skill，经水管剪辑 0.3.0 真实导入、分成七段、保存工程并导出；最新的 [55 秒英文无声版](../videos/freecut-launch-en-edit) 则由 FreeCut 0.3.1 实际组装与导出。两版视觉动画来自各自的 HyperFrames 源工程，最终成片均全量检查静音。之后本项目的宣传片继续优先使用水管剪辑和这个 Skill，遇到桥接尚不支持的效果时明确说明实际制作方式。

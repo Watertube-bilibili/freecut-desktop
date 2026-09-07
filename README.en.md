@@ -24,7 +24,7 @@ Local checks have passed for both interface languages, context-menu editing, sav
 
 The second layout runs in the same desktop application. It is not an Android or iOS app.
 
-An English silent promo is in progress. Its final export through the real FreeCut application is planned at `renders/freecut-launch-en-1080p.mp4` and as a [Release video asset](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4). **The final export and verification are not complete, and the asset has not been published.** The [English visual source and reproduction instructions](videos/freecut-launch-en) are kept separately.
+A 55-second, 1080p English promo has been exported through the actual FreeCut application and verified completely silent. It credits `@我叫水管同学` and asks viewers to download and Star the repository. The local final file is `renders/freecut-launch-en-1080p.mp4`; the [Release video asset](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4) will be uploaded after this release is published. See the [actual product export and silence verification](videos/freecut-launch-en-edit/QA.md), separate from the [English visual source](videos/freecut-launch-en).
 
 ## Editing features
 
@@ -61,11 +61,11 @@ You need only one application download for normal use; the source archives are f
 
 Windows builds are unsigned. Mac builds use ad-hoc signing and are not yet signed with a Developer ID or notarized by Apple. Each Release identifies its source commit and platform build records. The publishing workflow checks the application artifacts, matching source, and uploaded file hashes.
 
-When migrating from the older 0.2.0 installer, uninstall that version through Windows Settings first, or choose a different directory. The newer installer does not overwrite an old directory that lacks its installation ownership manifest. Uninstalling preserves project and model data. On macOS, place the app in a writable location such as Applications before updating; updating from inside a read-only DMG is not supported.
+You can upgrade a verified legacy FreeCut installation, including 0.2.0, in its existing directory without uninstalling first. The installer checks the old application's identity and replaces only incoming program paths, preserving projects, models and unrelated files. Unknown programs are not overwritten. Missing parent and installation folders are created automatically. After upgrading, use the new uninstaller; do not run a preserved legacy uninstaller against the new directory. On macOS, place the app in a writable location such as Applications before updating; updating from inside a read-only DMG is not supported.
 
 ## Start editing
 
-1. Open FreeCut and choose **New project**. You can switch the interface language in **Settings**; Simplified Chinese is the default.
+1. FreeCut starts in Simplified Chinese. On the home screen, open **设置 → 简体中文 Language** and select **English**, then choose **New project**. You can also use the language selector at the top of the editor. The choice persists across restarts.
 2. Import local media and add it to the timeline. Drag clips into position, or use their context menus to find editing actions.
 3. Select a clip to adjust its properties. Use Easy mode for one-click keyframe snapshots, or Pro mode for precise control.
 4. Save the project, then export an MP4. Keep the original media files alongside your work. If you move them, use **Relink media** to locate them again.
@@ -105,6 +105,8 @@ npm run build
 npm test
 node scripts/smoke-desktop.cjs
 node scripts/regression-editor.cjs
+node scripts/regression-context-menu.cjs
+node scripts/regression-language.cjs
 node scripts/regression-preview.cjs
 node scripts/regression-home.cjs
 node scripts/regression-keyframes.cjs

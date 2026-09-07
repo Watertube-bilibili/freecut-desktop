@@ -24,7 +24,7 @@
 
 让 AI 使用本软件剪片：安装免费的 [shuiguan-cut Skill](docs/AI-EDITING.md)，从本地素材生成可继续编辑的工程，并通过真实应用导出 MP4。
 
-英文宣传片正在制作：计划通过真实 FreeCut 导出到 `renders/freecut-launch-en-1080p.mp4`，并提供 [Release 视频附件](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4)。**最终导出与验证尚未完成，附件尚未发布。** [英文视觉源及复现步骤](videos/freecut-launch-en)已单独保留。
+英文宣传片已通过真实 FreeCut 导出并验证：55 秒、1080p、全静音，保留 `@我叫水管同学` 署名，只引导下载和 GitHub Star。成片为 `renders/freecut-launch-en-1080p.mp4`；[Release 视频附件](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4)等待本版发布后上传。[真实导出与静音检查](videos/freecut-launch-en-edit/QA.md)和[英文视觉源](videos/freecut-launch-en)分别记录。
 
 ![水管剪辑桌面工作台](docs/screenshots/editor-030.png)
 
@@ -34,6 +34,7 @@
 
 - 导入本地视频、图片、音频；多轨编排、叠加画中画、吸附、修剪、分割、复制、撤销 / 重做。
 - 时间线片段、轨道、空白区域和预览画面支持右键菜单，按当前位置提供剪辑操作。
+- 默认简体中文；首页设置或编辑器顶部可切换 English，并跨次启动记住选择。工程中的用户文字和文件名不自动翻译。
 - 为位置 X/Y、缩放、旋转、不透明度、音量添加关键帧，支持线性、缓入、缓出、缓入缓出、保持。分割保留动画变化。
 - 在预览中直接点选、拖动、用角点缩放和旋转；一次拖动对应一次撤销。普通模式一键记录画面，专业模式可继续精确编辑。
 - 添加文字和字幕，编辑字体大小、颜色、底色、描边；导入 / 导出 SRT。
@@ -66,7 +67,7 @@
 
 普通使用只需一份应用包，无需下载 `source` 源码包。Mac 可在「 → 关于本机」查看芯片。Windows 未签名；Mac 使用临时签名，尚未配置正式 Developer ID 和 Apple 公证。
 
-从 0.2.0 的旧安装器迁移时，请先通过 Windows 设置卸载旧程序，或为新版选择不同目录。新版不会直接覆盖缺少安装归属清单的旧目录。卸载保留项目和模型数据。Mac 自动更新需先将应用放到可写的 Applications 等目录，不能从只读 DMG 内更新。
+从可验证的 0.2.0 FreeCut 旧安装迁移时，可以直接选择原目录覆盖升级，无需先卸载。新版核对旧程序身份，仅替换新包对应的程序路径，保留工程、模型和未知文件；无法确认归属的程序不会被覆盖。不存在的安装目录及父目录会自动创建。升级后使用新版卸载入口，不要对新目录运行保留下来的旧卸载器。Mac 自动更新需先将应用放到可写的 Applications 等目录，不能从只读 DMG 内更新。
 
 语音模型不放入安装包。首次打开“自动字幕 / 语音朗读”，选择模型，再点“一键下载安装”。下载页面会显示大小、许可、进度、取消和重试。详细说明见 [语音模型](docs/AI-MODELS.md)、[ChatTTS](docs/CHAT-TTS.md)。ChatTTS 的模型采用 CC BY-NC 4.0，**仅用于非商业用途**；不能将“代码开源”当成模型无限制商用授权。
 
@@ -89,6 +90,8 @@ npm run build
 npm test
 node scripts/smoke-desktop.cjs
 node scripts/regression-editor.cjs
+node scripts/regression-context-menu.cjs
+node scripts/regression-language.cjs
 node scripts/regression-preview.cjs
 node scripts/regression-home.cjs
 node scripts/regression-keyframes.cjs
