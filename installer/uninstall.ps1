@@ -11,7 +11,8 @@ if ($Launch) {
   Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList $helperArguments -WindowStyle Hidden -WorkingDirectory $helperDirectory -RedirectStandardOutput (Join-Path $helperDirectory 'powershell.log') -RedirectStandardError (Join-Path $helperDirectory 'powershell-error.log')
   exit 0
 }
-$uninstallResult = @{ success = $false; removed = 0; preserved = @(); removedShortcuts = @(); preservedShortcuts = @(); error = '' }
+$uninstallResult = @{ success = $false; removed = 0; preserved = @(); removedShortcuts = @(); preservedShortcuts = @(); shortcutDetails = @(); error = '' }
+$uninstallResult.environment = @{ powershell = [string]$PSVersionTable.PSVersion; edition = [string]$PSVersionTable.PSEdition; bitness = [IntPtr]::Size * 8; culture = [string][Globalization.CultureInfo]::CurrentCulture; uiCulture = [string][Globalization.CultureInfo]::CurrentUICulture; ansiCodePage = [Text.Encoding]::Default.CodePage; languageMode = [string]$ExecutionContext.SessionState.LanguageMode }
 $plan = $null
 function Get-Sha256([string]$FilePath) {
   $fileStream = [IO.File]::OpenRead($FilePath)
@@ -44,6 +45,60 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 public static class FreeCutUninstallPaths {
+  // Explicit Unicode ABI, not WScript.Shell (which loses non-ACP characters).
+  [ComImport, Guid("000214F9-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  private interface IShellLinkW {
+    void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder path, int capacity, IntPtr findData, uint flags);
+    void GetIDList(out IntPtr list);
+    void SetIDList(IntPtr list);
+    void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder value, int capacity);
+    void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string value);
+    void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder value, int capacity);
+    void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string value);
+    void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder value, int capacity);
+    void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string value);
+    void GetHotkey(out ushort value);
+    void SetHotkey(ushort value);
+    void GetShowCmd(out int value);
+    void SetShowCmd(int value);
+    void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder value, int capacity, out int index);
+    void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string value, int index);
+    void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string value, uint reserved);
+    void Resolve(IntPtr window, uint flags);
+    void SetPath([MarshalAs(UnmanagedType.LPWStr)] string value);
+  }
+  [ComImport, Guid("45E2B4AE-B1C3-11D0-B92F-00A0C90312E1"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  private interface IShellLinkDataList {
+    void AddDataBlock(IntPtr block);
+    void CopyDataBlock(uint signature, out IntPtr block);
+    void RemoveDataBlock(uint signature);
+    void GetFlags(out uint flags);
+    void SetFlags(uint flags);
+  }
+  public sealed class ShortcutData {
+    public string TargetPath, Description, WorkingDirectory, Arguments, IconPath;
+    public ushort Hotkey;
+    public int WindowStyle, IconIndex;
+    public uint Flags;
+  }
+  public static ShortcutData ReadShortcut(string file) {
+    object instance = Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("00021401-0000-0000-C000-000000000046")));
+    try {
+      // STGM_READ; never resolve, modify, save, or launch the link.
+      ((System.Runtime.InteropServices.ComTypes.IPersistFile)instance).Load(file, 0);
+      IShellLinkW link = (IShellLinkW)instance;
+      ShortcutData data = new ShortcutData();
+      StringBuilder buffer = new StringBuilder(32768);
+      link.GetPath(buffer, buffer.Capacity, IntPtr.Zero, 4); data.TargetPath = buffer.ToString(); buffer.Length = 0;
+      link.GetDescription(buffer, buffer.Capacity); data.Description = buffer.ToString(); buffer.Length = 0;
+      link.GetWorkingDirectory(buffer, buffer.Capacity); data.WorkingDirectory = buffer.ToString(); buffer.Length = 0;
+      link.GetArguments(buffer, buffer.Capacity); data.Arguments = buffer.ToString(); buffer.Length = 0;
+      link.GetIconLocation(buffer, buffer.Capacity, out data.IconIndex); data.IconPath = buffer.ToString();
+      link.GetHotkey(out data.Hotkey); link.GetShowCmd(out data.WindowStyle);
+      ((IShellLinkDataList)instance).GetFlags(out data.Flags);
+      return data;
+    } finally { Marshal.FinalReleaseComObject(instance); }
+  }
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
   private static extern SafeFileHandle CreateFile(string name, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -121,28 +176,42 @@ try {
     $canonicalExecutable = Get-CanonicalLocalPath $expectedExecutable
     if ((Get-CanonicalLocalPath ([string]$plan.executable)) -ne $canonicalExecutable) { throw 'Uninstall executable identity does not match the installation.' }
   }
-  $shortcutShell = New-Object -ComObject WScript.Shell
   foreach ($shortcutPath in $plan.shortcuts) {
     if (-not (Test-Path -LiteralPath $shortcutPath)) { continue }
+    $detail = @{ path = [string]$shortcutPath; phase = 'inspect-path'; status = 'inspecting'; expectedExecutable = $canonicalExecutable }
+    $uninstallResult.shortcutDetails += $detail
     try {
       if (-not $canonicalExecutable -or [IO.Path]::GetExtension($shortcutPath) -ne '.lnk') { throw 'Cannot confirm shortcut ownership.' }
       Assert-ActualPath $shortcutPath
       $beforeHash = Get-Sha256 $shortcutPath
-      $shortcut = $shortcutShell.CreateShortcut($shortcutPath)
-      if ((Get-CanonicalLocalPath ([string]$shortcut.TargetPath)) -ne $canonicalExecutable) { throw 'Shortcut points to another application.' }
+      $detail.sha256 = $beforeHash
+      $detail.phase = 'read-shell-link'
+      $shortcut = [FreeCutUninstallPaths]::ReadShortcut([string]$shortcutPath)
+      # Do not persist argument or description text from a user's custom link.
+      $detail.metadata = @{ reader = 'IShellLinkW'; target = [string]$shortcut.TargetPath; hasArguments = [bool]$shortcut.Arguments; hotkey = [int]$shortcut.Hotkey; windowStyle = [int]$shortcut.WindowStyle; descriptionMatchesDefault = ($shortcut.Description -eq '水管剪辑 FreeCut'); workingDirectory = [string]$shortcut.WorkingDirectory; iconPath = [string]$shortcut.IconPath; iconIndex = [int]$shortcut.IconIndex; flags = [uint32]$shortcut.Flags }
+      $detail.phase = 'target-identity'
+      $detail.canonicalTarget = Get-CanonicalLocalPath ([string]$shortcut.TargetPath)
+      if ($detail.canonicalTarget -ne $canonicalExecutable) { throw 'Shortcut points to another application.' }
       # These are the properties written by installIntegrations. User-specific
       # arguments, icon, working directory, description, hotkey or state survive.
+      $detail.phase = 'default-properties'
+      # RUNAS_USER and RUN_WITH_SHIMLAYER are advanced user customizations,
+      # even when all visible target/argument/icon fields still match defaults.
+      if (($shortcut.Flags -band 0x22000) -ne 0) { throw 'Shortcut has user execution customizations.' }
       if ($shortcut.Arguments -or $shortcut.Hotkey -or [int]$shortcut.WindowStyle -ne 1 -or $shortcut.Description -ne '水管剪辑 FreeCut') { throw 'Shortcut has user customizations.' }
-      if ((Get-CanonicalLocalPath ([string]$shortcut.WorkingDirectory)) -ne [IO.Path]::GetDirectoryName($canonicalExecutable)) { throw 'Shortcut working directory changed.' }
-      $icon = [regex]::Match([string]$shortcut.IconLocation, '^(.*),(-?\d+)$')
-      if (-not $icon.Success -or $icon.Groups[2].Value -ne '0' -or (Get-CanonicalLocalPath ($icon.Groups[1].Value.Trim('"'))) -ne $canonicalExecutable) { throw 'Shortcut icon changed.' }
+      $detail.phase = 'working-directory'
+      $detail.canonicalWorkingDirectory = Get-CanonicalLocalPath ([string]$shortcut.WorkingDirectory)
+      if ($detail.canonicalWorkingDirectory -ne [IO.Path]::GetDirectoryName($canonicalExecutable)) { throw 'Shortcut working directory changed.' }
+      $detail.phase = 'icon'
+      if ($shortcut.IconIndex -ne 0 -or (Get-CanonicalLocalPath ([string]$shortcut.IconPath)) -ne $canonicalExecutable) { throw 'Shortcut icon changed.' }
+      $detail.phase = 'snapshot-hash'
       Assert-ActualPath $shortcutPath
       if ((Get-Sha256 $shortcutPath) -ne $beforeHash) { throw 'Shortcut changed during inspection.' }
-      $shortcutCandidates.Add(@{ path = [string]$shortcutPath; sha256 = $beforeHash })
+      $detail.status = 'matched'
+      $shortcutCandidates.Add(@{ path = [string]$shortcutPath; sha256 = $beforeHash; detail = $detail })
     } catch {
       $uninstallResult.preservedShortcuts += [string]$shortcutPath
-    } finally {
-      if ($shortcut) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shortcut); $shortcut = $null }
+      $detail.status = 'preserved'; $detail.reason = $_.Exception.Message; $detail.errorType = $_.Exception.GetType().FullName; $detail.errorId = $_.FullyQualifiedErrorId; $detail.position = $_.InvocationInfo.PositionMessage
     }
   }
   # No recursive delete is used for the installation directory.
@@ -155,15 +224,17 @@ try {
   foreach ($candidate in $shortcutCandidates) {
     try {
       if (-not (Test-Path -LiteralPath $candidate.path)) { continue }
+      $candidate.detail.phase = 'delete-hash'
       Assert-ActualPath $candidate.path
       if ((Get-Sha256 $candidate.path) -ne $candidate.sha256) { throw 'Shortcut changed before removal.' }
       Remove-Item -LiteralPath $candidate.path -Force
       $uninstallResult.removedShortcuts += $candidate.path
+      $candidate.detail.status = 'removed'
     } catch {
       $uninstallResult.preservedShortcuts += $candidate.path
+      $candidate.detail.status = 'preserved'; $candidate.detail.reason = $_.Exception.Message; $candidate.detail.errorType = $_.Exception.GetType().FullName; $candidate.detail.errorId = $_.FullyQualifiedErrorId; $candidate.detail.position = $_.InvocationInfo.PositionMessage
     }
   }
-  [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shortcutShell)
   if ($plan.registryKey) {
     $expectedHash = [Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes($installTarget.ToLowerInvariant()))
     $suffix = ([BitConverter]::ToString($expectedHash).Replace('-', '').ToLowerInvariant()).Substring(0, 16)

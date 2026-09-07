@@ -11,6 +11,59 @@ const assert = require('node:assert/strict');
 const { _electron, expect } = require('@playwright/test');
 const backend = require('./backend.cjs');
 
+async function readShortcutsUnderWesternCodePage(directory, files) {
+  // Compile the production Unicode reader unchanged into a temporary process
+  // with ACP1252. This reproduces English CI without changing the user's locale.
+  const helper = await fs.readFile(path.join(__dirname, 'uninstall.ps1'), 'utf8');
+  const csharp = helper.match(/Add-Type -TypeDefinition @'\r?\n([\s\S]+?)\r?\n'@/);
+  assert(csharp, 'Find the exact production Shell Link reader');
+  const source = path.join(directory, 'unicode-reader.cs');
+  const manifest = path.join(directory, 'unicode-reader.manifest');
+  const executable = path.join(directory, 'unicode-reader.exe');
+  await fs.writeFile(
+    source,
+    csharp[1] +
+      `
+public static class LocaleTest {
+  [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+  private static extern uint GetACP();
+  [System.STAThread]
+  public static int Main(string[] args) {
+    System.Console.OutputEncoding = new System.Text.UTF8Encoding(false);
+    var links = new System.Collections.Generic.List<object>();
+    foreach (string file in args) {
+      var data = FreeCutUninstallPaths.ReadShortcut(file);
+      links.Add(new { file = file, data = data, canonicalTarget = FreeCutUninstallPaths.Resolve(data.TargetPath) });
+    }
+    System.Console.WriteLine(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(new { codePage = GetACP(), links = links }));
+    return 0;
+  }
+}
+`,
+  );
+  await fs.writeFile(
+    manifest,
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"><assemblyIdentity version="1.0.0.0" name="FreeCut.Test.ShortcutLocale"/><application xmlns="urn:schemas-microsoft-com:asm.v3"><windowsSettings><activeCodePage xmlns="http://schemas.microsoft.com/SMI/2019/WindowsSettings">en-US</activeCodePage></windowsSettings></application></assembly>',
+  );
+  const framework = path.join(process.env.SystemRoot, 'Microsoft.NET/Framework64/v4.0.30319');
+  await execute(
+    path.join(framework, 'csc.exe'),
+    [
+      '/nologo',
+      '/target:exe',
+      '/out:' + executable,
+      '/win32manifest:' + manifest,
+      '/reference:' + path.join(framework, 'System.Web.Extensions.dll'),
+      source,
+    ],
+    { windowsHide: true },
+  );
+  const { stdout } = await execute(executable, files, { windowsHide: true });
+  const result = JSON.parse(stdout);
+  assert.equal(result.codePage, 1252, 'The isolated reader must really run under Western ACP1252');
+  return result;
+}
+
 async function main() {
   if (process.platform !== 'win32')
     throw Error(
@@ -285,6 +338,8 @@ async function main() {
         const aliasShortcut = path.join(integrationHome, 'Desktop', 'SameTargetAlias.lnk'),
           differentShortcut = path.join(integrationHome, 'Desktop', 'DifferentTarget.lnk'),
           customizedShortcut = path.join(integrationHome, 'Desktop', 'Customized.lnk'),
+          runAsShortcut = path.join(integrationHome, 'Desktop', 'RunAsAdministrator.lnk'),
+          compatibilityShortcut = path.join(integrationHome, 'Desktop', 'Compatibility.lnk'),
           userLinks = path.join(directory, 'user-owned-links'),
           linkedDirectory = path.join(integrationHome, 'Desktop', 'linked-folder'),
           userOwnedShortcut = path.join(userLinks, 'FreeCut.lnk'),
@@ -332,15 +387,83 @@ async function main() {
             otherExecutable,
           },
         );
+        // The documented Shell Link header stores LinkFlags at byte20. These
+        // fixtures change only a real link's advanced execution flags, leaving
+        // all normal UI properties equal to the installation defaults.
+        for (const [file, flag] of [
+          [runAsShortcut, 0x2000],
+          [compatibilityShortcut, 0x20000],
+        ]) {
+          const bytes = await fs.readFile(aliasShortcut);
+          assert.equal(bytes.readUInt32LE(0), 0x4c);
+          bytes.writeUInt32LE(bytes.readUInt32LE(20) | flag, 20);
+          await fs.writeFile(file, bytes);
+        }
+        const preservedPaths = [
+          differentShortcut,
+          customizedShortcut,
+          userOwnedShortcut,
+          runAsShortcut,
+          compatibilityShortcut,
+        ];
         const preservedShortcutHashes = await Promise.all(
-          [differentShortcut, customizedShortcut, userOwnedShortcut].map((file) =>
-            backend.sha256(file),
-          ),
+          preservedPaths.map((file) => backend.sha256(file)),
         );
         report.shortcutIdentity = {
           executable: ownedExecutable,
           executableAlias,
           canonical: await fs.realpath(executableAlias),
+        };
+        const candidatePaths = [
+          ...['Desktop', 'StartMenu'].map((kind) =>
+            path.join(integrationHome, kind, 'FreeCut.lnk'),
+          ),
+          aliasShortcut,
+          differentShortcut,
+          customizedShortcut,
+          linkedShortcut,
+          runAsShortcut,
+          compatibilityShortcut,
+        ];
+        report.shortcutBefore = await application.evaluate(
+          ({ shell }, files) =>
+            files.map((file) => ({ file, metadata: shell.readShortcutLink(file) })),
+          candidatePaths,
+        );
+        for (const candidate of report.shortcutBefore) {
+          candidate.canonicalTarget = await fs
+            .realpath(candidate.metadata.target)
+            .catch((error) => ({ error: error.message }));
+          candidate.sha256 = await backend.sha256(candidate.file);
+        }
+        report.unicodeReader = await readShortcutsUnderWesternCodePage(directory, candidatePaths);
+        for (const candidate of report.unicodeReader.links) {
+          const before = report.shortcutBefore.find((link) => link.file === candidate.file);
+          assert.equal(
+            candidate.canonicalTarget.toLowerCase(),
+            before.canonicalTarget.toLowerCase(),
+          );
+          assert.equal(candidate.data.Description, '水管剪辑 FreeCut');
+          assert.equal(candidate.data.WorkingDirectory, target);
+          assert.equal(
+            await fs.realpath(candidate.data.IconPath),
+            await fs.realpath(ownedExecutable),
+          );
+        }
+        assert(
+          report.unicodeReader.links.find((link) => link.file === runAsShortcut).data.Flags &
+            0x2000,
+        );
+        assert(
+          report.unicodeReader.links.find((link) => link.file === compatibilityShortcut).data
+            .Flags & 0x20000,
+        );
+        const helperBytes = await fs.readFile(path.join(__dirname, 'uninstall.ps1'));
+        report.helperSource = {
+          file: path.join(__dirname, 'uninstall.ps1'),
+          bytes: helperBytes.length,
+          prefix: helperBytes.subarray(0, 3).toString('hex'),
+          sha256: await backend.sha256(path.join(__dirname, 'uninstall.ps1')),
         };
         await application.close();
         application = undefined;
@@ -377,6 +500,8 @@ async function main() {
               differentShortcut,
               customizedShortcut,
               linkedShortcut,
+              runAsShortcut,
+              compatibilityShortcut,
             ],
             silent: true,
             logFile,
@@ -396,14 +521,37 @@ async function main() {
           ],
           { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] },
         );
-        let errors = '';
+        let errors = '',
+          helperOutput = '';
+        helper.stdout.on('data', (chunk) => {
+          helperOutput = (helperOutput + chunk).slice(-20000);
+        });
         helper.stderr.on('data', (chunk) => (errors += chunk));
         const code = await new Promise((resolve, reject) => {
           helper.once('error', reject);
           helper.once('exit', resolve);
         });
-        assert.equal(code, 0, errors);
         const result = JSON.parse((await fs.readFile(logFile, 'utf8')).replace(/^\uFEFF/, ''));
+        // Keep diagnostics before any outcome assertion: failed CI must explain
+        // which actual link/property/check was preserved, including its locale.
+        report.helperResult = result;
+        console.log(
+          'UNINSTALL_DIAGNOSTICS ' +
+            JSON.stringify(
+              {
+                code,
+                errors,
+                helperOutput,
+                source: report.helperSource,
+                identity: report.shortcutIdentity,
+                before: report.shortcutBefore,
+                result,
+              },
+              null,
+              2,
+            ),
+        );
+        assert.equal(code, 0, errors);
         assert.equal(result.success, true, result.error);
         assert.deepEqual(result.preserved, ['LICENSE.txt']);
         await assert.rejects(fs.stat(path.join(target, 'FreeCut.exe')), { code: 'ENOENT' });
@@ -422,25 +570,35 @@ async function main() {
           });
         await assert.rejects(fs.stat(aliasShortcut), { code: 'ENOENT' });
         assert.deepEqual(
-          await Promise.all(
-            [differentShortcut, customizedShortcut, userOwnedShortcut].map((file) =>
-              backend.sha256(file),
-            ),
-          ),
+          await Promise.all(preservedPaths.map((file) => backend.sha256(file))),
           preservedShortcutHashes,
         );
         assert((await fs.lstat(linkedDirectory)).isSymbolicLink());
         assert.equal(result.removedShortcuts.length, 3);
         assert.deepEqual(
           result.preservedShortcuts.sort(),
-          [differentShortcut, customizedShortcut, linkedShortcut].sort(),
+          [
+            differentShortcut,
+            customizedShortcut,
+            linkedShortcut,
+            runAsShortcut,
+            compatibilityShortcut,
+          ].sort(),
         );
+        for (const file of [runAsShortcut, compatibilityShortcut]) {
+          assert.equal(
+            result.shortcutDetails.find((detail) => detail.path === file).reason,
+            'Shortcut has user execution customizations.',
+          );
+        }
         assert.equal(await fs.readFile(otherExecutable, 'utf8'), 'USER OTHER APPLICATION');
         report.shortcutResult = {
           removedOwned: 3,
           preservedDifferentTarget: true,
           preservedCustomized: true,
           preservedJunction: true,
+          preservedRunAsAdministrator: true,
+          preservedCompatibility: true,
           result,
         };
       },

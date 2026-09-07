@@ -4,6 +4,8 @@
 // Real Electron preview gestures and native project save/open IPC. No external
 // media, FFmpeg inference or downloads. Native dialog choices are redirected to
 // a fresh test directory; the product's navigation and close guards stay active.
+// One recent-project index commit is explicitly held/released to reproduce the
+// save acknowledgment race without a sleep or changing the product's behavior.
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
@@ -52,13 +54,58 @@ async function main() {
     report.checks.push({ name, passed: true, elapsedMs: Date.now() - start });
     console.log(`PASS: ${name}`);
   };
-  const save = async (label) => {
+  const save = async (label, holdAcknowledgment = false) => {
     const file = path.join(directory, `${String(++counter).padStart(2, '0')}-${label}.freecut`);
-    await app.evaluate((_, filePath) => globalThis.__transformDialogs.save.push(filePath), file);
+    await app.evaluate(
+      (_, { filePath, holdAcknowledgment }) => {
+        globalThis.__transformDialogs.save.push(filePath);
+        globalThis.__transformSaveBarrier.armed = holdAcknowledgment;
+      },
+      { filePath: file, holdAcknowledgment },
+    );
     const button = page.getByTitle('保存工程 Ctrl+S', { exact: true });
-    await button.click();
-    await expect.poll(() => fs.readFile(file, 'utf8').catch(() => '')).not.toBe('');
-    await expect(button).toBeEnabled();
+    const busy = page.getByText('正在处理工程文件…', { exact: true });
+    try {
+      await button.click();
+      await expect.poll(() => fs.readFile(file, 'utf8').catch(() => '')).not.toBe('');
+      if (holdAcknowledgment) {
+        await expect
+          .poll(() => app.evaluate(() => globalThis.__transformSaveBarrier.waiting))
+          .toBe(true);
+        await expect(busy).toBeVisible();
+        // Neither the completed project file nor this enabled button means that
+        // the native IPC has returned: main is still persisting recent projects.
+        await expect(button).toBeEnabled();
+        const text = clipOf(fixture, textId);
+        const p = await point(fixture, text.transform);
+        const blocked = await page.evaluate(
+          ({ x, y }) => !!document.elementFromPoint(x, y)?.closest('.close-backdrop'),
+          p,
+        );
+        assert(blocked, 'Pending-save overlay must intercept a direct preview click');
+        await page.mouse.click(p.x, p.y);
+        await expect(
+          page.getByRole('button', { name: `片段 ${text.name}`, exact: true }),
+        ).not.toHaveClass(/selected/);
+        await expect(
+          page.getByRole('button', { name: `片段 ${clipOf(fixture, shapeId).name}`, exact: true }),
+        ).toHaveClass(/selected/);
+        report.saveAcknowledgment = {
+          delayedRecentIndexCommit: true,
+          saveButtonEnabledWhilePending: true,
+          prematurePreviewClickBlocked: true,
+        };
+      }
+    } finally {
+      if (holdAcknowledgment)
+        await app.evaluate(() => {
+          globalThis.__transformSaveBarrier.armed = false;
+          globalThis.__transformSaveBarrier.release?.();
+        });
+    }
+    // Raw page.mouse clicks and keyboard shortcuts do not wait for overlay
+    // actionability. Finish the actual save transaction before returning.
+    await expect(busy).toBeHidden({ timeout: 15000 });
     const project = JSON.parse(await fs.readFile(file, 'utf8'));
     assert.equal(project.assets.length, 0, 'This regression must remain independent of media');
     assert.equal(project.clips.length, 2, 'Neither gesture nor undo may create/delete clips');
@@ -71,6 +118,9 @@ async function main() {
     await app.evaluate((_, filePath) => globalThis.__transformDialogs.open.push([filePath]), file);
     await page.getByTitle('打开工程 Ctrl+O', { exact: true }).click();
     await expect(page.getByLabel('工程名称', { exact: true })).toHaveValue(next.name);
+    await expect(page.getByText('正在处理工程文件…', { exact: true })).toBeHidden({
+      timeout: 15000,
+    });
     await expect(page.getByRole('dialog', { name: '保存未完成的修改', exact: true })).toBeHidden();
     await expect(page.getByTitle('撤销 Ctrl+Z', { exact: true })).toBeDisabled();
     return next;
@@ -184,8 +234,29 @@ async function main() {
     }));
     assert.equal(report.runtime.userData, profile);
     assert.equal(report.runtime.sessionData, profile);
-    await app.evaluate(({ dialog }) => {
+    await app.evaluate(({ dialog, app }) => {
       globalThis.__transformDialogs = { save: [], open: [], unexpected: [], closeChoices: 0 };
+      globalThis.__transformSaveBarrier = { armed: false, waiting: false, release: null };
+      const nativeFs = process.mainModule.require('node:fs/promises');
+      const nativePath = process.mainModule.require('node:path');
+      const recentIndex = nativePath.join(app.getPath('userData'), 'projects.json');
+      const rename = nativeFs.rename.bind(nativeFs);
+      nativeFs.rename = async (source, target) => {
+        const barrier = globalThis.__transformSaveBarrier;
+        if (barrier.armed && target === recentIndex) {
+          barrier.armed = false;
+          barrier.waiting = true;
+          try {
+            await new Promise((resolve) => {
+              barrier.release = resolve;
+            });
+          } finally {
+            barrier.waiting = false;
+            barrier.release = null;
+          }
+        }
+        return rename(source, target);
+      };
       dialog.showSaveDialog = async () => {
         const filePath = globalThis.__transformDialogs.save.shift();
         if (!filePath) throw Error('Unexpected native save dialog');
@@ -240,12 +311,14 @@ async function main() {
         await select(fixture, clipOf(fixture, textId));
         await select(fixture, clipOf(fixture, shapeId));
         assert.equal(
-          await page.getByLabel('视频预览', { exact: true }).evaluate((canvas) => canvas.toDataURL()),
+          await page
+            .getByLabel('视频预览', { exact: true })
+            .evaluate((canvas) => canvas.toDataURL()),
           before,
           'Selection outlines must remain in the DOM and never contaminate rendered/exported pixels',
         );
         await expect(page.getByTitle('撤销 Ctrl+Z', { exact: true })).toBeDisabled();
-        assert.deepEqual(await save('selection-only'), fixture);
+        assert.deepEqual(await save('selection-only', true), fixture);
       },
     );
 
