@@ -14,9 +14,9 @@
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-当前源码正在准备 0.3.1 开发预览版，**尚未发布**，并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
+当前版本为已发布的 **0.3.1 开发预览版**，并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
 
-本地中英文界面、右键剪辑、保存退出与覆盖安装检查已通过，三平台发布构建正在验证中。
+中英文界面、右键剪辑、保存退出与覆盖安装检查已通过；[三平台构建](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130)及[发布校验](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194)均成功。
 
 新版采用原创 3D 图标，以“水管剪辑”为中文主名称。FreeCut 保留为英文名，仓库名、安装文件名和 `.freecut` 工程格式继续兼容。品牌来源与发布前排查见 [品牌说明](docs/BRAND.md) 和 [来源及许可核查](docs/RELEASE-REVIEW-030.md)。
 
@@ -24,7 +24,9 @@
 
 让 AI 使用本软件剪片：安装免费的 [shuiguan-cut Skill](docs/AI-EDITING.md)，从本地素材生成可继续编辑的工程，并通过真实应用导出 MP4。
 
-英文宣传片已通过真实 FreeCut 导出并验证：55 秒、1080p、全静音，保留 `@我叫水管同学` 署名，只引导下载和 GitHub Star。成片为 `renders/freecut-launch-en-1080p.mp4`；[Release 视频附件](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4)等待本版发布后上传。[真实导出与静音检查](videos/freecut-launch-en-edit/QA.md)和[英文视觉源](videos/freecut-launch-en)分别记录。
+英文宣传片已通过真实 FreeCut 导出并发布：55 秒、1080p、全静音，保留 `@我叫水管同学` 署名，只引导下载和 GitHub Star。[观看 / 下载英文宣传片](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4)，可以自行加音乐。[真实导出与静音检查](videos/freecut-launch-en-edit/QA.md)和[英文视觉源](videos/freecut-launch-en)分别记录。
+
+[下载英文宣传片工程包](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-editing-kit.zip)：包含真实 `.freecut` 工程、视觉素材、可复现配方、英文说明及许可。换电脑打开工程时，将唯一缺失素材重新链接到包内的 `media/visual-source.mp4`。
 
 ![水管剪辑桌面工作台](docs/screenshots/editor-030.png)
 
@@ -53,7 +55,7 @@
 
 ## 下载和运行
 
-**0.3.1 尚未发布。** [计划中的 0.3.1 预览版页面](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1)将在完成验证并发布后提供 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中文教程和 SHA-256 清单。下表列出计划文件名；已发布版本请查看 [Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases)。
+[下载 0.3.1 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1)：已提供 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中英文教程和 SHA-256 清单。中英文共用同一份应用包，首次启动默认简体中文。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 
@@ -107,7 +109,7 @@ node installer/smoke.cjs
 
 桌面回归覆盖保存退出、真实视频定位、普通关键帧、预览拖拽、蒙版像素、短窗口滚动、立体声预览与导出，以及更新时的保存/取消/失败路径。脚本使用独立临时用户目录；更新回归仅替换网络响应和最后的安装启动器，不改用户安装。`npm run test:desktop` 完成构建和桌面回归。真实语音测试脚本默认禁止下载；命令与模型验收结果见模型文档。
 
-上述内容说明测试脚本的覆盖范围，不代表当前 0.3.1 提交已完成三平台验收；具体通过记录以验证文档和对应 CI 运行结果为准。
+0.3.1 发布构建对应 `bc68dc5`，Windows x64、Mac Intel 和 Apple 芯片均通过上述回归和打包后媒体验收。详细范围见[验证记录](docs/VERIFICATION.md)和[对应 CI](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130)；这些结果不代表所有硬件、素材和长工程均已验证。
 
 仅看浏览器界面：`npm run dev`。浏览器模式支持编辑预览；本地模型、完整工程媒体重开和 FFmpeg 视频导出需要桌面版。
 

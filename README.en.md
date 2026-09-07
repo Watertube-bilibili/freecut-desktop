@@ -12,9 +12,9 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
-The source is being prepared for the **0.3.1 development preview, which has not been released yet**. It does not yet cover every feature of Jianying or CapCut. The project aims to make everyday editing, desktop keyframes, captions, and local voice tools easier to reach. See the [feature matrix](docs/FEATURE-MATRIX.md) and [verification record](docs/VERIFICATION.md) for the implemented scope and actual tests; these documents are currently in Chinese.
+The current release is the **0.3.1 development preview**. It does not yet cover every feature of Jianying or CapCut. The project aims to make everyday editing, desktop keyframes, captions, and local voice tools easier to reach. See the [feature matrix](docs/FEATURE-MATRIX.md) and [verification record](docs/VERIFICATION.md) for the implemented scope and actual tests; these documents are currently in Chinese.
 
-Local checks have passed for both interface languages, context-menu editing, save/quit protection and legacy installation upgrades. The three-platform release build is being verified.
+Both interface languages, context-menu editing, save/quit protection and legacy installation upgrades passed their checks. The [three-platform build](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130) and [verified release workflow](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194) both succeeded.
 
 ## Preview
 
@@ -24,7 +24,9 @@ Local checks have passed for both interface languages, context-menu editing, sav
 
 The second layout runs in the same desktop application. It is not an Android or iOS app.
 
-A 55-second, 1080p English promo has been exported through the actual FreeCut application and verified completely silent. It credits `@我叫水管同学` and asks viewers to download and Star the repository. The local final file is `renders/freecut-launch-en-1080p.mp4`; the [Release video asset](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4) will be uploaded after this release is published. See the [actual product export and silence verification](videos/freecut-launch-en-edit/QA.md), separate from the [English visual source](videos/freecut-launch-en).
+[Watch or download the English promo](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4): 55 seconds, 1080p, exported through the actual FreeCut application and verified completely silent. It credits `@我叫水管同学` and asks viewers to download and Star the repository. Add your own music if you wish. See the [actual product export and silence verification](videos/freecut-launch-en-edit/QA.md), separate from the [English visual source](videos/freecut-launch-en).
+
+[Download the English editing kit](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-editing-kit.zip) for the genuine `.freecut` project, visual input, reproducible recipe, English instructions and licenses. On another computer, relink the project's one missing asset to `media/visual-source.mp4` inside the kit.
 
 ## Editing features
 
@@ -47,7 +49,7 @@ A 55-second, 1080p English promo has been exported through the actual FreeCut ap
 
 ## Download and install
 
-**0.3.1 has not been released yet.** The [planned 0.3.1 preview page](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1) will provide Windows setup and portable builds, macOS Intel and Apple Silicon DMG/ZIP builds, corresponding source archives, and SHA-256 checksums after validation and publication. The table below lists the planned filenames. For currently published versions, see [Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases).
+[Download the 0.3.1 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1). Windows setup and portable builds, macOS Intel and Apple Silicon DMG/ZIP builds, corresponding source archives, English and Chinese guides, and SHA-256 checksums are available. One application package supports both languages and starts in Simplified Chinese.
 
 | Computer or use | Download | How to use it |
 | --- | --- | --- |
@@ -70,7 +72,7 @@ You can upgrade a verified legacy FreeCut installation, including 0.2.0, in its 
 3. Select a clip to adjust its properties. Use Easy mode for one-click keyframe snapshots, or Pro mode for precise control.
 4. Save the project, then export an MP4. Keep the original media files alongside your work. If you move them, use **Relink media** to locate them again.
 
-Read the detailed [English quick-start guide](docs/QUICKSTART.en.md). The planned Release also includes a downloadable `FreeCut-Quickstart-en.md` copy.
+Read the detailed [English quick-start guide](docs/QUICKSTART.en.md), also available as [FreeCut-Quickstart-en.md in the Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/FreeCut-Quickstart-en.md).
 
 ## Optional local AI
 
@@ -123,7 +125,7 @@ The desktop smoke test generates original local media and exercises the actual E
 
 Regression coverage includes save/close protection, real video seeks, keyframe controls, preview transforms, mask pixels, short-window scrolling, stereo preview/export, and update cancellation or failure. These tests establish the behavior of their tested fixtures, not the quality of every possible media file or model output.
 
-This describes test coverage, not a claim that the current 0.3.1 commit has passed all three platform builds. Consult the verification records and the matching CI run for actual results.
+Release 0.3.1 was built from `bc68dc5`. Windows x64, macOS Intel and Apple Silicon passed the regressions and packaged-app media checks in the [matching CI run](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130). These results cover the tested fixtures, not every hardware configuration, recording or long project.
 
 `npm run test:desktop` runs the build and desktop regressions. Real AI smoke tests disable downloads by default; the model documents explain how to explicitly prepare their dependencies.
 

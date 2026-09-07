@@ -20,6 +20,12 @@
 
 英文宣传片经真实 FreeCut 0.3.1 Skill 导入、7 段时间线组装、保存工程与导出完成：55 秒、1080p/30 fps、1,650 帧，渲染错误 0。全片解码音频 5,280,000 个样本的峰值/RMS 均为 0，画面无全黑帧。视觉源与最终产品导出分别验证，详见 [英文成片 QA](../videos/freecut-launch-en-edit/QA.md)。
 
+[最终构建 34135596130](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130) 对应源码 `bc68dc519bfcb5851181e3e2595ecf4773582573`，Windows x64、Mac Intel x64、Mac Apple arm64 全部成功，含新增右键/中英文回归、同版本 Skill 自检、打包后实际导入/保存重开/导出、Windows 实际 Setup 和卸载、Mac 更新 ZIP 核验。[发布工作流 34136544194](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194) 校验三平台匹配源码与上传散列后发布 15 份基础文件；英文 MP4、工程包及两份校验附件另行上传并匹配服务器 SHA-256。
+
+公开 Windows Setup 与 Portable 重新下载后均与 Release 的服务器散列和 `SHA256SUMS.txt` 相符，中英文指南同样核对通过。英文工程包包含 58 项文件，逐条解压核对 SHA-256；真实工程未改写，ZIP 为 26,219,799 字节，SHA-256 `e19fe570fbbaf9478021c2769819ab5b6a003464defe62695a9211d0b92adc0a`。
+
+公开 Portable 原文件另行复制到独立目录实际启动，确认版本 0.3.1、视频引擎可用、数据位于旁边的 `FreeCutData`；首次默认中文，设置切 English、英文关于页 Star/永久免费且无捐助诉求通过。真正退出重启后，英文、手机布局、专业关键帧模式及已完成引导均保留。没有修改用户已安装的程序或已有配置。
+
 ## 0.3.0 直接预览操作、声音与分发更新
 
 2026-09-07，Windows x64 / Electron 44.2.0，本次本机验收记录如下；三平台最终构建及准确提交以 [0.3.0 Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.0-preview.1) 关联的 Actions 为准。
