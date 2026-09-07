@@ -55,7 +55,12 @@ const state = {
   ready: false,
 };
 app.setName('FreeCut Installer');
-app.setPath('userData', path.join(testHome ?? app.getPath('appData'), 'FreeCut Installer'));
+const explicitProfile = app.commandLine.getSwitchValue('user-data-dir');
+const profileDirectory = explicitProfile
+  ? path.resolve(explicitProfile)
+  : path.join(testHome ?? app.getPath('appData'), 'FreeCut Installer');
+app.setPath('userData', profileDirectory);
+app.setPath('sessionData', profileDirectory);
 
 function publish(patch = {}) {
   Object.assign(state, patch);

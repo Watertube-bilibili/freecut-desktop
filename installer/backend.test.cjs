@@ -9,10 +9,13 @@ const backend = require('./backend.cjs');
 
 const digest = (data) => crypto.createHash('sha256').update(data).digest('hex');
 async function workspace(t) {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'freecut-installer-test-'));
+  // macOS exposes its temporary directory through /var -> /private/var.
+  // Fixtures need a real parent; explicit link attack cases below stay linked.
+  const temporaryRoot = await fs.realpath(os.tmpdir());
+  const directory = await fs.mkdtemp(path.join(temporaryRoot, 'freecut-installer-test-'));
   t.after(async () => {
     const absolute = path.resolve(directory);
-    assert.equal(path.dirname(absolute), path.resolve(os.tmpdir()));
+    assert.equal(path.dirname(absolute), temporaryRoot);
     assert(path.basename(absolute).startsWith('freecut-installer-test-'));
     await fs.rm(absolute, { recursive: true, force: true });
   });

@@ -15,8 +15,10 @@ async function main() {
     throw Error(
       'Installer UI integration runs on Windows. Use backend.test.cjs on other platforms.',
     );
-  const root = path.resolve(__dirname, '..');
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'freecut-installer-ui-'));
+  const root = await fs.realpath(path.resolve(__dirname, '..'));
+  // Windows temp paths may contain an 8.3 alias such as RUNNER~1.
+  const temporaryRoot = await fs.realpath(os.tmpdir());
+  const directory = await fs.mkdtemp(path.join(temporaryRoot, 'freecut-installer-ui-'));
   const payloadRoot = path.join(directory, 'payload');
   const target = path.join(directory, '中文 安装目录', 'FreeCut');
   const integrationHome = path.join(directory, 'integration');
@@ -51,7 +53,7 @@ async function main() {
     );
   }
   await writePayload('0.3.0');
-  const report = { directory, checks: [], rendererErrors: [], passed: false };
+  const report = { directory, checks: [], rendererErrors: [], profiles: [], passed: false };
   let application, page, oldProcess;
   const check = async (name, action) => {
     console.log(`RUN: ${name}`);
@@ -59,7 +61,11 @@ async function main() {
     report.checks.push(name);
     console.log(`PASS: ${name}`);
   };
-  const launch = async (args = []) => {
+  const launch = async (args = [], explicitProfile = true) => {
+    const profile = explicitProfile
+      ? path.join(directory, `profile-${report.profiles.length}`)
+      : path.join(integrationHome, 'FreeCut Installer');
+    await fs.mkdir(profile, { recursive: true });
     const env = {
       ...process.env,
       FREECUT_INSTALLER_PAYLOAD_DIR: payloadRoot,
@@ -69,7 +75,7 @@ async function main() {
     delete env.PORTABLE_EXECUTABLE_DIR;
     delete env.PORTABLE_EXECUTABLE_FILE;
     application = await _electron.launch({
-      args: [__dirname, ...args],
+      args: [__dirname, ...(explicitProfile ? [`--user-data-dir=${profile}`] : []), ...args],
       cwd: root,
       env,
       timeout: 30000,
@@ -78,6 +84,23 @@ async function main() {
     page.setDefaultTimeout(20000);
     page.on('pageerror', (error) => report.rendererErrors.push(error.message));
     await expect(page.locator('#heading')).toBeVisible();
+    const paths = await application.evaluate(({ app }) => ({
+      userData: app.getPath('userData'),
+      sessionData: app.getPath('sessionData'),
+    }));
+    const expectedProfile = await fs.realpath(profile);
+    assert.equal(await fs.realpath(paths.userData), expectedProfile);
+    assert.equal(await fs.realpath(paths.sessionData), expectedProfile);
+    await page.evaluate(() => localStorage.setItem('freecut-installer-profile-test', 'isolated'));
+    await expect
+      .poll(() =>
+        fs.access(path.join(profile, 'Local Storage', 'leveldb', 'CURRENT')).then(
+          () => true,
+          () => false,
+        ),
+      )
+      .toBe(true);
+    report.profiles.push({ explicitProfile, ...paths });
   };
   const closeCompleted = async () => {
     const closed = application.waitForEvent('close');
@@ -89,7 +112,7 @@ async function main() {
     await check(
       'Custom installer starts with no selected disk and normalizes native root selection',
       async () => {
-        await launch();
+        await launch([], false); // Preserve the existing testHome fallback without an explicit switch.
         await expect(page.locator('#target')).toHaveText('尚未选择');
         await expect(page.locator('#primary')).toBeDisabled();
         await expect(page.locator('#driveC')).toHaveAttribute('aria-pressed', 'false');
@@ -160,8 +183,8 @@ async function main() {
             path.join(integrationHome, kind, 'FreeCut.lnk'),
           );
           assert.equal(
-            shortcut.target.toLowerCase(),
-            path.join(target, 'FreeCut.exe').toLowerCase(),
+            await fs.realpath(shortcut.target),
+            await fs.realpath(path.join(target, 'FreeCut.exe')),
           );
         }
         await expect(page.locator('#primary')).toHaveText('启动水管剪辑 →');
@@ -216,6 +239,10 @@ async function main() {
     await check(
       'The actual PowerShell uninstaller removes only owned unchanged files and preserves personal data',
       async () => {
+        await launch(['--uninstall', '--install-dir', target]);
+        assert.equal((await page.evaluate(() => window.freecutInstaller.state())).mode, 'uninstall');
+        await application.close();
+        application = undefined;
         const installed = (await backend.inspectTarget(target, { update: true })).installed;
         await fs.writeFile(path.join(target, 'LICENSE.txt'), 'USER MODIFICATION');
         const sleeper = spawn(process.execPath, ['-e', 'setTimeout(()=>{},100)'], {

@@ -23,12 +23,15 @@ async function freePort() {
 }
 async function main() {
   if (process.platform !== 'win32') throw Error('Actual Setup regression requires Windows');
-  const root = path.resolve(__dirname, '..'),
+  const root = await fs.realpath(path.resolve(__dirname, '..')),
     { version } = require('../package.json');
   const setup = path.join(root, 'release', `FreeCut-${version}-win-x64-Setup.exe`),
     source = path.join(root, 'release', 'win-unpacked');
   await fs.access(setup);
-  const directory = await fs.mkdtemp(path.join(root, '.cache', 'setup-runtime-test-')),
+  await fs.mkdir(path.join(root, '.cache'), { recursive: true });
+  const fixtureRoot = await fs.realpath(path.join(root, '.cache'));
+  const temporaryRoot = await fs.realpath(os.tmpdir());
+  const directory = await fs.mkdtemp(path.join(fixtureRoot, 'setup-runtime-test-')),
     target = path.join(directory, '中文 安装位置', 'FreeCut'),
     profile = path.join(directory, 'profile');
   await fs.mkdir(target, { recursive: true });
@@ -54,6 +57,14 @@ async function main() {
         throw error;
       },
     );
+  // CDP cannot call Electron's main-process app.getPath. Force actual session
+  // storage and verify Chromium creates it beneath this launch's isolated profile.
+  const assertProfileStorage = async (profilePath) => {
+    await page.evaluate(() => localStorage.setItem('freecut-installer-profile-test', 'isolated'));
+    await expect
+      .poll(() => absent(path.join(profilePath, 'Local Storage', 'leveldb', 'CURRENT')))
+      .toBe(false);
+  };
   try {
     const port = await freePort();
     child = spawn(
@@ -90,6 +101,7 @@ async function main() {
         assert.equal(state.version, version);
         assert.equal(state.ready, true);
         assert.equal(state.mode, 'install');
+        await assertProfileStorage(profile);
         report.initialState = state;
         assert(page.url().includes('/resources/freecut-installer/index.html'));
         await page.screenshot({ path: path.join(directory, 'actual-setup-ui.png') });
@@ -149,14 +161,19 @@ async function main() {
         report.product = await application.evaluate(({ app }) => ({
           packaged: app.isPackaged,
           userData: app.getPath('userData'),
+          sessionData: app.getPath('sessionData'),
           execPath: process.execPath,
           argv: process.argv,
           portable: process.env.PORTABLE_EXECUTABLE_DIR ?? null,
         }));
         assert.equal(report.product.packaged, true);
         assert.equal(
-          path.resolve(report.product.userData),
-          path.join(directory, 'product-profile'),
+          await fs.realpath(report.product.userData),
+          await fs.realpath(path.join(directory, 'product-profile')),
+        );
+        assert.equal(
+          await fs.realpath(report.product.sessionData),
+          await fs.realpath(path.join(directory, 'product-profile')),
         );
         assert(!report.product.argv.includes('--installer'));
         assert.equal(report.product.portable, null);
@@ -210,6 +227,7 @@ async function main() {
         await expect(page.locator('#heading')).toBeVisible();
         const state = await page.evaluate(() => window.freecutInstaller.state());
         assert.equal(state.mode, 'uninstall');
+        await assertProfileStorage(path.join(directory, 'uninstall-profile'));
         await page.locator('#primary').click();
         await expect.poll(() => child.exitCode, { timeout: 30000 }).toBe(0);
         assert.deepEqual(await uninstallExit, { code: 0, signal: null });
@@ -226,13 +244,17 @@ async function main() {
         );
         report.remaining = await fs.readdir(target);
         assert.deepEqual(report.remaining, ['个人工程.freecut']);
-        for (const entry of await fs.readdir(os.tmpdir(), { withFileTypes: true })) {
+        const canonicalTarget = await fs.realpath(target);
+        for (const entry of await fs.readdir(temporaryRoot, { withFileTypes: true })) {
           if (!entry.isDirectory() || !entry.name.startsWith('freecut-uninstall-')) continue;
-          const helperDirectory = path.join(os.tmpdir(), entry.name);
+          const helperDirectory = path.join(temporaryRoot, entry.name);
           const plan = await fs
             .readFile(path.join(helperDirectory, 'plan.json'), 'utf8')
             .then(JSON.parse, () => null);
-          if (plan?.target === target) {
+          if (
+            typeof plan?.target === 'string' &&
+            (await fs.realpath(plan.target).catch(() => null)) === canonicalTarget
+          ) {
             report.uninstallLog = helperDirectory;
             break;
           }

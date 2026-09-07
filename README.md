@@ -10,6 +10,8 @@
 
 操作步骤见 [中文使用说明](docs/QUICKSTART.md)，实际测试范围见 [验证记录](docs/VERIFICATION.md)。
 
+让 AI 使用本软件剪片：安装免费的 [shuiguan-cut Skill](docs/AI-EDITING.md)，从本地素材生成可继续编辑的工程，并通过真实应用导出 MP4。
+
 ![水管剪辑桌面工作台](docs/screenshots/editor-030.png)
 
 ![手机风格工作台](docs/screenshots/mobile-030.png)

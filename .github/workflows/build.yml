@@ -85,6 +85,8 @@ jobs:
       - run: node scripts/prepare-ffmpeg.mjs
       - run: npm test
       - run: npm run build
+      - name: Verify AI Skill through the real editor and MP4 export
+        run: node skills/shuiguan-cut/scripts/shuiguan-cut.cjs demo --repo . --out-dir artifacts/skill-smoke
       - name: Verify editor regressions in isolated desktop profile
         run: node scripts/regression-editor.cjs
       - name: Verify preview seeking and layout changes with real video
@@ -138,6 +140,9 @@ jobs:
             release/*.zip
             artifacts/*source*.tar.gz
             artifacts/smoke/*
+            artifacts/skill-smoke/report.json
+            artifacts/skill-smoke/preview.png
+            artifacts/skill-smoke/render.mp4
             resources/ffmpeg/*.txt
             resources/ffmpeg/*.json
           if-no-files-found: error

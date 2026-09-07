@@ -1,0 +1,4 @@
+interface:
+  display_name: "水管剪辑 AI 助手"
+  short_description: "通过水管剪辑真实导入素材、生成可编辑工程并导出无水印视频"
+  default_prompt: "使用 $shuiguan-cut 将这些本地素材剪成视频，保存可编辑工程并通过水管剪辑导出。"
