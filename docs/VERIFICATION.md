@@ -24,7 +24,7 @@ SenseVoice 在原公开 0.2.0 应用、中文路径和补丁打包应用中完�
 
 公开分发使用三平台源码构建 FFmpeg；本地快速打包的供应商引擎不作为正式 Release 引擎。依赖许可核对见 [DEPENDENCY-LICENSE-AUDIT.md](DEPENDENCY-LICENSE-AUDIT.md)，品牌与模型等边界见 [RELEASE-REVIEW-030.md](RELEASE-REVIEW-030.md)。未验证事项包括所有硬件/媒体组合、长片压力、Mac AI 模型真实推理以及正式代码签名/公证。
 
-宣传片的真实媒体检查与来源记录独立保存在 `videos/shuiguan-launch/QA.md` 和 `SOURCES.md`，不把动画宣传画面当成软件功能测试。
+宣传片的真实媒体检查与来源记录独立保存：首版见 `videos/shuiguan-launch/QA.md` 和 `SOURCES.md`；新版无声片的实际水管剪辑导出与完整静音检查见 `videos/shuiguan-launch-silent-edit/QA.md`，视觉输入的来源与许可见 `videos/shuiguan-launch-instrumental/`。不把动画宣传画面当成软件功能测试。
 
 ## AI 剪辑 Skill
 

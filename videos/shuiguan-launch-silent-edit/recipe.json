@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "name": "水管剪辑 · 无声宣传片",
+  "canvas": { "width": 1920, "height": 1080, "fps": 30, "background": "#F4F3E8" },
+  "assets": [
+    { "id": "visual", "path": "../shuiguan-launch-instrumental/renders/shuiguan-launch-silent-1080p.mp4" }
+  ],
+  "clips": [
+    { "asset": "visual", "name": "01 自由创作", "start": 0, "inPoint": 0, "duration": 7, "layer": 0, "transform": { "volume": 0 } },
+    { "asset": "visual", "name": "02 初中生 × GPT-6 × Codex", "start": 7, "inPoint": 7, "duration": 7, "layer": 0, "transform": { "volume": 0 } },
+    { "asset": "visual", "name": "03 预览操控与关键帧", "start": 14, "inPoint": 14, "duration": 8, "layer": 0, "transform": { "volume": 0 } },
+    { "asset": "visual", "name": "04 桌面与手机风格布局", "start": 22, "inPoint": 22, "duration": 8, "layer": 0, "transform": { "volume": 0 } },
+    { "asset": "visual", "name": "05 工具与创作空间", "start": 30, "inPoint": 30, "duration": 10, "layer": 0, "transform": { "volume": 0 } },
+    { "asset": "visual", "name": "06 开源共建与持续改进", "start": 40, "inPoint": 40, "duration": 7, "layer": 0, "transform": { "volume": 0 } },
+    { "asset": "visual", "name": "07 下载与自愿支持", "start": 47, "inPoint": 47, "duration": 8, "layer": 0, "transform": { "volume": 0 } }
+  ],
+  "export": { "height": 1080, "fps": 30, "quality": "high" }
+}

@@ -1,0 +1,127 @@
+{
+  "sourceProject": "../shuiguan-launch",
+  "sourceIndexSha256": "eda6babdff4aac70ef8373097c19e309c9b0edd396fff91c2b17c7f43c76130d",
+  "operation": "Remove all eight audio clips and the el-captions composition mount; retain seven visual scenes and watermark.",
+  "copied": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 7769,
+      "sha256": "f2e23ad5f9766de061475da6f4b04ad114dbc8d930ba0423b01bd716df63069c"
+    },
+    {
+      "path": "frame.md",
+      "bytes": 20737,
+      "sha256": "47d6a0b6b2e923438cfe57c4850b574005d05c6d97b2a3394c5932f01bdc239a"
+    },
+    {
+      "path": "hyperframes.json",
+      "bytes": 525,
+      "sha256": "c1438ef769990bbe2901599924d47a263c822a3197a2d68f7e388f96356ad47a"
+    },
+    {
+      "path": "hyperframes.lock.json",
+      "bytes": 116,
+      "sha256": "c06993221231af2c324c174dbb2e212cefdb2c2c9284471f1c1be2c916f12dd5"
+    },
+    {
+      "path": "package.json",
+      "bytes": 362,
+      "sha256": "2bbdc56ec97bca5d60df25b83e2fda23e1c7c374f397a48eacdf9c98b503824a"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 37220,
+      "sha256": "f51ce68cd97b2da095cde17f5f057f990f0f172f8180f2a69d212459ee9624a3"
+    },
+    {
+      "path": "compositions/components/logo-sting.html",
+      "bytes": 6717,
+      "sha256": "8c60f46928c1c99ec85a2b14b96245751372da8a1c85f3f6caaa101a873d5efe"
+    },
+    {
+      "path": "compositions/frames/01-freedom.html",
+      "bytes": 8057,
+      "sha256": "07b6903f123593f14c2cddf8dc24eb08d57ae8bc40af09d9b0b6ec68da8176ac"
+    },
+    {
+      "path": "compositions/frames/02-maker.html",
+      "bytes": 10689,
+      "sha256": "58831b0c754604ab1f3513d04667ad8fda837b732bc17a562b17b32665bb47c1"
+    },
+    {
+      "path": "compositions/frames/03-control.html",
+      "bytes": 9709,
+      "sha256": "cfaf999c1b43df105f65281c446b9da1899f8d20d992fb2b9509d96a02461bf7"
+    },
+    {
+      "path": "compositions/frames/04-layout.html",
+      "bytes": 10999,
+      "sha256": "ba859405cda5cc9823f12c0436af383714c7dc51b1abc3688be10722f4c7013c"
+    },
+    {
+      "path": "compositions/frames/05-tools.html",
+      "bytes": 9377,
+      "sha256": "54e5131335fbea2abe16b2affddc57eaf4de752cf4ed6855de769fd1813467b3"
+    },
+    {
+      "path": "compositions/frames/06-open.html",
+      "bytes": 10574,
+      "sha256": "f851ab068040a8672f019b8f6a36cfb9e2dc31bda1a1e025f29b7372a9cfe67c"
+    },
+    {
+      "path": "compositions/frames/07-download.html",
+      "bytes": 9688,
+      "sha256": "9f4ca9d607a009fdad5e4223838daa63295df55c3891f81ee7755e70a4028b84"
+    },
+    {
+      "path": "assets/editor-030.png",
+      "bytes": 246966,
+      "sha256": "8387cdc5137ed0c471210870bb4c63a9fcef8af1d71625b2d2fb922dfb10f714"
+    },
+    {
+      "path": "assets/editor-keyframes-030.png",
+      "bytes": 254817,
+      "sha256": "56fd0b6d8c7f6269b66e2e647f56f499299dead4294c38a04aede79e1ddcc480"
+    },
+    {
+      "path": "assets/editor-transform-030.png",
+      "bytes": 247077,
+      "sha256": "8d542c70832ecaf22ba016184be585a0918d6cb3869b4dd717bcbf7b2b502cc0"
+    },
+    {
+      "path": "assets/fonts/LICENSE-NOTO.txt",
+      "bytes": 4301,
+      "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+    },
+    {
+      "path": "assets/fonts/NotoSansSC-Bold.otf",
+      "bytes": 8543168,
+      "sha256": "c6cb5a93abaa9edc8ee7463b7ebb7f42d618d40e6ed2f7a5371c97b0b64767c0"
+    },
+    {
+      "path": "assets/fonts/NotoSansSC-Regular.otf",
+      "bytes": 8331336,
+      "sha256": "faa6c9df652116dde789d351359f3d7e5d2285a2b2a1f04a2d7244df706d5ea9"
+    },
+    {
+      "path": "assets/icon.png",
+      "bytes": 1814069,
+      "sha256": "2bd399856aeb2be777026b692fdd9e9354a3adf9b685e10c270faeeed4d2b304"
+    },
+    {
+      "path": "assets/mobile-030.png",
+      "bytes": 198086,
+      "sha256": "b1727301432e239c17fe0475e99564f035e55261cc2a458122f518e09488759f"
+    },
+    {
+      "path": "assets/vendor/gsap.min.js",
+      "bytes": 72779,
+      "sha256": "c174bfce53a729418d57a8ad8625e7247c793a22fef8e2851e3cfa3de9cd8280"
+    },
+    {
+      "path": "assets/vendor/LICENSE-GSAP.txt",
+      "bytes": 4526,
+      "sha256": "31ab01719fd63f004d531d9fbe06ca33457fc802102204c2d0fdd8f272420392"
+    }
+  ]
+}

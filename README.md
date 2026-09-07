@@ -118,4 +118,4 @@ React + TypeScript + Electron。预览和视频帧导出共用 Canvas 合成器�
 
 本项目代码 GPL-3.0-or-later，见 [LICENSE](LICENSE)。每个第三方库、视频引擎、模型都有独立授权，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
-欢迎下载体验、提交问题和参与开源。作者：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。宣传片工程位于 [videos/shuiguan-launch](videos/shuiguan-launch)，爱发电支持入口以作者本人发布的真实链接为准。
+欢迎下载体验、提交问题和参与开源。作者：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。最新的 [55 秒无声宣传片与剪辑工程](videos/shuiguan-launch-silent-edit) 已通过水管剪辑实际导入、分成七段、保存工程并导出，方便自行配乐；画面动画来自重新渲染的 [HyperFrames 视觉源](videos/shuiguan-launch-instrumental)。首版工程仍保留在 [videos/shuiguan-launch](videos/shuiguan-launch)。爱发电支持入口以作者本人发布的真实链接为准。

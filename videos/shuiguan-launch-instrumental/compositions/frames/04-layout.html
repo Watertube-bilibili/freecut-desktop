@@ -1,0 +1,293 @@
+<template>
+  <style>
+    @font-face {
+      font-family: 'NotoSansSC';
+      src: url('assets/fonts/NotoSansSC-Regular.otf') format('opentype');
+      font-style: normal;
+      font-weight: 400;
+      font-display: block;
+    }
+    @font-face {
+      font-family: 'NotoSansSC';
+      src: url('assets/fonts/NotoSansSC-Bold.otf') format('opentype');
+      font-style: normal;
+      font-weight: 700;
+      font-display: block;
+    }
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      container-type: size;
+      color: #091C19;
+      font-family: 'NotoSansSC';
+      font-weight: 400;
+    }
+    .clip {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .f04-ground { background: #F4F3E8; }
+    .f04-title-mask {
+      position: absolute;
+      left: 10cqw;
+      top: 5.6cqw;
+      width: 80cqw;
+      height: 10cqw;
+      overflow: hidden;
+    }
+    .f04-title {
+      margin: 0;
+      padding-top: 0.833333cqw;
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      font-size: 7.5cqw;
+      font-weight: 700;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+    }
+    .f04-word { display: inline-block; }
+    .f04-support-mask {
+      position: absolute;
+      left: 35cqw;
+      top: 14.583333cqw;
+      width: 30cqw;
+      height: 3.958333cqw;
+      overflow: hidden;
+      text-align: center;
+    }
+    .f04-support {
+      display: inline-block;
+      margin: 0;
+      min-height: 3.125cqw;
+      padding: 0.416667cqw 1.041667cqw 0;
+      font-size: 2.291667cqw;
+      font-weight: 400;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      border-bottom: 0.4cqw solid #78E4BC;
+    }
+    .f04-pair {
+      position: absolute;
+      inset: 0;
+      perspective: 100cqw;
+      perspective-origin: 50% 58%;
+    }
+    .f04-entry {
+      position: absolute;
+      top: 20.833333cqw;
+      width: 42.5cqw;
+      height: 24.270833cqw;
+      transform-style: preserve-3d;
+    }
+    .f04-left-entry { left: 5cqw; transform-origin: 100% 50%; }
+    .f04-right-entry { left: 52.5cqw; transform-origin: 0% 50%; }
+    .f04-float {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+    }
+    .f04-card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      border: 0.4cqw solid #091C19;
+      background: #091C19;
+      transform-style: preserve-3d;
+    }
+    .f04-left-card { transform: rotateY(6deg); }
+    .f04-right-card { transform: rotateY(-6deg); }
+    .f04-viewport {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .f04-screenshot {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .f04-label {
+      position: absolute;
+      top: -2.916667cqw;
+      height: 3.333333cqw;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 1.25cqw;
+      border: 0.208333cqw solid #091C19;
+      font-size: 1.875cqw;
+      font-weight: 400;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      z-index: 2;
+    }
+    .f04-left-label {
+      right: -0.833333cqw;
+      width: 16.666667cqw;
+      background: #78E4BC;
+      transform-origin: 85% 100%;
+    }
+    .f04-right-label {
+      left: -0.833333cqw;
+      width: 19.166667cqw;
+      border-radius: 999px;
+      background: #FFB9A9;
+      transform-origin: 15% 100%;
+    }
+    .f04-proof {
+      position: absolute;
+      box-sizing: border-box;
+      border: 0.208333cqw solid #78E4BC;
+      pointer-events: none;
+    }
+    /* Measured UI regions on the supplied 1920 x 1080 captures. */
+    .f04-desktop-tools {
+      left: 0.2%;
+      top: 5.35%;
+      width: 17.1%;
+      height: 64.6%;
+      transform-origin: 0% 0%;
+    }
+    .f04-mobile-tools {
+      left: 0.2%;
+      top: 77.3%;
+      width: 99.6%;
+      height: 22.3%;
+      transform-origin: 50% 100%;
+    }
+    .f04-desktop-inspector {
+      left: 84.9%;
+      top: 5.35%;
+      width: 14.9%;
+      height: 64.6%;
+      transform-origin: 100% 0%;
+    }
+  </style>
+
+  <div data-hf-id="hf-tphi" id="root" data-composition-id="04-layout" data-width="1920" data-height="1080" data-duration="8">
+    <div data-hf-id="hf-i0up" id="f-04-layout-clip-1" class="clip f04-ground" data-start="0" data-duration="8" data-track-index="0"></div>
+    <div data-hf-id="hf-hs03" id="f-04-layout-clip-2" class="clip f04-content" data-start="0" data-duration="8" data-track-index="1">
+      <div data-hf-id="hf-1els" class="f04-title-mask">
+        <h1 data-hf-id="hf-6ftg" class="f04-title" aria-label="两种布局"><span data-hf-id="hf-dewc" class="f04-word f04-word-a">两种</span><span data-hf-id="hf-icf1" class="f04-word f04-word-b">布</span><span data-hf-id="hf-yrdb" class="f04-word f04-word-c">局</span></h1>
+      </div>
+      <div data-hf-id="hf-ifw5" class="f04-support-mask"><p data-hf-id="hf-acsq" class="f04-support">一份灵感</p></div>
+
+      <div data-hf-id="hf-uwrr" class="f04-pair">
+        <div data-hf-id="hf-fea0" class="f04-entry f04-left-entry">
+          <div data-hf-id="hf-v2y4" class="f04-float f04-left-float">
+            <div data-hf-id="hf-07ii" class="f04-card f04-left-card">
+              <div data-hf-id="hf-tpj1" class="f04-viewport">
+                <img data-hf-id="hf-3fb8" class="f04-screenshot" src="assets/editor-030.png" alt="电脑布局" draggable="false">
+                <div data-hf-id="hf-uwmn" class="f04-proof f04-desktop-tools" aria-hidden="true"></div>
+                <div data-hf-id="hf-f8wh" class="f04-proof f04-desktop-inspector" aria-hidden="true"></div>
+              </div>
+            </div>
+            <div data-hf-id="hf-2dzs" class="f04-label f04-left-label" data-layout-allow-overflow="">电脑布局</div>
+          </div>
+        </div>
+        <div data-hf-id="hf-rr6x" class="f04-entry f04-right-entry">
+          <div data-hf-id="hf-w5n5" class="f04-float f04-right-float">
+            <div data-hf-id="hf-wxnt" class="f04-card f04-right-card">
+              <div data-hf-id="hf-9lld" class="f04-viewport">
+                <img data-hf-id="hf-y53c" class="f04-screenshot" src="assets/mobile-030.png" alt="桌面应用的手机风格布局" draggable="false">
+                <div data-hf-id="hf-y3qb" class="f04-proof f04-mobile-tools" aria-hidden="true"></div>
+              </div>
+            </div>
+            <div data-hf-id="hf-3so0" class="f04-label f04-right-label" data-layout-allow-overflow="">手机风格布局</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines['04-layout'] = tl;
+
+      // Content-aware starts are reduced once. These sequential arrivals persist
+      // together because the comparison requires both layouts in the final spread.
+      const CONTENT = [
+        { key: 'support', body: '一份灵感', hold: 1.2 },
+        { key: 'desktop', body: '电脑布局', hold: 0.6 },
+        { key: 'mobile', body: '手机风格布局', hold: 2.0 }
+      ];
+      let cursor = 1.1;
+      const TIMELINE = CONTENT.map(function (entry) {
+        const duration = 0.8 + entry.body.length * 0.05 + entry.hold;
+        const start = cursor;
+        cursor += duration;
+        return { key: entry.key, start: start, end: cursor };
+      });
+      const supportAt = TIMELINE[0].start;
+      const desktopAt = TIMELINE[1].start;
+      const mobileAt = TIMELINE[2].start;
+
+      gsap.set('.f04-word, .f04-support, .f04-entry, .f04-label, .f04-proof', { opacity: 0 });
+
+      // Downward group settle, with a binary, upward waterfall inside its mask.
+      tl.fromTo('.f04-title', { y: -18 }, { y: 0, duration: 0.65, ease: 'power3.out' }, 0);
+      const cascade = [
+        { selector: '.f04-word-a', start: 0.08, travel: 80, duration: 0.18 },
+        { selector: '.f04-word-b', start: 0.243333, travel: 70, duration: 0.16 },
+        { selector: '.f04-word-c', start: 0.386667, travel: 70, duration: 0.14 }
+      ];
+      cascade.forEach(function (word) {
+        tl.set(word.selector, { opacity: 1 }, word.start);
+        tl.fromTo(word.selector, { y: word.travel }, { y: 0, duration: word.duration, ease: 'power4.out' }, word.start);
+      });
+      tl.set('.f04-support', { opacity: 1 }, supportAt);
+      tl.fromTo('.f04-support', { y: 50 }, { y: 0, duration: 0.16, ease: 'power4.out' }, supportAt);
+
+      // Mirrored book opening: entry transforms and the later idle have separate layers.
+      tl.fromTo('.f04-left-entry',
+        { x: -140, scale: 0.85, rotationY: 20, opacity: 0 },
+        { x: 0, scale: 1, rotationY: 0, opacity: 1, duration: 0.92, ease: 'power3.out' }, supportAt + 0.28);
+      tl.fromTo('.f04-right-entry',
+        { x: 140, scale: 0.85, rotationY: -20, opacity: 0 },
+        { x: 0, scale: 1, rotationY: 0, opacity: 1, duration: 0.92, ease: 'power3.out' }, supportAt + 0.48);
+
+      // Flat brand fills replace ambient glows; attached labels supply punctuation.
+      tl.set('.f04-left-label', { opacity: 1 }, desktopAt);
+      tl.fromTo('.f04-left-label', { y: 14, scale: 0.78 },
+        { y: 0, scale: 1, duration: 0.48, ease: 'back.out(1.5)' }, desktopAt);
+      tl.set('.f04-desktop-tools', { opacity: 1 }, desktopAt + 0.35);
+      tl.fromTo('.f04-desktop-tools', { scaleY: 0 },
+        { scaleY: 1, duration: 0.4, ease: 'power3.out' }, desktopAt + 0.35);
+
+      tl.set('.f04-right-label', { opacity: 1 }, mobileAt);
+      tl.fromTo('.f04-right-label', { y: 14, scale: 0.78 },
+        { y: 0, scale: 1, duration: 0.48, ease: 'back.out(1.5)' }, mobileAt);
+      tl.set('.f04-mobile-tools', { opacity: 1 }, mobileAt + 0.35);
+      tl.fromTo('.f04-mobile-tools', { scaleY: 0 },
+        { scaleY: 1, duration: 0.42, ease: 'power3.out' }, mobileAt + 0.35);
+
+      // The final proof identifies the desktop inspector, then holds through the cut.
+      tl.set('.f04-desktop-inspector', { opacity: 1 }, mobileAt + 1.35);
+      tl.fromTo('.f04-desktop-inspector', { scaleY: 0 },
+        { scaleY: 1, duration: 0.45, ease: 'power3.out' }, mobileAt + 1.35);
+
+      tl.fromTo('.f04-left-float', { y: 0 }, { y: -2, duration: 0.6, ease: 'sine.out' }, 2.6);
+      tl.to('.f04-left-float', { y: 2, duration: 1.9, ease: 'sine.inOut' }, 3.2);
+      tl.to('.f04-left-float', { y: 0, duration: 1.9, ease: 'sine.inOut' }, 5.1);
+      tl.fromTo('.f04-right-float', { y: 0 }, { y: 2, duration: 0.6, ease: 'sine.out' }, 2.6);
+      tl.to('.f04-right-float', { y: -2, duration: 1.9, ease: 'sine.inOut' }, 3.2);
+      tl.to('.f04-right-float', { y: 0, duration: 1.9, ease: 'sine.inOut' }, 5.1);
+
+      // Preserve the exact eight-second local duration without animating an exit.
+      tl.to({ time: 0 }, { time: 8, duration: 8, ease: 'none' }, 0);
+    })();
+  </script>
+</template>

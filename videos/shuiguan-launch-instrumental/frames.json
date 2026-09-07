@@ -1,0 +1,116 @@
+[
+  {
+    "id": "01-freedom",
+    "title": "让创作，自由一点",
+    "duration": 7,
+    "blueprint": "kinetic-type-beats",
+    "type": "typography",
+    "headline": [
+      "让创作",
+      "自由一点"
+    ],
+    "assets": [
+      "icon.png"
+    ],
+    "role": "Lead with the viewer value, free all editing features and clean exports.",
+    "start": 0
+  },
+  {
+    "id": "02-maker",
+    "title": "一个初中生的真实作品",
+    "duration": 7,
+    "blueprint": "logo-assemble-lockup",
+    "type": "brand",
+    "headline": [
+      "一个初中生",
+      "把想法做成了真的"
+    ],
+    "assets": [
+      "icon.png"
+    ],
+    "role": "Introduce the maker and name the actual product.",
+    "start": 7
+  },
+  {
+    "id": "03-control",
+    "title": "关键帧，点一下就会",
+    "duration": 8,
+    "blueprint": "device-surface-showcase",
+    "type": "product-demo",
+    "headline": [
+      "关键帧",
+      "点一下就会"
+    ],
+    "assets": [
+      "editor-keyframes-030.png",
+      "editor-transform-030.png"
+    ],
+    "role": "Prove accessible motion editing with real screenshots, never claim a recorded gesture.",
+    "start": 14
+  },
+  {
+    "id": "04-layout",
+    "title": "两种布局，一份灵感",
+    "duration": 8,
+    "blueprint": "comparison-split",
+    "type": "product-demo",
+    "headline": [
+      "两种布局",
+      "一份灵感"
+    ],
+    "assets": [
+      "editor-030.png",
+      "mobile-030.png"
+    ],
+    "role": "Show the real desktop app desktop/mobile-style layout options, not native phone builds.",
+    "start": 22
+  },
+  {
+    "id": "05-tools",
+    "title": "灵感之外，工具到位",
+    "duration": 10,
+    "blueprint": "grid-card-assemble",
+    "type": "features",
+    "headline": [
+      "想做的效果",
+      "慢慢变成日常"
+    ],
+    "assets": [
+      "editor-030.png"
+    ],
+    "role": "Show actual optional local AI and creative tools without universal model license claims.",
+    "start": 30
+  },
+  {
+    "id": "06-open",
+    "title": "一起，把它做得更好",
+    "duration": 7,
+    "blueprint": "kinetic-type-beats",
+    "type": "community",
+    "headline": [
+      "开源，也开放",
+      "一起把它做得更好"
+    ],
+    "assets": [
+      "icon.png"
+    ],
+    "role": "Invite honest preview testing rather than implying mature Jianying parity.",
+    "start": 40
+  },
+  {
+    "id": "07-download",
+    "title": "现在，轮到你的灵感",
+    "duration": 8,
+    "blueprint": "titlecard-reveal",
+    "type": "cta",
+    "headline": [
+      "下载地址见简介",
+      "现在，轮到你的灵感"
+    ],
+    "assets": [
+      "icon.png"
+    ],
+    "role": "Give accurate download destination and creator support copy with no invented support URL.",
+    "start": 47
+  }
+]
