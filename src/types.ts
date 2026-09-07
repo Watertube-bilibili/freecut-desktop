@@ -27,7 +27,15 @@ export interface Transform {
   opacity: number;
   volume: number;
 }
-export type MaskShape = 'none' | 'circle' | 'rectangle' | 'ellipse' | 'diamond' | 'star' | 'heart' | 'band';
+export type MaskShape =
+  | 'none'
+  | 'circle'
+  | 'rectangle'
+  | 'ellipse'
+  | 'diamond'
+  | 'star'
+  | 'heart'
+  | 'band';
 export interface Effects {
   brightness: number;
   contrast: number;
@@ -114,6 +122,8 @@ export interface ExportOptions {
   duration: number;
   quality: 'high' | 'medium';
   format: 'mp4';
+  frameFormat?: 'png' | 'rgba';
+  pipeline?: 'auto' | 'frames';
 }
 export interface ExportProgress {
   jobId: string;
@@ -122,7 +132,9 @@ export interface ExportProgress {
 }
 export interface DesktopAPI {
   setLanguage: (language: 'zh-CN' | 'en') => Promise<'zh-CN' | 'en'>;
-  listSounds: () => Promise<{ id: string; name: string; category: string; duration: number; license: string }[]>;
+  listSounds: () => Promise<
+    { id: string; name: string; category: string; duration: number; license: string }[]
+  >;
   createSound: (id: string) => Promise<MediaAsset>;
   updateState: () => Promise<UpdateState>;
   checkUpdate: () => Promise<UpdateState>;
@@ -133,11 +145,7 @@ export interface DesktopAPI {
   onCloseRequested: (
     callback: (request: { requestId: string; reason: 'window' | 'quit' }) => void,
   ) => () => void;
-  resolveClose: (data: {
-    requestId: string;
-    dirty: boolean;
-    project: Project;
-  }) => Promise<{
+  resolveClose: (data: { requestId: string; dirty: boolean; project: Project }) => Promise<{
     status: 'ready' | 'cancelled' | 'failed';
     outcome?: 'saved' | 'discarded' | 'clean';
     path?: string;
@@ -152,7 +160,14 @@ export interface DesktopAPI {
   importMedia: () => Promise<MediaAsset[]>;
   saveProject: (project: Project) => Promise<string | null>;
   openProject: () => Promise<Project | null>;
-  beginExport: (options: ExportOptions) => Promise<{ jobId: string; path: string } | null>;
+  beginExport: (
+    options: ExportOptions,
+  ) => Promise<{
+    jobId: string;
+    path: string;
+    pipeline?: 'native' | 'frames';
+    frameFormat?: 'png' | 'rgba';
+  } | null>;
   writeFrame: (data: { jobId: string; index: number; bytes: Uint8Array }) => Promise<void>;
   finishExport: (jobId: string) => Promise<{ path: string }>;
   cancelExport: (jobId: string) => Promise<void>;
@@ -178,7 +193,15 @@ export interface ProjectSummary {
   missing: boolean;
 }
 export interface UpdateState {
-  phase: 'disabled' | 'idle' | 'checking' | 'latest' | 'downloading' | 'ready' | 'installing' | 'error';
+  phase:
+    | 'disabled'
+    | 'idle'
+    | 'checking'
+    | 'latest'
+    | 'downloading'
+    | 'ready'
+    | 'installing'
+    | 'error';
   automatic: boolean;
   currentVersion: string;
   repository: string;

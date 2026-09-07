@@ -9,7 +9,7 @@ const fsp = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { pathToFileURL } = require('node:url');
-const { createMediaLibrary, MEDIA_EXTENSIONS, assertTrustedSender } = require('./media.cjs');
+const { createMediaLibrary, MEDIA_EXTENSIONS, assertTrustedSender, restoreMediaAsset } = require('./media.cjs');
 const { createExporter, validateProject, validateOptions } = require('./export.cjs');
 const { createCloseGuard } = require('./close-guard.cjs');
 const { createRecentProjects } = require('./recent-projects.cjs');
@@ -180,7 +180,6 @@ async function openProjectPath(file) {
   }
   validateProject(project);
   for (const asset of project.assets) {
-    const id = asset.id;
     asset.url = '';
     delete asset.thumbnail;
     if (!asset.path) {
@@ -189,7 +188,7 @@ async function openProjectPath(file) {
     }
     try {
       const restored = await importPath(asset.path);
-      Object.assign(asset, restored, { id, missing: false });
+      restoreMediaAsset(project, asset, restored);
     } catch {
       asset.missing = true;
     }

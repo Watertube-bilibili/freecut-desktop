@@ -85,6 +85,8 @@ jobs:
       - run: node scripts/prepare-ffmpeg.mjs
       - run: npm test
       - run: npm run build
+      - name: Verify album artwork stays audio in import and old projects
+        run: node scripts/regression-media-kind.cjs
       - name: Verify AI Skill through the real editor and MP4 export
         run: node skills/shuiguan-cut/scripts/shuiguan-cut.cjs demo --repo . --out-dir artifacts/skill-smoke
       - name: Verify editor regressions in isolated desktop profile

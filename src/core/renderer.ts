@@ -9,6 +9,10 @@ const audioSources = new Map<string, HTMLAudioElement>();
 const audioGains = new Map<string, ReturnType<typeof createAudioRouting>>();
 let audioContext: AudioContext | undefined;
 const canvasIds = new WeakMap<HTMLCanvasElement, string>();
+const renderBuffers = new WeakMap<
+  HTMLCanvasElement,
+  { canvas: HTMLCanvasElement; busy: boolean }
+>();
 let cacheEpoch = 0;
 function checkCancelled(signal?: AbortSignal) {
   if (signal?.aborted) throw new DOMException('预览请求已更新', 'AbortError');
@@ -121,55 +125,69 @@ export async function renderProject(
     height = options?.height ?? project.height;
   if (!canvasIds.has(canvas)) canvasIds.set(canvas, crypto.randomUUID());
   // Nothing touches the visible canvas until every source has decoded and sought.
-  const frame = document.createElement('canvas');
-  frame.width = width;
-  frame.height = height;
-  const ctx = frame.getContext('2d')!;
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = project.background;
-  ctx.fillRect(0, 0, width, height);
-  const ordered = project.tracks
-    .filter((t) => !t.hidden && t.kind !== 'audio')
-    .slice()
-    .reverse()
-    .flatMap((track) =>
-      project.clips.filter(
-        (c) =>
-          c.trackId === track.id &&
-          c.kind !== 'audio' &&
-          time >= c.start &&
-          time < c.start + c.duration,
-      ),
-    );
-  for (const clip of ordered) {
-    checkCancelled(options?.signal);
-    const asset = project.assets.find((a) => a.id === clip.assetId);
-    let source: Source | undefined;
-    if (asset) {
-      if (asset.missing) throw new Error(`找不到素材 ${asset.name}，请使用“重新链接素材”恢复。`);
-      source = await cancellable(
-        load(asset, `${options?.sourceScope ?? canvasIds.get(canvas)}:${clip.id}`),
-        options?.signal,
+  let buffer = renderBuffers.get(canvas);
+  if (!buffer || buffer.busy) {
+    const available = !buffer;
+    buffer = { canvas: document.createElement('canvas'), busy: false };
+    if (available) renderBuffers.set(canvas, buffer);
+  }
+  buffer.busy = true;
+  try {
+    const frame = buffer.canvas;
+    if (frame.width !== width) frame.width = width;
+    if (frame.height !== height) frame.height = height;
+    const ctx = frame.getContext('2d')!;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.filter = 'none';
+    ctx.fillStyle = project.background;
+    ctx.fillRect(0, 0, width, height);
+    const ordered = project.tracks
+      .filter((t) => !t.hidden && t.kind !== 'audio')
+      .slice()
+      .reverse()
+      .flatMap((track) =>
+        project.clips.filter(
+          (c) =>
+            c.trackId === track.id &&
+            c.kind !== 'audio' &&
+            time >= c.start &&
+            time < c.start + c.duration,
+        ),
       );
-      if (source instanceof HTMLVideoElement)
-        await seek(source, clip.inPoint + (time - clip.start) * clip.speed, options?.signal);
+    for (const clip of ordered) {
+      checkCancelled(options?.signal);
+      const asset = project.assets.find((a) => a.id === clip.assetId);
+      if (asset?.kind === 'audio') continue;
+      let source: Source | undefined;
+      if (asset) {
+        if (asset.missing) throw new Error(`找不到素材 ${asset.name}，请使用“重新链接素材”恢复。`);
+        source = await cancellable(
+          load(asset, `${options?.sourceScope ?? canvasIds.get(canvas)}:${clip.id}`),
+          options?.signal,
+        );
+        if (source instanceof HTMLVideoElement)
+          await seek(source, clip.inPoint + (time - clip.start) * clip.speed, options?.signal);
+      }
+      checkCancelled(options?.signal);
+      drawClip(ctx, clip, source, time - clip.start, project, width, height);
     }
     checkCancelled(options?.signal);
-    drawClip(ctx, clip, source, time - clip.start, project, width, height);
+    if (epoch !== cacheEpoch) throw new DOMException('素材缓存已关闭', 'AbortError');
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== height) canvas.height = height;
+    const target = canvas.getContext('2d')!;
+    target.save();
+    target.setTransform(1, 0, 0, 1, 0, 0);
+    target.globalAlpha = 1;
+    target.filter = 'none';
+    target.globalCompositeOperation = 'copy';
+    target.drawImage(frame, 0, 0);
+    target.restore();
+  } finally {
+    buffer.busy = false;
   }
-  checkCancelled(options?.signal);
-  if (epoch !== cacheEpoch) throw new DOMException('素材缓存已关闭', 'AbortError');
-  if (canvas.width !== width) canvas.width = width;
-  if (canvas.height !== height) canvas.height = height;
-  const target = canvas.getContext('2d')!;
-  target.save();
-  target.setTransform(1, 0, 0, 1, 0, 0);
-  target.globalAlpha = 1;
-  target.filter = 'none';
-  target.globalCompositeOperation = 'copy';
-  target.drawImage(frame, 0, 0);
-  target.restore();
 }
 
 /** Latest-only interactive preview. renderProject itself remains strict for export. */
@@ -304,7 +322,8 @@ function drawClip(
   const tr = getTransform(clip, local),
     fx = clip.effects,
     s = width / project.width;
-  let dw = width, dh = height;
+  let dw = width,
+    dh = height;
   if (source) {
     const iw = source instanceof HTMLVideoElement ? source.videoWidth : source.naturalWidth,
       ih = source instanceof HTMLVideoElement ? source.videoHeight : source.naturalHeight;
@@ -317,15 +336,24 @@ function drawClip(
     // This synchronous path is shared by preview and strict export frames.
     featherLayer.width = featherAlpha.width = width;
     featherLayer.height = featherAlpha.height = height;
-    const content = featherLayer.getContext('2d')!, alpha = featherAlpha.getContext('2d')!;
-    drawClip(content, { ...clip, effects: { ...fx, mask: 'none' } }, source, local, project, width, height);
+    const content = featherLayer.getContext('2d')!,
+      alpha = featherAlpha.getContext('2d')!;
+    drawClip(
+      content,
+      { ...clip, effects: { ...fx, mask: 'none' } },
+      source,
+      local,
+      project,
+      width,
+      height,
+    );
     if (fx.maskInvert) {
       alpha.fillStyle = '#ffffff';
       alpha.fillRect(0, 0, width, height);
       alpha.globalCompositeOperation = 'destination-out';
     }
     alpha.translate(width / 2 + tr.x * s, height / 2 + tr.y * (height / project.height));
-    alpha.rotate(tr.rotation * Math.PI / 180);
+    alpha.rotate((tr.rotation * Math.PI) / 180);
     alpha.scale(tr.scale * (fx.flipX ? -1 : 1), tr.scale * (fx.flipY ? -1 : 1));
     alpha.filter = `blur(${(fx.maskFeather ?? 0) * Math.min(dw, dh) * tr.scale}px)`;
     alpha.fillStyle = '#ffffff';
@@ -447,7 +475,10 @@ export function syncAudio(project: Project, time: number, playing: boolean) {
     const target = clip.inPoint + local * clip.speed;
     media.playbackRate = Math.max(0.0625, Math.min(16, clip.speed));
     if (audioContext && !audioGains.has(clip.id)) {
-      const routing = createAudioRouting(audioContext, audioContext.createMediaElementSource(media));
+      const routing = createAudioRouting(
+        audioContext,
+        audioContext.createMediaElementSource(media),
+      );
       routing.output.connect(audioContext.destination);
       audioGains.set(clip.id, routing);
     }

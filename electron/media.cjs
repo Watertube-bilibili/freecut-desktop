@@ -20,7 +20,9 @@ function parseProbe(stderr, filePath) {
   const audioLine = stderr.split(/\r?\n/).find((line) => /Stream[^\n]*Audio:/.test(line));
   const audio = Boolean(audioLine);
   const audioChannels = /\bmono\b|\b1 channels?\b/.test(audioLine || '') ? 1 : /\bstereo\b|\b2 channels?\b/.test(audioLine || '') ? 2 : undefined;
-  const videoLine = stderr.split(/\r?\n/).find((line) => /Stream[^\n]*Video:/.test(line));
+  // Album artwork is exposed by FFmpeg as a video stream, but has no moving
+  // picture. Do not turn FLAC/MP3/M4A (or audio-only containers) into video.
+  const videoLine = stderr.split(/\r?\n/).find((line) => /Stream[^\n]*Video:/.test(line) && !/\(attached pic\)/i.test(line));
   if (!audio && !videoLine) throw safeError('无法读取此媒体，文件可能损坏或格式不受支持。');
   const match = stderr.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/);
   const duration = match ? Number(match[1])*3600 + Number(match[2])*60 + Number(match[3]) : 0;
@@ -28,6 +30,19 @@ function parseProbe(stderr, filePath) {
   const kind = IMAGE_EXTENSIONS.has(path.extname(filePath).toLowerCase()) ? 'image' : videoLine ? 'video' : 'audio';
   if (kind !== 'image' && (!Number.isFinite(duration) || duration <= 0)) throw safeError('无法确定媒体时长。请先转换为本地 MP4、WAV 或 MP3 文件。');
   return { kind, duration: kind === 'image' ? 5 : duration, width: size ? Number(size[1]) : undefined, height: size ? Number(size[2]) : undefined, hasAudio: audio, ...(audioChannels ? { audioChannels } : {}) };
+}
+
+function restoreMediaAsset(project, asset, restored) {
+  const id = asset.id;
+  Object.assign(asset, restored, { id, missing: false });
+  if (restored.kind !== 'audio') return;
+  delete asset.width;
+  delete asset.height;
+  // Existing projects may have saved album artwork as a video clip. Preserve
+  // timing, track/mute state and volume automation while correcting its kind.
+  for (const clip of project.clips) {
+    if (clip.assetId === id && clip.kind === 'video') clip.kind = 'audio';
+  }
 }
 
 function probe(ffmpegPath, filePath) {
@@ -102,4 +117,4 @@ function createMediaLibrary(ffmpegPath) {
   }
   return { importPath, validateMediaPath, resolveAsset, handleRequest };
 }
-module.exports = { MEDIA_EXTENSIONS, INPUT_SECURITY, parseProbe, parseRange, createMediaLibrary, assertTrustedSender };
+module.exports = { MEDIA_EXTENSIONS, INPUT_SECURITY, parseProbe, parseRange, createMediaLibrary, assertTrustedSender, restoreMediaAsset };

@@ -51,6 +51,9 @@ if(mode==='verify'){
 
 ## 本次更新
 
+- 更新导出架构：符合条件的常规裁剪、拼接、图片和变速自动交给 FFmpeg 原生处理；文字、关键帧、蒙版等复杂画面继续使用共用合成器，以 RGBA 管道边渲染边编码，不再逐帧保存临时 PNG，无需用户选择额外模式。
+- 管道对当前帧实施背压，避免积压整部影片的画面数据；进度约每 100 ms 更新，H.264 使用 x264 veryfast 预设和 4 个编码线程。复杂效果仍需逐帧解码与合成，不承诺所有工程或机器获得相同提速。
+- 修复带专辑封面的 FLAC 等音频被误识别为视频；打开或重新链接旧工程素材时修正受影响的类型，并保留片段位置、时长及音量动画。
 - 修复 Windows 覆盖安装后仍显示旧桌面图标的问题：快捷方式改用按 SHA-256 内容命名的独立 ICO 文件，并通知 Windows Shell 刷新，不需要清空整个系统图标缓存。
 - 安装器识别经过验证的旧版 FreeCut 桌面和开始菜单入口；即使安装目录改变，也会迁移至本次安装，避免继续打开旧版。
 - 首次安装同样创建新图标。用户自行修改过的快捷方式和其他程序的同名入口会保留。
@@ -61,6 +64,10 @@ if(mode==='verify'){
 ## English
 
 FreeCut is a free, open-source desktop video editor created by a junior high school student using GPT-6 and Codex. All features are free forever, with no membership, paid unlocks or export watermark.
+
+Export now automatically routes eligible ordinary cuts, joins, still images, and constant-speed edits through FFmpeg directly. Complex visuals use the shared compositor and pipe RGBA frames to the encoder while rendering, without creating a temporary PNG for each frame. No extra mode needs selecting. The pipe limits pending frame writes, progress updates are throttled to roughly 100 ms, and H.264 uses x264's veryfast preset with four encoding threads. Complex effects still require frame-by-frame decoding and composition, so speed improvements depend on the project and computer.
+
+Audio files with embedded album artwork, including FLAC, are recognized as audio. Opening or relinking affected media in older projects repairs their type while preserving clip positions, timing, and volume animation.
 
 This patch fixes stale Windows desktop icons after upgrades. Setup uses a separate ICO file named by its SHA-256 content hash and notifies Windows Shell to refresh. Verified old FreeCut desktop and Start menu shortcuts are updated even when the installation moves to a different folder. User-customized shortcuts and unrelated programs' shortcuts are preserved; fresh installs also receive the new icon. Use the Setup installer to repair an existing desktop shortcut. Portable builds do not change shortcuts.
 
@@ -88,7 +95,7 @@ FreeCut-project-source-*.tar.gz 是本次应用源码，FreeCut-ffmpeg-source-*.
 
 ## 发布验证与说明
 
-Windows x64、Mac arm64、Mac x64 的构建均通过核心/宿主测试、实际桌面回归及打包应用的导入、保存重开和 MP4 导出。详见[本次构建记录](https://github.com/${repo}/actions/runs/${runId})与随附源码的 docs/VERIFICATION.md。源码提交：${build.head_sha}。
+Windows x64、Mac arm64、Mac x64 的构建均通过核心/宿主测试、实际桌面回归及打包应用的导入、保存重开和 MP4 导出。详见[本次构建记录](https://github.com/${repo}/actions/runs/${runId})与随附源码的 docs/VERIFICATION.md、docs/VERIFICATION-032.md。原生导出小样本检查帧数、时长、切点及画面正确性，不作为通用性能倍数的依据。源码提交：${build.head_sha}。
 
 Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按各自许可另行下载，ChatTTS 官方模型为 CC BY-NC 4.0，仅限非商业用途；Mac 的可选模型推理仍需设备验收。本项目为持续开发的预览版，功能范围与尚未完成能力见 docs/FEATURE-MATRIX.md。
 

@@ -1269,38 +1269,42 @@ export default function App() {
         duration: dur,
         quality,
         format: 'mp4',
+        frameFormat: 'rgba',
+        pipeline: 'auto',
       });
       if (!out) {
         setBusy(false);
         return;
       }
       job.current = out.jobId;
+      let framesComplete = out.pipeline === 'native';
       unsub = api.onExportProgress((event) => {
-        if (event.jobId === out.jobId && event.phase === 'encoding') {
+        if (event.jobId === out.jobId && event.phase === 'encoding' && framesComplete) {
           setExportPhase(t('编码视频与混合音频'));
-          setProgress(75 + event.progress * 25);
+          setProgress(out.pipeline === 'native' ? event.progress * 100 : 90 + event.progress * 10);
         }
       });
       const offscreen = document.createElement('canvas'),
         count = Math.ceil(dur * exportFps);
-      for (let i = 0; i < count; i++) {
+      let lastProgress = 0;
+      for (let i = 0; out.pipeline !== 'native' && i < count; i++) {
         if (cancelled.current) break;
-        setExportPhase(t('渲染画面 {v0} / {v1}', { v0: i + 1, v1: count }));
         await renderProject(offscreen, p, i / exportFps, { width, height });
-        const blob = await new Promise<Blob>((resolve, reject) =>
-          offscreen.toBlob(
-            (b) => (b ? resolve(b) : reject(new Error(t('画面编码失败')))),
-            'image/png',
-          ),
-        );
+        const pixels = offscreen.getContext('2d')!.getImageData(0, 0, width, height).data;
         if (cancelled.current) break;
         await api.writeFrame({
           jobId: out.jobId,
           index: i,
-          bytes: new Uint8Array(await blob.arrayBuffer()),
+          bytes: new Uint8Array(pixels.buffer, pixels.byteOffset, pixels.byteLength),
         });
-        setProgress(((i + 1) / count) * 75);
+        const now = performance.now();
+        if (now - lastProgress >= 100 || i === count - 1) {
+          setExportPhase(t('渲染画面 {v0} / {v1}', { v0: i + 1, v1: count }));
+          setProgress(((i + 1) / count) * 90);
+          lastProgress = now;
+        }
       }
+      framesComplete = true;
       if (cancelled.current) {
         await api.cancelExport(out.jobId);
         notify(t('导出已取消。'));

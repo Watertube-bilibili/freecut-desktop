@@ -65,8 +65,7 @@ test('export failure/cancel preserves existing output and removes job temporary 
     const first=await exporter.begin(options(),destination);
     await assert.rejects(exporter.writeFrame({jobId:first.jobId,index:1,bytes:pngHeader()}),/不连续/);
     await assert.rejects(exporter.finish(first.jobId),/帧不完整/);
-    await exporter.writeFrame({jobId:first.jobId,index:0,bytes:pngHeader()});
-    await assert.rejects(exporter.finish(first.jobId),/编码器|编码失败/);
+    await assert.rejects(exporter.writeFrame({jobId:first.jobId,index:0,bytes:pngHeader()}),/编码器|编码失败/);
     assert.equal(await fs.readFile(destination,'utf8'),'original video');
     const second=await exporter.begin(options(),destination);
     await exporter.cancel(second.jobId);

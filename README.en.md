@@ -12,11 +12,15 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
-The current source version is the **0.3.2 development preview**, focused on Windows shortcut and stale-icon fixes after upgrades. Check its Release page for publication status. It does not yet cover every feature of Jianying or CapCut. The project aims to make everyday editing, desktop keyframes, captions, and local voice tools easier to reach. See the [feature matrix](docs/FEATURE-MATRIX.md) and [verification record](docs/VERIFICATION.md) for the implemented scope and actual tests; these documents are currently in Chinese.
+The current source version is the **0.3.2 development preview**, with a revised export pipeline, fixes for audio files containing album artwork, and Windows shortcut icon repairs. Check its Release page for publication status. It does not yet cover every feature of Jianying or CapCut. The project aims to make everyday editing, desktop keyframes, captions, and local voice tools easier to reach. See the [feature matrix](docs/FEATURE-MATRIX.md) and [verification record](docs/VERIFICATION.md) for the implemented scope and actual tests; these documents are currently in Chinese.
 
 In the previous 0.3.1 release, both interface languages, context-menu editing, save/quit protection and legacy installation upgrades passed their checks. Its [three-platform build](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34135596130) and [verified release workflow](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34136544194) both succeeded. Refer to the 0.3.2 Release for this patch's verification and downloads.
 
 The 0.3.2 installer updates verified old FreeCut desktop and Start menu shortcuts, including when the install location changes. A separate icon file and Windows refresh notification address stale icons after upgrades. Fresh installations use the same new icon. User-customized shortcuts are preserved.
+
+Export automatically chooses the appropriate path. Eligible everyday cuts, joins, still images, and constant-speed edits run directly through FFmpeg. Complex visuals such as text, keyframes, and masks use the preview's compositor and send RGBA frames straight to the encoder, rendering and encoding together without creating a temporary PNG for every frame. There is no additional mode to select. Complex effects still require frame-by-frame decoding and composition; results depend on the project and computer. The [0.3.2 verification record](docs/VERIFICATION-032.md) distinguishes correctness checks from measurements of the same project before and after the change.
+
+FLAC and other audio files with embedded album artwork are recognized as audio instead of treating the cover as video. Opening or relinking affected media in an older project repairs the mistaken type while preserving clip position, timing, and volume animation.
 
 ## Preview
 
@@ -42,6 +46,7 @@ The second layout runs in the same desktop application. It is not an Android or 
 - Preview and add 16 original sound effects. Adjust stereo balance, independent channel gains, left-only/right-only routing, mono, and channel swapping. Preview and export use the same channel routing.
 - Set a constant playback speed, clip volume, and visual or audio fades. Animation presets create keyframes that remain editable.
 - Work in landscape, portrait, or square formats. Export H.264/AAC MP4 at the available 720p, 1080p, or 4K settings and 24–60 fps.
+- Eligible ordinary edits use native FFmpeg export automatically. Complex effects send frames through an RGBA pipe without writing individual temporary PNG files.
 - Save and reopen `.freecut` projects. Projects reference your original media files; they do not embed or duplicate those media files.
 - Find recent projects on the home screen, with search and sorting. Settings and recent-project records persist across launches.
 - Keep unsaved work protected when closing, going home, or opening another project. Cancelling a save or encountering a save error leaves the current project open.
@@ -148,7 +153,7 @@ Distributing the video engine also requires its corresponding source. CI uses th
 ## Current limits
 
 - This is a desktop application. The mobile-style layout is not an Android or iOS build.
-- Canvas frame composition and FFmpeg encoding can take time and temporary disk space for long or 4K projects. Proxy media and a GPU rendering pipeline are not implemented yet.
+- Eligible ordinary edits export directly through FFmpeg. Complex effects still require frame-by-frame decoding and Canvas composition, so long or 4K projects can take time. Piped export removes intermediate PNG files, but encoding and the final video still require memory and disk space. Proxy media and a GPU rendering pipeline are not implemented yet; speed improvements are not guaranteed to be the same on every computer.
 - Preview decoding depends on formats supported by Electron. Common H.264 MP4, PNG/JPEG, WAV, and MP3 files are a practical starting point; some professional formats need transcoding.
 - Speech recognition depends on language, recording quality, and model choice. Generated captions remain editable and are not guaranteed to be accurate.
 - Model downloads and inference depend on network access, storage, and hardware. The documentation describes the actual tested scope; macOS model inference still needs validation on the corresponding devices.
@@ -156,7 +161,7 @@ Distributing the video engine also requires its corresponding source. CI uses th
 
 ## Architecture and licenses
 
-FreeCut uses React, TypeScript, and Electron. Preview and video-frame export share the Canvas compositor and keyframe calculations; FFmpeg mixes audio from the same project model. Desktop IPC authenticates the application window and its main frame. Local media access is granted to files selected by the user or explicitly referenced by an opened project. See the [architecture document](docs/ARCHITECTURE.md).
+FreeCut uses React, TypeScript, and Electron. Eligible ordinary edits use FFmpeg directly. Complex visuals share the preview's Canvas compositor and keyframe calculations, with export sending RGBA frames through a pipe to FFmpeg. The sender waits for the current frame to be accepted before continuing, preventing a queue of an entire video's frames. Progress updates are limited to roughly one per 100 ms. H.264 uses x264's veryfast preset with four encoding threads; audio is mixed from the same project model. Desktop IPC authenticates the application window and its main frame. Local media access is granted to files selected by the user or explicitly referenced by an opened project. See the [architecture document](docs/ARCHITECTURE.md) and [0.3.2 export verification](docs/VERIFICATION-032.md).
 
 Project code is **GPL-3.0-or-later**; see [LICENSE](LICENSE). Third-party libraries, the video engine, fonts, and models retain their own licenses, listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The original icon and brand are documented in [BRAND.md](docs/BRAND.md).
 

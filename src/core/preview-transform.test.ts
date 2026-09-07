@@ -118,6 +118,16 @@ describe('preview geometry matches renderer space', () => {
       getClipGeometry(fixture(), createClip('video', 'video', { assetId: 'absent' }), 1),
     ).toBeNull();
   });
+  it('never gives audio a preview transform, including previously misclassified artwork', () => {
+    const project = fixture();
+    project.assets = [{ id: 'flac', name: 'album.flac', kind: 'audio', duration: 5, url: 'blob:audio' }];
+    for (const kind of ['audio', 'video'] as const) {
+      const clip = createClip(kind, 'video', { assetId: 'flac' });
+      project.clips = [clip];
+      expect(getClipGeometry(project, clip, 1)).toBeNull();
+      expect(hitTestProject(project, 1, { x: 500, y: 250 })).toBeNull();
+    }
+  });
   it('does not hit invisible opacity/fade boundaries', () => {
     const project = fixture();
     expect(

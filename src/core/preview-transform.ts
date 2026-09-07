@@ -159,7 +159,7 @@ export function getClipGeometry(
   if (clip.fadeOut > 0) fade = Math.min(fade, (clip.duration - local) / clip.fadeOut);
   if (transform.opacity * fade <= 0 || transform.scale <= 0) return null;
   const asset = project.assets.find((item) => item.id === clip.assetId);
-  if (asset?.missing) return null;
+  if (asset?.missing || asset?.kind === 'audio') return null;
   if ((clip.kind === 'image' || clip.kind === 'video') && (!asset || asset.missing || !asset.url))
     return null;
   let width = project.width,
