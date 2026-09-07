@@ -5,7 +5,8 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
-const { spawn } = require('node:child_process');
+const { spawn, execFile } = require('node:child_process');
+const execute = require('node:util').promisify(execFile);
 const assert = require('node:assert/strict');
 const { _electron, expect } = require('@playwright/test');
 const backend = require('./backend.cjs');
@@ -118,10 +119,12 @@ async function main() {
         await expect(page.locator('#driveC')).toHaveAttribute('aria-pressed', 'false');
         await expect(page.locator('#driveD')).toHaveAttribute('aria-pressed', 'false');
         // Verify the one-click action without installing test files into real C/D locations.
-        await application.evaluate(({ipcMain}) => {
-          globalThis.__driveInstallCalls=[];
+        await application.evaluate(({ ipcMain }) => {
+          globalThis.__driveInstallCalls = [];
           ipcMain.removeHandler('freecut-installer:install');
-          ipcMain.handle('freecut-installer:install',(_event,target)=>{globalThis.__driveInstallCalls.push(target);});
+          ipcMain.handle('freecut-installer:install', (_event, target) => {
+            globalThis.__driveInstallCalls.push(target);
+          });
         });
         if (await page.locator('#driveC').isEnabled()) {
           await page.locator('#driveC').click();
@@ -138,9 +141,10 @@ async function main() {
           await expect(page.locator('#driveD')).toBeDisabled();
           await expect(page.locator('#driveNote')).toContainText('D 盘');
         }
-        const calls=await application.evaluate(()=>globalThis.__driveInstallCalls);
-        assert.equal(calls.length,driveState.drives.filter(drive=>drive.available).length);
-        await application.close();application=undefined;
+        const calls = await application.evaluate(() => globalThis.__driveInstallCalls);
+        assert.equal(calls.length, driveState.drives.filter((drive) => drive.available).length);
+        await application.close();
+        application = undefined;
         // A fresh process restores the actual backend for the isolated custom installation.
         await launch();
         await application.evaluate(
@@ -240,7 +244,104 @@ async function main() {
       'The actual PowerShell uninstaller removes only owned unchanged files and preserves personal data',
       async () => {
         await launch(['--uninstall', '--install-dir', target]);
-        assert.equal((await page.evaluate(() => window.freecutInstaller.state())).mode, 'uninstall');
+        assert.equal(
+          (await page.evaluate(() => window.freecutInstaller.state())).mode,
+          'uninstall',
+        );
+        const powershell = path.join(
+          process.env.SystemRoot,
+          'System32/WindowsPowerShell/v1.0/powershell.exe',
+        );
+        const aliasScript = path.join(directory, 'shortcut-alias.ps1'),
+          aliasFile = path.join(directory, 'shortcut-alias.txt'),
+          ownedExecutable = path.join(target, 'FreeCut.exe');
+        await fs.writeFile(
+          aliasScript,
+          'param([string]$Target,[string]$Output)\r\n$fso=New-Object -ComObject Scripting.FileSystemObject\r\n[IO.File]::WriteAllText($Output,[string]$fso.GetFile($Target).ShortPath,[Text.Encoding]::UTF8)\r\n',
+        );
+        await execute(
+          powershell,
+          [
+            '-NoProfile',
+            '-NonInteractive',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            aliasScript,
+            '-Target',
+            ownedExecutable,
+            '-Output',
+            aliasFile,
+          ],
+          { windowsHide: true },
+        );
+        const executableAlias = (await fs.readFile(aliasFile, 'utf8')).replace(/^\uFEFF/, '');
+        assert.equal(await fs.realpath(executableAlias), await fs.realpath(ownedExecutable));
+        assert.notEqual(
+          executableAlias.toLowerCase(),
+          ownedExecutable.toLowerCase(),
+          'Exercise a real existing Windows 8.3 alias',
+        );
+        const aliasShortcut = path.join(integrationHome, 'Desktop', 'SameTargetAlias.lnk'),
+          differentShortcut = path.join(integrationHome, 'Desktop', 'DifferentTarget.lnk'),
+          customizedShortcut = path.join(integrationHome, 'Desktop', 'Customized.lnk'),
+          userLinks = path.join(directory, 'user-owned-links'),
+          linkedDirectory = path.join(integrationHome, 'Desktop', 'linked-folder'),
+          userOwnedShortcut = path.join(userLinks, 'FreeCut.lnk'),
+          linkedShortcut = path.join(linkedDirectory, 'FreeCut.lnk'),
+          otherExecutable = path.join(directory, 'another application', 'FreeCut.exe');
+        await fs.mkdir(path.dirname(otherExecutable));
+        await fs.writeFile(otherExecutable, 'USER OTHER APPLICATION');
+        await fs.mkdir(userLinks);
+        await fs.symlink(userLinks, linkedDirectory, 'junction');
+        await application.evaluate(
+          ({ shell }, values) => {
+            const standard = {
+              target: values.executableAlias,
+              cwd: values.target,
+              icon: values.executableAlias,
+              iconIndex: 0,
+              description: '水管剪辑 FreeCut',
+            };
+            if (!shell.writeShortcutLink(values.aliasShortcut, 'create', standard))
+              throw Error('Cannot create actual alias shortcut');
+            if (
+              !shell.writeShortcutLink(values.differentShortcut, 'create', {
+                ...standard,
+                target: values.otherExecutable,
+              })
+            )
+              throw Error('Cannot create different-target shortcut');
+            if (
+              !shell.writeShortcutLink(values.customizedShortcut, 'create', {
+                ...standard,
+                args: '--user-custom-option',
+              })
+            )
+              throw Error('Cannot create customized shortcut');
+            if (!shell.writeShortcutLink(values.userOwnedShortcut, 'create', standard))
+              throw Error('Cannot create shortcut behind a directory junction');
+          },
+          {
+            executableAlias,
+            target,
+            aliasShortcut,
+            differentShortcut,
+            customizedShortcut,
+            userOwnedShortcut,
+            otherExecutable,
+          },
+        );
+        const preservedShortcutHashes = await Promise.all(
+          [differentShortcut, customizedShortcut, userOwnedShortcut].map((file) =>
+            backend.sha256(file),
+          ),
+        );
+        report.shortcutIdentity = {
+          executable: ownedExecutable,
+          executableAlias,
+          canonical: await fs.realpath(executableAlias),
+        };
         await application.close();
         application = undefined;
         const installed = (await backend.inspectTarget(target, { update: true })).installed;
@@ -263,19 +364,23 @@ async function main() {
             installId: installed.installId,
             ownershipHash: await backend.sha256(path.join(target, backend.OWNERSHIP)),
             files: installed.files,
-            executable: path.join(target, 'FreeCut.exe'),
+            // The same executable has an actual alternate path spelling. The
+            // old string-only comparison leaves these owned links behind.
+            executable: executableAlias,
             pid: sleeper.pid,
             registryKey: null,
-            shortcuts: ['Desktop', 'StartMenu'].map((kind) =>
-              path.join(integrationHome, kind, 'FreeCut.lnk'),
-            ),
+            shortcuts: [
+              ...['Desktop', 'StartMenu'].map((kind) =>
+                path.join(integrationHome, kind, 'FreeCut.lnk'),
+              ),
+              aliasShortcut,
+              differentShortcut,
+              customizedShortcut,
+              linkedShortcut,
+            ],
             silent: true,
             logFile,
           }),
-        );
-        const powershell = path.join(
-          process.env.SystemRoot,
-          'System32/WindowsPowerShell/v1.0/powershell.exe',
         );
         const helper = spawn(
           powershell,
@@ -315,6 +420,29 @@ async function main() {
           await assert.rejects(fs.stat(path.join(integrationHome, kind, 'FreeCut.lnk')), {
             code: 'ENOENT',
           });
+        await assert.rejects(fs.stat(aliasShortcut), { code: 'ENOENT' });
+        assert.deepEqual(
+          await Promise.all(
+            [differentShortcut, customizedShortcut, userOwnedShortcut].map((file) =>
+              backend.sha256(file),
+            ),
+          ),
+          preservedShortcutHashes,
+        );
+        assert((await fs.lstat(linkedDirectory)).isSymbolicLink());
+        assert.equal(result.removedShortcuts.length, 3);
+        assert.deepEqual(
+          result.preservedShortcuts.sort(),
+          [differentShortcut, customizedShortcut, linkedShortcut].sort(),
+        );
+        assert.equal(await fs.readFile(otherExecutable, 'utf8'), 'USER OTHER APPLICATION');
+        report.shortcutResult = {
+          removedOwned: 3,
+          preservedDifferentTarget: true,
+          preservedCustomized: true,
+          preservedJunction: true,
+          result,
+        };
       },
     );
     assert.deepEqual(report.rendererErrors, []);
