@@ -76,7 +76,7 @@ export default function Home(props: Props) {
           </span>
           <div>
             <strong>水管剪辑</strong>
-            <small>by 我叫我水管同学</small>
+            <small>by 我叫水管同学</small>
           </div>
         </div>
         <nav aria-label="首页导航">
@@ -335,7 +335,7 @@ export default function Home(props: Props) {
                 <BrandIcon size={84} />
               </span>
               <h2>
-                水管剪辑 <span>by 我叫我水管同学</span>
+                水管剪辑 <span>by 我叫水管同学</span>
               </h2>
               <p className="home-about-version">
                 版本 {info?.version ?? '0.3.0'} ·{' '}
@@ -361,7 +361,7 @@ export default function Home(props: Props) {
                   <ExternalLink size={16} />
                 </button>
               </div>
-              <div className="home-about-address">@我叫我水管同学 · space.bilibili.com/390310418</div>
+              <div className="home-about-address">@我叫水管同学 · space.bilibili.com/390310418</div>
               <p>
                 由初中生使用 GPT-6 与 Codex
                 自主制作。全部功能永久免费，不设会员，不设付费解锁，导出无水印。自愿赞助不影响任何功能使用。

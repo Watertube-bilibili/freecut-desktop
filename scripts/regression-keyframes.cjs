@@ -3,7 +3,9 @@
 // npm run build && node scripts/regression-keyframes.cjs
 // Full application UI test, with actual save IPC. No FFmpeg, model or network
 // setup is needed. All generated projects and Electron state use a fresh temp
-// directory. Only native file-dialog choices are mocked; the close guard stays on.
+// directory. Native file-dialog choices are mocked, and one recent-project index
+// commit is held until explicitly released to test the save acknowledgment race.
+// The actual save IPC, writes, keyboard handler and close guard stay enabled.
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
@@ -46,15 +48,43 @@ async function main() {
     report.checks.push({ name, passed: true, elapsedMs: Date.now() - started });
     console.log(`PASS: ${name}`);
   };
-  const save = async (label) => {
+  const save = async (label, holdAcknowledgment = false) => {
     const file = path.join(directory, `${String(++savedNumber).padStart(2, '0')}-${label}.freecut`);
-    await app.evaluate((_, selected) => {
-      globalThis.__keyframeDialogs.save.push(selected);
-    }, file);
-    await page.getByTitle('保存工程 Ctrl+S', { exact: true }).click();
-    await expect
-      .poll(() => fs.readFile(file, 'utf8').catch(() => ''), { timeout: 15000 })
-      .not.toBe('');
+    await app.evaluate(
+      (_, { selected, holdAcknowledgment }) => {
+        globalThis.__keyframeDialogs.save.push(selected);
+        globalThis.__keyframeSaveBarrier.armed = holdAcknowledgment;
+      },
+      { selected: file, holdAcknowledgment },
+    );
+    const busy = page.getByText('正在处理工程文件…', { exact: true });
+    try {
+      await page.getByTitle('保存工程 Ctrl+S', { exact: true }).click();
+      await expect
+        .poll(() => fs.readFile(file, 'utf8').catch(() => ''), { timeout: 15000 })
+        .not.toBe('');
+      if (holdAcknowledgment) {
+        await expect
+          .poll(() => app.evaluate(() => globalThis.__keyframeSaveBarrier.waiting))
+          .toBe(true);
+        await expect(busy).toBeVisible();
+        // The project file is already complete, but the save IPC has not returned.
+        // Four premature arrows reproduced the CI's exact 56/30 = 1.87 seconds.
+        // They must remain blocked; stepping starts only after acknowledgment.
+        for (let frame = 0; frame < 4; frame++) await page.keyboard.press('ArrowRight');
+        await expect(page.locator('.easy-keyframe-position')).toContainText('0.00 秒');
+        report.saveAcknowledgment = { delayedRecentIndexCommit: true, blockedArrowKeys: 4 };
+      }
+    } finally {
+      if (holdAcknowledgment)
+        await app.evaluate(() => {
+          globalThis.__keyframeSaveBarrier.armed = false;
+          globalThis.__keyframeSaveBarrier.release?.();
+        });
+    }
+    // A file existing is not a save acknowledgment: main also persists recents
+    // before returning. Await the product's actual completion state, not a delay.
+    await expect(busy).toBeHidden();
     const project = JSON.parse(await fs.readFile(file, 'utf8'));
     assert.equal(project.clips.length, 1, 'The UI should contain only the generated text fixture');
     assert.equal(project.clips[0].kind, 'text');
@@ -79,8 +109,29 @@ async function main() {
     }));
     assert.equal(report.runtime.userData, profile);
     assert.equal(report.runtime.sessionData, profile);
-    await app.evaluate(({ dialog }) => {
+    await app.evaluate(({ dialog, app }) => {
       globalThis.__keyframeDialogs = { save: [], unexpected: [], closeChoices: 0 };
+      globalThis.__keyframeSaveBarrier = { armed: false, waiting: false, release: null };
+      const nativeFs = process.mainModule.require('node:fs/promises');
+      const nativePath = process.mainModule.require('node:path');
+      const recentIndex = nativePath.join(app.getPath('userData'), 'projects.json');
+      const rename = nativeFs.rename.bind(nativeFs);
+      nativeFs.rename = async (source, target) => {
+        const barrier = globalThis.__keyframeSaveBarrier;
+        if (barrier.armed && target === recentIndex) {
+          barrier.armed = false;
+          barrier.waiting = true;
+          try {
+            await new Promise((resolve) => {
+              barrier.release = resolve;
+            });
+          } finally {
+            barrier.waiting = false;
+            barrier.release = null;
+          }
+        }
+        return rename(source, target);
+      };
       dialog.showSaveDialog = async () => {
         const filePath = globalThis.__keyframeDialogs.save.shift();
         if (!filePath) throw Error('Unexpected native save dialog');
@@ -122,7 +173,7 @@ async function main() {
       await expect(next).toBeDisabled();
       await expect(remove).toBeDisabled();
       await record.click();
-      first = await save('first-group');
+      first = await save('first-group', true);
       assert.deepEqual(Object.keys(first.clip.keyframes).sort(), visualProperties);
       for (const prop of visualProperties) {
         const frames = first.clip.keyframes[prop];

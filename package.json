@@ -2,7 +2,7 @@
   "name": "freecut-desktop",
   "version": "0.3.0",
   "private": true,
-  "description": "水管剪辑 — 我叫我水管同学出品的开源桌面视频编辑器（FreeCut）",
+  "description": "水管剪辑 — 我叫水管同学出品的开源桌面视频编辑器（FreeCut）",
   "license": "GPL-3.0-or-later",
   "author": "FreeCut contributors",
   "main": "electron/main.cjs",

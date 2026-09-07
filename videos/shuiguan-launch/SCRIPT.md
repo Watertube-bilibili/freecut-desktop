@@ -44,4 +44,4 @@ Direction: clear and warm, confident student maker; pronunciation GPT 六 / Code
 
 **Delivery:** 8s scene with concise spoken clauses and a readable hold.
 
-    下载地址见简介，关注我叫我水管同学。爱发电自愿赞助，不影响任何功能。
+    下载地址见简介，关注我叫水管同学。爱发电自愿赞助，不影响任何功能。

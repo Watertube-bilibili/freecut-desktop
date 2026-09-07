@@ -1,6 +1,6 @@
 # 水管剪辑独立 Windows 安装器
 
-安装界面复用产品自身的 Electron 运行时，Setup 中只有一份产品。主品牌为「水管剪辑」，出品方为「我叫我水管同学」；`FreeCut.exe`、安装子文件夹和 `org.freecut.desktop` 保留兼容。安装 UI 是本目录的 HTML/CSS/JS，自定义 NSIS 脚本只负责隐藏解压并启动 `FreeCut.exe --installer`，没有 NSIS/Inno 向导页面。
+安装界面复用产品自身的 Electron 运行时，Setup 中只有一份产品。主品牌为「水管剪辑」，出品方为「我叫水管同学」；`FreeCut.exe`、安装子文件夹和 `org.freecut.desktop` 保留兼容。安装 UI 是本目录的 HTML/CSS/JS，自定义 NSIS 脚本只负责隐藏解压并启动 `FreeCut.exe --installer`，没有 NSIS/Inno 向导页面。
 
 首次打开不选择任何磁盘。C 盘快捷按钮使用当前用户位于 C 卷的 `%LOCALAPPDATA%\Programs\FreeCut`，无需提升权限；若当前用户目录不在 C 卷，按钮明确禁用，可用自定义目录选择其他可写位置。D 盘可用时选择 `D:\FreeCut`，不存在时禁用。原生目录选择返回任意盘根目录时，界面自动补 `FreeCut`；安装 API 收到原始根路径时仍直接拒绝。
 

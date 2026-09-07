@@ -10,7 +10,7 @@ music: original deterministic electronic instrumental
 
 ## Video direction
 
-This video tells creators that a junior high student made a real, fully free editor worth trying with GPT-6 and Codex. Mint, dark ink and warm paper; original icon, real screenshots and large Chinese type. Every frame keeps all important content above y=930; narration captions occupy y=954..1020. Global @我叫我水管同学 watermark is mounted by the parent at right=100px,y=40px for the entire film. Screenshots are authentic still captures, not reconstructed fake UI, with no invented native phone availability. Changes are decisive and seek-safe, followed by readable holds, never idle wobble. No skill review question: user explicitly authorized autonomous final rendering in BRIEF.
+This video tells creators that a junior high student made a real, fully free editor worth trying with GPT-6 and Codex. Mint, dark ink and warm paper; original icon, real screenshots and large Chinese type. Every frame keeps all important content above y=930; narration captions occupy y=954..1020. Global @我叫水管同学 watermark is mounted by the parent at right=100px,y=40px for the entire film. Screenshots are authentic still captures, not reconstructed fake UI, with no invented native phone availability. Changes are decisive and seek-safe, followed by readable holds, never idle wobble. No skill review question: user explicitly authorized autonomous final rendering in BRIEF.
 
 ## Frame 1 — 让创作，自由一点
 
@@ -54,7 +54,7 @@ Motion rules: waterfall-entry, dynamic-content-sequencing.
 3.3–6s: On the narration's second thought, change a meaningful state: reveal next real screenshot or a proof label; do not move a merely decorative dot.
 6–7s: Hold the final readable proof. No exit animation because the next frame hard cuts.
 
-Exact additional copy: “水管剪辑”, “我叫我水管同学出品”, “GPT-6 + Codex”; no OpenAI logo.
+Exact additional copy: “水管剪辑”, “我叫水管同学出品”, “GPT-6 + Codex”; no OpenAI logo.
 
 Motion rules: waterfall-entry, dynamic-content-sequencing.
 
@@ -157,7 +157,7 @@ Motion rules: waterfall-entry, dynamic-content-sequencing.
 - duration: 8s
 - transition_in: cut
 - scene: 现在，轮到你的灵感
-- voiceover: 下载地址见简介，关注我叫我水管同学。爱发电自愿赞助，不影响任何功能。
+- voiceover: 下载地址见简介，关注我叫水管同学。爱发电自愿赞助，不影响任何功能。
 - poster: 4s
 - blueprint: titlecard-reveal
 - type: cta

@@ -21,7 +21,7 @@ run('product-launch-video/scripts/transitions.mjs',['verify','--storyboard','STO
 let html=fs.readFileSync(path.join(project,'index.html'),'utf8');
 html=html.replaceAll('https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js','assets/vendor/gsap.min.js');
 html=html.replace('</style>',`\n@font-face{font-family:'NotoSansSC';src:url('assets/fonts/NotoSansSC-Regular.otf')}\n.creator-watermark{position:absolute;right:100px;top:40px;color:#F4F3E8;background:#091C19;border:2px solid #78E4BC;padding:10px 22px;font:400 30px/1.4 'NotoSansSC';white-space:nowrap;}\n</style>`);
-html=html.replace(/(<div[^>]*id="root"[^>]*>)/,`$1\n<div id="creator-watermark-layer" class="clip" data-start="0" data-duration="55" data-track-index="99" style="position:absolute;inset:0;z-index:999;pointer-events:none"><span class="creator-watermark">@我叫我水管同学</span></div>`);
+html=html.replace(/(<div[^>]*id="root"[^>]*>)/,`$1\n<div id="creator-watermark-layer" class="clip" data-start="0" data-duration="55" data-track-index="99" style="position:absolute;inset:0;z-index:999;pointer-events:none"><span class="creator-watermark">@我叫水管同学</span></div>`);
 html=html.replace(/(id="el-[^"]*-voice")/g,'$1 data-audio-group="voiceover"');
 fs.writeFileSync(path.join(project,'index.html'),html);
 const caption=path.join(project,'compositions/captions.html');

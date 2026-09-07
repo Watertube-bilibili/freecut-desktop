@@ -25,7 +25,7 @@ for (const block of srt.trim().split(/\r?\n\s*\r?\n/)) {
   lastSubtitleEnd = end;
 }
 if (subtitleCount !== 14 || !srt.includes('全部功能永久免费') ||
-    !srt.includes('关注我叫我水管同学') || !srt.includes('自愿赞助，不影响任何功能')) {
+    !srt.includes('关注我叫水管同学') || !srt.includes('自愿赞助，不影响任何功能')) {
   throw new Error('Subtitle copy does not reflect the final creator and free-use brief');
 }
 function run(bin, args) {

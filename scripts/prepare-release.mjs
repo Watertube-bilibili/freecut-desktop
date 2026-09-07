@@ -46,7 +46,7 @@ if(mode==='verify'){
     assert.equal(assets.length,13);
     const sums=assets.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(asset=>`${asset.sha256}  ${asset.name}`).join('\n')+'\n';
     await fs.writeFile(path.join(out,'SHA256SUMS.txt'),sums);assets.push({name:'SHA256SUMS.txt',size:Buffer.byteLength(sums),sha256:await digest(path.join(out,'SHA256SUMS.txt'))});
-    const notes=`水管剪辑 ${version} 预览版，我叫我水管同学出品。FreeCut 保留为仓库、安装文件和旧工程的兼容代号。
+    const notes=`水管剪辑 ${version} 预览版，我叫水管同学出品。FreeCut 保留为仓库、安装文件和旧工程的兼容代号。
 
 ## 本次更新
 
@@ -86,7 +86,7 @@ Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按�
 
 来源、依赖许可、品牌及专利边界排查见 docs/RELEASE-REVIEW-030.md；工程核查不等于商标核准、专利自由实施意见或零诉讼风险承诺。免费剪辑不改变第三方模型的用途限制。
 
-欢迎下载体验和支持开源：[B站 @我叫我水管同学](https://space.bilibili.com/390310418)。爱发电支持入口请以作者本人发布的真实链接为准。
+欢迎下载体验和支持开源：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。爱发电支持入口请以作者本人发布的真实链接为准。
 `;
     await fs.writeFile(path.join(out,'release-notes.md'),notes);await fs.writeFile(path.join(out,'release-manifest.json'),JSON.stringify({runId,tag,head:build.head_sha,assets},null,2));console.log(`Prepared ${assets.length} verified assets`);
   }else if(mode==='publish'){

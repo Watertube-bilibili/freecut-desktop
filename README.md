@@ -1,6 +1,6 @@
 # 水管剪辑 · FreeCut
 
-我叫我水管同学出品。由初中生自主使用 GPT-6 与 Codex 制作的中文开源桌面视频编辑器。支持 Windows 和 macOS，面向日常剪辑、电脑端关键帧和容易找到的字幕 / 语音工具。
+我叫水管同学出品。由初中生自主使用 GPT-6 与 Codex 制作的中文开源桌面视频编辑器。支持 Windows 和 macOS，面向日常剪辑、电脑端关键帧和容易找到的字幕 / 语音工具。
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** 爱发电只是自愿赞助，是否赞助都能使用全部功能。
 
@@ -116,4 +116,4 @@ React + TypeScript + Electron。预览和视频帧导出共用 Canvas 合成器�
 
 本项目代码 GPL-3.0-or-later，见 [LICENSE](LICENSE)。每个第三方库、视频引擎、模型都有独立授权，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
-欢迎下载体验、提交问题和参与开源。作者：[B站 @我叫我水管同学](https://space.bilibili.com/390310418)。宣传片工程位于 [videos/shuiguan-launch](videos/shuiguan-launch)，爱发电支持入口以作者本人发布的真实链接为准。
+欢迎下载体验、提交问题和参与开源。作者：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。宣传片工程位于 [videos/shuiguan-launch](videos/shuiguan-launch)，爱发电支持入口以作者本人发布的真实链接为准。
