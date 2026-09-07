@@ -51,10 +51,10 @@ test('cancel during a pending save cannot approve closure and repeated requests 
 
 // Exercise the actual main-process event wiring with a fake native window.
 // This catches premature disposal in before-quit without launching a GUI.
-async function mainHarness(platform,existingDirectory){
+async function mainHarness(platform,existingDirectory,updateOptions){
   const directory=existingDirectory??await fs.mkdtemp(path.join(os.tmpdir(),'freecut-close-main-'));
   const app=new EventEmitter(),ipc=new Map(),windows=[],messages=[];
-  const counts={export:0,chattts:0,ai:0,quit:0,revealed:[]},choices={response:2,save:{canceled:true}};
+  const counts={export:0,chattts:0,ai:0,quit:0,revealed:[],updates:0,deferred:0},choices={response:2,save:{canceled:true}};
   class Window extends EventEmitter {
     constructor(){super();this.destroyed=false;this.webContents=Object.assign(new EventEmitter(),{setWindowOpenHandler(){},send(channel,value){messages.push({channel,value});},isDestroyed:()=>this.destroyed});windows.push(this);}
     static getAllWindows(){return windows.filter(item=>!item.destroyed);}
@@ -71,9 +71,11 @@ async function mainHarness(platform,existingDirectory){
     if(name==='./export.cjs')return {...nativeRequire('./export.cjs'),createExporter:()=>({dispose:async()=>{counts.export++;}})};
     if(name==='./ai.cjs')return {registerAI:options=>{assert.equal(options.app.on,undefined,'AI must not attach a premature before-quit listener');return {cancel:()=>{counts.ai++;}};}};
     if(name==='./chattts.cjs')return {registerChatTTS:()=>({dispose:async()=>{counts.chattts++;}})};
+    if(updateOptions&&name==='./updater.cjs')return {createUpdater:()=>({state:()=>({automatic:false,phase:'ready'}),prepareInstall:async()=>({file:'verified-test-package'}),installing(){},dispose(){},deferred(){counts.deferred++;},failed(){counts.deferred++;}})};
+    if(updateOptions&&name==='./update-install.cjs')return {prepareUpdateInstall:async()=>async()=>{if(updateOptions.fail)throw Error('launch failed');counts.updates++;}};
     return nativeRequire(name);
   };
-  vm.runInNewContext(await fs.readFile(path.join(__dirname,'main.cjs'),'utf8'),{require:customRequire,__dirname,process:{platform,env:{},argv:[]},setImmediate,console,structuredClone});
+  vm.runInNewContext('(function(){\n'+await fs.readFile(path.join(__dirname,'main.cjs'),'utf8')+'\n})()',{require:customRequire,__dirname,process:{platform,env:{},argv:[]},setImmediate,setTimeout,setInterval,console,structuredClone});
   await new Promise(setImmediate);
   const project={version:1,id:'p',name:'退出测试',width:1920,height:1080,fps:30,tracks:[],clips:[],assets:[]};
   return {app,window:windows[0],choices,counts,messages,project,directory,invoke:(name,data)=>ipc.get(`freecut:${name}`)({},data),request:()=>messages.at(-1).value,cleanup:()=>fs.rm(directory,{recursive:true,force:true})};
@@ -116,4 +118,32 @@ test('actual show-item IPC permits persisted recent projects after restart while
     await fresh.invoke('remove-recent-project',(await fresh.invoke('list-projects'))[0].id);await assert.rejects(fresh.invoke('show-item',canonical),/选择/);
     await fs.access(file);
   }finally{await first.cleanup();}
+});
+
+test('automatic update waits for saving approval, and cancel never launches an installer', async()=>{
+  const h=await mainHarness('win32',undefined,{});
+  try {
+    await h.invoke('update-install');
+    assert.equal(h.request().reason,'quit');assert.equal(h.counts.updates,0);assert.equal(h.counts.export,0);
+    const result=await h.invoke('resolve-close',{requestId:h.request().requestId,dirty:true,project:h.project});
+    assert.equal(result.status,'cancelled');assert.equal(h.counts.updates,0);assert.equal(h.counts.deferred,1);assert.equal(h.window.destroyed,false);
+    await h.invoke('update-install');h.choices.response=0;h.choices.save={canceled:false,filePath:path.join(h.directory,'update-save.freecut')};
+    await h.invoke('resolve-close',{requestId:h.request().requestId,dirty:true,project:h.project});
+    assert.equal(h.counts.updates,0);
+    await h.invoke('confirm-close',{requestId:h.request().requestId,unchanged:true});await new Promise(setImmediate);await new Promise(setImmediate);
+    assert.equal(JSON.parse(await fs.readFile(h.choices.save.filePath,'utf8')).name,h.project.name);
+    assert.equal(h.counts.updates,1);assert.equal(h.window.destroyed,true);assert.equal(h.counts.export,1);
+  } finally { await h.cleanup(); }
+});
+
+test('failed installer launch resets close approval and leaves the editor usable',async()=>{
+  const h=await mainHarness('win32',undefined,{fail:true});
+  try {
+    await h.invoke('update-install');const id=h.request().requestId;
+    await h.invoke('resolve-close',{requestId:id,dirty:false,project:h.project});
+    await h.invoke('confirm-close',{requestId:id,unchanged:true});await new Promise(setImmediate);await new Promise(setImmediate);
+    assert.equal(h.window.destroyed,false);assert.equal(h.counts.export,0);assert.equal(h.messages.at(-1).channel,'freecut:close-failed');
+    h.window.close();assert.equal(h.window.destroyed,false);assert.equal(h.request().reason,'window');
+    await h.invoke('cancel-close',h.request().requestId);
+  } finally { await h.cleanup(); }
 });

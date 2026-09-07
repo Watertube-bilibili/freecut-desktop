@@ -1,0 +1,219 @@
+<template id="captions-template" data-composition-id="captions" data-width="1920" data-height="1080">
+
+
+
+<style data-brand-tokens="">
+      @font-face { font-family: 'NotoSansSC'; src: url('assets/fonts/NotoSansSC-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: block; }
+      @font-face { font-family: 'NotoSansSC'; src: url('assets/fonts/NotoSansSC-Regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: block; }
+      :root {
+      --cream: #F4F3E8;
+      --cream-2: #FFB9A9;
+      --ink: #091C19;
+      --ink-2: #2A2A2A;
+      --green: #78E4BC;
+      --green-dark: #12332B;
+      --pink: #78E4BC;
+      --pink-dark: #45DAA3;
+      --orange: #78E4BC;
+      --yellow: #FF8D73;
+      --cap-ink: #091C19;
+      --cap-canvas: #F4F3E8;
+      --cap-accent: #45DAA3;
+      --cap-accent-2: #FF8D73;
+      --font-display: "NotoSansSC", system-ui, serif;
+      --font-body: "NotoSansSC", system-ui, sans-serif;
+      --cap-band-top: 930px;
+      --cap-band-height: 150px;
+      }
+    </style>
+
+<style>
+  #captions-root {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .caption-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+  /* the keep-out band, from captionBand(H) — frame content stays above it */
+  .caption-stage {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--cap-band-top, 900px);
+    height: var(--cap-band-height, 180px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .caption-group {
+    /* every group is absolutely stacked over the SAME band — exactly one shown at a
+       time via opacity. Must be absolute: in-flow groups would lay out side-by-side. */
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+  }
+
+  /* THE cream card — thick 4px ink border + the signature HARD offset shadow
+     (a solid same-direction orange+ink duplicate, no blur), square corners */
+  .caption-pill {
+    max-width: 80%;
+    padding: 18px 40px 22px;
+    background: var(--cap-canvas, #efe9d9);
+    border: 4px solid var(--cap-ink, #0f0f0f);
+    border-radius: 0;
+    box-shadow:
+      14px 14px 0 var(--cap-accent-2, #e85a1f),
+      14px 14px 0 4px var(--cap-ink, #0f0f0f);
+  }
+  .caption-line {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.16em 0.3em;
+    font-family: "NotoSansSC", sans-serif;
+    font-weight: 400;
+    text-transform: none;
+    font-size: 42px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  /* upcoming — faint ink, no accent block */
+  .caption-word {
+    display: inline-block;
+    padding: 0.02em 0.1em;
+    color: color-mix(in srgb, var(--cap-ink, #0f0f0f) 38%, var(--cap-canvas, #efe9d9));
+  }
+  /* current word — THE hard yellow inked block (box-shadow spread = a hard square
+     block w/o layout shift; no blur), ink reading on top */
+  .caption-word.is-active {
+    color: var(--cap-ink, #0f0f0f);
+    background: var(--cap-accent, #f5c518);
+    box-shadow: 0 0 0 0.08em var(--cap-accent, #f5c518);
+  }
+  /* already spoken — solid ink, accent block cleared */
+  .caption-word.is-spoken {
+    color: var(--cap-ink, #0f0f0f);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* optional per-word accents (dormant until a word-classer tags them) */
+  /* brand / key term — an inverted ink chip (the kicker-block voice) */
+  .caption-word.cap-brand {
+    color: var(--cap-canvas, #efe9d9);
+    background: var(--cap-ink, #0f0f0f);
+    box-shadow: 0 0 0 0.08em var(--cap-ink, #0f0f0f);
+  }
+  /* numerals / data — the mono voice, slightly recessed */
+  .caption-word.cap-num {
+    font-family: "NotoSansSC", ui-monospace, monospace;
+    color: color-mix(in srgb, var(--cap-ink, #0f0f0f) 72%, var(--cap-canvas, #efe9d9));
+  }
+  /* emphasis — a thick orange underline (the counter accent) */
+  .caption-word.cap-cta {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-decoration-color: var(--cap-accent-2, #e85a1f);
+    text-underline-offset: 0.12em;
+  }
+
+  @media (max-aspect-ratio: 9/16) {
+    .caption-pill {
+      max-width: 92%;
+    }
+    .caption-line {
+      font-size: clamp(30px, 5vw, 44px);
+    }
+  }
+</style>
+
+<div data-hf-id="hf-mc8u" id="captions-root" data-composition-id="captions" data-timeline-locked="" data-start="0" data-duration="55" data-fps="30" data-width="1920" data-height="1080">
+  <div data-hf-id="hf-9flp" class="caption-layer" aria-hidden="true">
+    <div data-hf-id="hf-ajrg" id="caption-stage" class="caption-stage"></div>
+  </div>
+</div>
+
+<script>
+  // captions.mjs injects the engine's scene-aware groups + real duration here.
+  var GROUPS = [{"id":"caption-group-0","frame":1,"start":0.22,"end":2.275,"text":"让创作，自由一点。","words":[{"id":"caption-word-0-0","text":"让创作，自由一点。","start":0.22,"end":2.155}]},{"id":"caption-group-1","frame":1,"start":2.395,"end":5.531,"text":"全部功能永久免费，导出没有水印。","words":[{"id":"caption-word-1-0","text":"全部功能永久免费，导出没有水印。","start":2.395,"end":5.411}]},{"id":"caption-group-2","frame":2,"start":7.22,"end":9.077,"text":"我是一名初中生。","words":[{"id":"caption-word-2-0","text":"我是一名初中生。","start":7.22,"end":8.957}]},{"id":"caption-group-3","frame":2,"start":9.197,"end":12.783,"text":"使用 GPT-6和 Codex，做出了水管剪辑。","words":[{"id":"caption-word-3-0","text":"使用 GPT-6和 Codex，做出了水管剪辑。","start":9.197,"end":12.663}]},{"id":"caption-group-4","frame":3,"start":14.22,"end":16.679,"text":"关键帧，点一下就能记录。","words":[{"id":"caption-word-4-0","text":"关键帧，点一下就能记录。","start":14.22,"end":16.559}]},{"id":"caption-group-5","frame":3,"start":16.799,"end":20.276,"text":"在预览里，直接拖动、缩放、旋转。","words":[{"id":"caption-word-5-0","text":"在预览里，直接拖动、缩放、旋转。","start":16.799,"end":20.156}]},{"id":"caption-group-6","frame":4,"start":22.22,"end":25.391,"text":"电脑布局，手机风格，随时切换。","words":[{"id":"caption-word-6-0","text":"电脑布局，手机风格，随时切换。","start":22.22,"end":25.271}]},{"id":"caption-group-7","frame":4,"start":25.511,"end":29.191,"text":"把常用工具摆在眼前，按自己的习惯创作。","words":[{"id":"caption-word-7-0","text":"把常用工具摆在眼前，按自己的习惯创作。","start":25.511,"end":29.071}]},{"id":"caption-group-8","frame":5,"start":30.22,"end":34.568,"text":"自动字幕、语音朗读，模型按需下载，本地运行。","words":[{"id":"caption-word-8-0","text":"自动字幕、语音朗读，模型按需下载，本地运行。","start":30.22,"end":34.448}]},{"id":"caption-group-9","frame":5,"start":34.688,"end":38.372,"text":"还有原创音效、左右声道、蒙版和调色。","words":[{"id":"caption-word-9-0","text":"还有原创音效、左右声道、蒙版和调色。","start":34.688,"end":38.252}]},{"id":"caption-group-10","frame":6,"start":40.22,"end":42.781,"text":"这是一个还在成长的开源项目。","words":[{"id":"caption-word-10-0","text":"这是一个还在成长的开源项目。","start":40.22,"end":42.661}]},{"id":"caption-group-11","frame":6,"start":42.901,"end":46.964,"text":"欢迎下载试用，反馈问题，一起把它做得更好。","words":[{"id":"caption-word-11-0","text":"欢迎下载试用，反馈问题，一起把它做得更好。","start":42.901,"end":46.844}]},{"id":"caption-group-12","frame":7,"start":47.22,"end":50.772,"text":"下载地址见简介，关注我叫我水管同学。","words":[{"id":"caption-word-12-0","text":"下载地址见简介，关注我叫我水管同学。","start":47.22,"end":50.652}]},{"id":"caption-group-13","frame":7,"start":50.892,"end":54.018,"text":"爱发电自愿赞助，不影响任何功能。","words":[{"id":"caption-word-13-0","text":"爱发电自愿赞助，不影响任何功能。","start":50.892,"end":53.898}]}];
+  var DURATION = 55;
+
+  (function () {
+    var stage = document.getElementById("caption-stage");
+
+    // build DOM: one .caption-group per group, .caption-word per word
+    GROUPS.forEach(function (group, g) {
+      var groupEl = document.createElement("div");
+      groupEl.className = "caption-group";
+      groupEl.id = "caption-group-" + g;
+      var pill = document.createElement("div");
+      pill.className = "caption-pill";
+      var line = document.createElement("div");
+      line.className = "caption-line";
+      (group.words || []).forEach(function (w, i) {
+        var span = document.createElement("span");
+        span.className = "caption-word";
+        span.id = "caption-word-" + g + "-" + i;
+        span.textContent = String(w.text);
+        line.appendChild(span);
+      });
+      pill.appendChild(line);
+      groupEl.appendChild(pill);
+      stage.appendChild(groupEl);
+    });
+
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+
+    GROUPS.forEach(function (group, g) {
+      var groupEl = document.getElementById("caption-group-" + g);
+      var words = group.words || [];
+      var next = GROUPS[g + 1];
+      var isLast = g === GROUPS.length - 1;
+      var start = Math.max(0, Number(group.start));
+      var end = isLast ? DURATION : Math.min(Number(next.start), Number(group.end) + 0.3);
+      if (end <= start) end = start + 0.01;
+
+      // group on/off — exactly one group visible at a time
+      tl.set(groupEl, { opacity: 1 }, start);
+      tl.set(groupEl, { opacity: 0 }, end);
+
+      // 3-state karaoke via className SETS — seek-safe (gsap.set applies on the
+      // engine's frame-by-frame seek; .call callbacks would NOT fire).
+      words.forEach(function (w, i) {
+        var el = document.getElementById("caption-word-" + g + "-" + i);
+        var at = Math.max(start, Number(w.start));
+        tl.set(el, { className: "caption-word" }, start); // upcoming (also resets on reverse-seek)
+        tl.set(el, { className: "caption-word is-active" }, at); // current
+        tl.fromTo(el, { scale: 0.92 }, { scale: 1, duration: 0.16, ease: "back.out(2.2)" }, at);
+        if (i + 1 < words.length) {
+          var nextAt = Math.max(start, Number(words[i + 1].start));
+          tl.set(el, { className: "caption-word is-spoken" }, nextAt); // demote when next activates
+        }
+      });
+      if (words.length) {
+        var lastEl = document.getElementById("caption-word-" + g + "-" + (words.length - 1));
+        var lastSpoken = Math.min(end, Number(words[words.length - 1].end) + 0.1);
+        tl.set(lastEl, { className: "caption-word is-spoken" }, lastSpoken);
+      }
+    });
+
+    // full-span anchor so the sub-comp timeline spans the whole video
+    tl.to({}, { duration: DURATION }, 0);
+    window.__timelines["captions"] = tl;
+  })();
+</script>
+
+<style>
+  .caption-line { line-height: 1.1 !important; }
+</style>
+</template>

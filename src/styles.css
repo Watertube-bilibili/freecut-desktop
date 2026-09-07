@@ -2276,3 +2276,69 @@ kbd {
     scroll-behavior: auto !important;
   }
 }
+
+/* Each editor pane owns its scrolling; short windows must not extend below the shell. */
+.brand-symbol:has(img) {
+  background: transparent;
+  box-shadow: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 0;
+}
+.workspace {
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+}
+.app:not(.mobile-mode) .tool-nav {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.app:not(.home-view) {
+  min-height: 0;
+  grid-template-rows: 57px minmax(0, 1fr) clamp(155px, 29dvh, 300px) 26px;
+}
+.workspace > .library,
+.workspace > .preview-panel,
+.workspace > .inspector {
+  min-width: 0;
+  min-height: 0;
+}
+.inspector-body,
+.library-body {
+  min-height: 0;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.preview-panel {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.preview-panel .stage {
+  flex: 1 0 150px;
+  min-height: 150px;
+}
+.preview-panel .quick-tools {
+  flex-shrink: 0;
+}
+.app.mobile-mode:not(.home-view) {
+  grid-template-rows: 57px minmax(0, 1fr) clamp(145px, 27dvh, 255px) 26px;
+}
+.app.mobile-mode.shelf-open:not(.home-view) {
+  grid-template-rows: 57px minmax(0, 1fr) clamp(110px, 20dvh, 180px) 26px;
+}
+@media (max-width: 800px) {
+  .app:not(.home-view) {
+    grid-template-rows: 53px minmax(0, 1fr) clamp(140px, 27dvh, 230px) 23px;
+  }
+  .app.mobile-mode:not(.home-view) {
+    grid-template-rows: 53px minmax(0, 1fr) clamp(130px, 25dvh, 215px) 23px;
+  }
+  .app.mobile-mode.shelf-open:not(.home-view) {
+    grid-template-rows: 53px minmax(0, 1fr) clamp(95px, 18dvh, 160px) 23px;
+  }
+  .preview-panel .stage { flex-basis: 135px; min-height: 135px; }
+}

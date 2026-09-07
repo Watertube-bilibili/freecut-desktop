@@ -1,0 +1,95 @@
+.stage:has(> .preview-transform-overlay) {
+  padding: 44px 14px 14px;
+}
+.stage > .preview-error {
+  z-index: 4;
+}
+.preview-transform-overlay {
+  position: absolute;
+  z-index: 3;
+  touch-action: none;
+  user-select: none;
+  outline: none;
+  overflow: visible;
+  cursor: default;
+}
+.preview-transform-overlay.is-hovering {
+  cursor: grab;
+}
+.preview-transform-overlay.is-dragging {
+  cursor: grabbing;
+}
+.preview-transform-lines {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.preview-transform-lines polygon {
+  fill: none;
+  stroke: #72e5bf;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.preview-transform-lines line {
+  stroke: #72e5bf;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.preview-transform-handle {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  min-width: 0;
+  padding: 0;
+  border: 2px solid #f3fff9;
+  border-radius: 2px;
+  background: #248b6b;
+  box-shadow: 0 1px 4px #0008;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+}
+.preview-transform-handle::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+.preview-transform-handle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+.preview-transform-handle.scale-nw,
+.preview-transform-handle.scale-se {
+  cursor: nwse-resize;
+}
+.preview-transform-handle.scale-ne,
+.preview-transform-handle.scale-sw {
+  cursor: nesw-resize;
+}
+.preview-transform-rotate {
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  cursor: grab;
+  color: #fff;
+  font-size: 19px;
+  line-height: 1;
+}
+.preview-transform-overlay.is-dragging .preview-transform-handle {
+  cursor: grabbing;
+}
+@media (pointer: coarse) {
+  .preview-transform-handle {
+    width: 18px;
+    height: 18px;
+  }
+  .preview-transform-handle::before {
+    inset: -9px;
+  }
+  .preview-transform-rotate {
+    width: 28px;
+    height: 28px;
+  }
+}

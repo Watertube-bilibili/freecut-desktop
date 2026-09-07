@@ -57,6 +57,6 @@ function createCloseGuard({requestSnapshot,chooseAction,saveProject,validateProj
     else clear(pending);
   }
   function dispose(){if(pending)clear(pending);}
-  return {request,resolve,confirm,cancel,dispose,isApproved:()=>approved};
+  return {request,resolve,confirm,cancel,dispose,isApproved:()=>approved,resetApproval:()=>{approved=false;}};
 }
 module.exports={createCloseGuard};

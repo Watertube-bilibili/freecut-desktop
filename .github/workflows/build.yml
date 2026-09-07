@@ -15,7 +15,7 @@ jobs:
           - os: windows-latest
             platform: win
             arch: x64
-            targets: nsis portable
+            targets: dir portable
             engine: win32-x64
             executable: ffmpeg.exe
             application: release/win-unpacked/FreeCut.exe
@@ -93,6 +93,19 @@ jobs:
         run: node scripts/regression-home.cjs
       - name: Verify one-click keyframes and professional mode interoperability
         run: node scripts/regression-keyframes.cjs
+      - name: Verify direct preview manipulation and one-gesture undo
+        run: node scripts/regression-transform.cjs
+      - name: Verify real stereo preview and exported channels
+        run: node scripts/regression-audio.cjs
+      - name: Verify sound library playback and repeated insertion
+        run: node scripts/regression-sounds.cjs
+      - name: Verify masks, filters and controls in short windows
+        run: node scripts/regression-effects.cjs
+      - name: Verify update download and unsaved project protection
+        run: node scripts/regression-update.cjs
+      - name: Verify custom installer paths, cancellation and uninstall
+        if: runner.os == 'Windows'
+        run: node installer/smoke.cjs
       - name: Archive matching application source
         shell: bash
         run: git archive --format=tar.gz --prefix=FreeCut-source/ --output=artifacts/FreeCut-project-source-${{ github.sha }}.tar.gz HEAD
@@ -103,6 +116,19 @@ jobs:
       - name: Verify packaged desktop with real media
         timeout-minutes: 10
         run: node -e "process.env.FREECUT_TEST_EXE=require('path').resolve('${{ matrix.application }}');require('./scripts/smoke-desktop.cjs');"
+      - name: Verify actual macOS update ZIP
+        if: runner.os == 'macOS'
+        run: node scripts/verify-mac-update.cjs --arch ${{ matrix.arch }}
+      - name: Build the custom Windows installer
+        if: runner.os == 'Windows'
+        run: node scripts/package-installer.cjs
+      - name: Verify embedded Windows plugins match archived upstream sources
+        if: runner.os == 'Windows'
+        run: node -e "const p=require('./package.json');process.argv=[process.execPath,'verify.cjs','release/FreeCut-'+p.version+'-win-x64-Setup.exe','release/FreeCut-'+p.version+'-win-x64-Portable.exe'];require('./docs/third-party/windows-launcher/verify.cjs');"
+      - name: Verify actual Setup, installed editor and uninstaller
+        if: runner.os == 'Windows'
+        timeout-minutes: 10
+        run: node installer/smoke-setup.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: FreeCut-${{ matrix.platform }}-${{ matrix.arch }}-unsigned

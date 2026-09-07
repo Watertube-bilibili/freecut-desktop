@@ -1,0 +1,149 @@
+{
+  "bgm": {
+    "path": "assets/music/mint-launch-original.wav",
+    "volume": 0.22
+  },
+  "voices": [
+    {
+      "frame": 1,
+      "path": "assets/voice/01-freedom.wav",
+      "duration_s": 7,
+      "provider": "windows-sapi",
+      "voice": "Microsoft Huihui Desktop",
+      "tempo": 1.32,
+      "words": [
+        {
+          "text": "让创作，自由一点。",
+          "start": 0.22,
+          "end": 2.154618181818182
+        },
+        {
+          "text": "全部功能永久免费，导出没有水印。",
+          "start": 2.394618181818182,
+          "end": 5.41114393939394
+        }
+      ]
+    },
+    {
+      "frame": 2,
+      "path": "assets/voice/02-maker.wav",
+      "duration_s": 7,
+      "provider": "windows-sapi",
+      "voice": "Microsoft Huihui Desktop",
+      "tempo": 1.32,
+      "words": [
+        {
+          "text": "我是一名初中生。",
+          "start": 0.22,
+          "end": 1.9572022727272727
+        },
+        {
+          "text": "使用 GPT-6和 Codex，做出了水管剪辑。",
+          "start": 2.1972022727272726,
+          "end": 5.663016666666666
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "path": "assets/voice/03-control.wav",
+      "duration_s": 8,
+      "provider": "windows-sapi",
+      "voice": "Microsoft Huihui Desktop",
+      "tempo": 1.32,
+      "words": [
+        {
+          "text": "关键帧，点一下就能记录。",
+          "start": 0.22,
+          "end": 2.5591053030303033
+        },
+        {
+          "text": "在预览里，直接拖动、缩放、旋转。",
+          "start": 2.799105303030303,
+          "end": 6.156248484848485
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "path": "assets/voice/04-layout.wav",
+      "duration_s": 8,
+      "provider": "windows-sapi",
+      "voice": "Microsoft Huihui Desktop",
+      "tempo": 1.32,
+      "words": [
+        {
+          "text": "电脑布局，手机风格，随时切换。",
+          "start": 0.22,
+          "end": 3.2706083333333336
+        },
+        {
+          "text": "把常用工具摆在眼前，按自己的习惯创作。",
+          "start": 3.5106083333333338,
+          "end": 7.071489393939395
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "path": "assets/voice/05-tools.wav",
+      "duration_s": 10,
+      "provider": "windows-sapi",
+      "voice": "Microsoft Huihui Desktop",
+      "tempo": 1.32,
+      "words": [
+        {
+          "text": "自动字幕、语音朗读，模型按需下载，本地运行。",
+          "start": 0.22,
+          "end": 4.448303787878787
+        },
+        {
+          "text": "还有原创音效、左右声道、蒙版和调色。",
+          "start": 4.688303787878787,
+          "end": 8.252311363636363
+        }
+      ]
+    },
+    {
+      "frame": 6,
+      "path": "assets/voice/06-open.wav",
+      "duration_s": 7,
+      "provider": "windows-sapi",
+      "voice": "Microsoft Huihui Desktop",
+      "tempo": 1.32,
+      "words": [
+        {
+          "text": "这是一个还在成长的开源项目。",
+          "start": 0.22,
+          "end": 2.661489393939394
+        },
+        {
+          "text": "欢迎下载试用，反馈问题，一起把它做得更好。",
+          "start": 2.9014893939393938,
+          "end": 6.844043939393939
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "path": "assets/voice/07-download.wav",
+      "duration_s": 8,
+      "provider": "windows-sapi",
+      "voice": "Microsoft Huihui Desktop",
+      "tempo": 1.32,
+      "words": [
+        {
+          "text": "下载地址见简介，关注我叫我水管同学。",
+          "start": 0.22,
+          "end": 3.6516636363636366
+        },
+        {
+          "text": "爱发电自愿赞助，不影响任何功能。",
+          "start": 3.8916636363636368,
+          "end": 6.897572727272728
+        }
+      ]
+    }
+  ],
+  "sfx": []
+}

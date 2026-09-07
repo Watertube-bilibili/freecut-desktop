@@ -2,11 +2,14 @@ appId: org.freecut.desktop
 productName: FreeCut
 copyright: Copyright © 2026 FreeCut contributors
 asar: true
+electronLanguages: [en-US, zh-CN]
 directories:
   output: release
 files:
   - dist/**/*
   - electron/**/*.cjs
+  - electron/*.ps1
+  - electron/*.sh
   - '!electron/**/*.test.cjs'
   - package.json
   - LICENSE
@@ -14,23 +17,24 @@ files:
 extraResources:
   - from: resources/ffmpeg
     to: ffmpeg
+  - from: installer
+    to: freecut-installer
+    filter:
+      - main.cjs
+      - preload.cjs
+      - backend.cjs
+      - index.html
+      - styles.css
+      - renderer.js
+      - uninstall.ps1
+      - icon.png
 artifactName: FreeCut-${version}-${os}-${arch}.${ext}
 win:
   icon: resources/icon.ico
   target:
-    - target: nsis
-      arch: [x64]
     - target: portable
       arch: [x64]
   signExecutable: false
-nsis:
-  artifactName: FreeCut-${version}-win-${arch}-Setup.${ext}
-  oneClick: false
-  allowToChangeInstallationDirectory: true
-  perMachine: false
-  createDesktopShortcut: true
-  createStartMenuShortcut: true
-  deleteAppDataOnUninstall: false
 portable:
   artifactName: FreeCut-${version}-win-${arch}-Portable.${ext}
   requestExecutionLevel: user

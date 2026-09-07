@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "verifiedAt": "2026-09-07",
+  "scope": "Windows FreeCut 0.3.0 hidden Setup and Portable launchers",
+  "sources": [
+    {
+      "file": "StdUtils.2018-10-27.zip",
+      "description": "StdUtils 1.14 / DLL 1.1.4.0, verbatim release including its corresponding source tar",
+      "url": "https://downloads.sourceforge.net/project/muldersoft/StdUtils-Plugin%20%28NSIS%29/StdUtils.2018-10-27.zip",
+      "bytes": 391785,
+      "sha256": "3ffe893dc7477fdb1cac551a86ae017509e1f2d0ebdc7185fd0fbaf20870688c"
+    },
+    {
+      "file": "stdutils-1.14-source.tar.gz",
+      "description": "StdUtils exact release Git revision 4e1117321001e54dcd2c52f72d3c359d5215e426",
+      "url": "https://codeload.github.com/lordmulder/stdutils/tar.gz/4e1117321001e54dcd2c52f72d3c359d5215e426",
+      "bytes": 222751,
+      "sha256": "3687ab4e09005a8a0b93c1a07a36285d93466070e94b8bf6f12781fb53c419e1"
+    },
+    {
+      "file": "Nsis7z_19.00.7z",
+      "description": "Nsis7z 19.00 plugin sources, Visual Studio project, notices and verbatim binaries",
+      "url": "https://nsis.sourceforge.io/mediawiki/images/6/69/Nsis7z_19.00.7z",
+      "bytes": 461078,
+      "sha256": "6f2f3730049926f40442ee0c8b7d3e3dee7ace544d82467ff8059ea3f4201c58"
+    },
+    {
+      "file": "lzma1900.7z",
+      "description": "LZMA SDK 19.00; matching SDK required by Nsis7z source overlay",
+      "url": "https://www.7-zip.org/a/lzma1900.7z",
+      "bytes": 1082692,
+      "sha256": "00f569e624b3d9ed89cf8d40136662c4c5207eaceb92a70b1044c77f84234bad"
+    },
+    {
+      "file": "nsis-3.04-src.tar.bz2",
+      "description": "NSIS 3.04 complete source including System plugin and exehead",
+      "url": "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.04/nsis-3.04-src.tar.bz2",
+      "bytes": 1740579,
+      "sha256": "609536046c50f35cfd909dd7df2ab38f2e835d0da3c1048aa0d48c59c5a4f4f5"
+    },
+    {
+      "file": "nsis-3.04-strlen_8192.zip",
+      "description": "NSIS 3.04 official large-string binary build used for supplier stub matching",
+      "url": "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.04/nsis-3.04-strlen_8192.zip",
+      "bytes": 476271,
+      "sha256": "aa1d5b0505ea9cad1ffe9710870b05e1f5e08a1e6f98042ef70325c9d9a50999"
+    }
+  ],
+  "embeddedPlugins": [
+    {
+      "name": "System.dll",
+      "supplier": "nsis-3.0.4.1",
+      "architecture": "x86-unicode",
+      "bytes": 12288,
+      "sha256": "3eb38ae99653a7dbc724132ee240f6e5c4af4bfe7c01d31d23faf373f9f2eaca"
+    },
+    {
+      "name": "nsis7z.dll",
+      "supplier": "nsis-resources-3.4.1",
+      "architecture": "x86-unicode",
+      "bytes": 434176,
+      "sha256": "b393f05e8ff919ef071181050e1873c9a776e1a0ae8329aefff7007d0cadf592"
+    },
+    {
+      "name": "StdUtils.dll",
+      "supplier": "nsis-resources-3.4.1",
+      "architecture": "x86-unicode",
+      "bytes": 102400,
+      "sha256": "b72e9013a6204e9f01076dc38dabbf30870d44dfc66962adbf73619d4331601e"
+    }
+  ]
+}

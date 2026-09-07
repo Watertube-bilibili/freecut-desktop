@@ -7,7 +7,7 @@ export interface EffectPreset {
   swatch: string;
   values: Partial<Effects>;
 }
-export const effectPresets: EffectPreset[] = [
+const presets: EffectPreset[] = [
   {
     id: 'clean',
     name: '清透',
@@ -137,3 +137,174 @@ export const effectPresets: EffectPreset[] = [
     values: { flipX: true },
   },
 ];
+
+const additionalColors: EffectPreset[] = [
+  {
+    id: 'daylight',
+    name: '晴日',
+    category: '调色',
+    description: '适度提亮，保留自然色彩',
+    swatch: '#b1c697',
+    values: { brightness: 1.06, contrast: 1.02, saturation: 1.12 },
+  },
+  {
+    id: 'mist',
+    name: '薄雾',
+    category: '调色',
+    description: '低对比与柔和淡彩',
+    swatch: '#afbdb4',
+    values: { brightness: 1.12, contrast: 0.82, saturation: 0.78 },
+  },
+  {
+    id: 'forest',
+    name: '林间',
+    category: '调色',
+    description: '加深层次，让风景更鲜明',
+    swatch: '#55745a',
+    values: { brightness: 0.98, contrast: 1.15, saturation: 1.35, vignette: 0.15 },
+  },
+  {
+    id: 'coast',
+    name: '海岸',
+    category: '调色',
+    description: '明亮通透的清凉画面',
+    swatch: '#71a4ad',
+    values: { brightness: 1.1, contrast: 1.08, saturation: 1.18, hue: 5 },
+  },
+  {
+    id: 'amber',
+    name: '琥珀',
+    category: '调色',
+    description: '偏暖的金褐色调',
+    swatch: '#b5884d',
+    values: { sepia: 0.4, saturation: 1.15, contrast: 1.08 },
+  },
+  {
+    id: 'tea',
+    name: '奶茶',
+    category: '调色',
+    description: '柔和明亮的浅暖色',
+    swatch: '#c8b29b',
+    values: { sepia: 0.18, brightness: 1.13, contrast: 0.9, saturation: 0.8 },
+  },
+  {
+    id: 'faded',
+    name: '旧日',
+    category: '调色',
+    description: '褪色低饱和的日常回忆',
+    swatch: '#aa9c7c',
+    values: { sepia: 0.2, saturation: 0.62, contrast: 0.88, brightness: 1.03, vignette: 0.18 },
+  },
+  {
+    id: 'silver',
+    name: '银盐',
+    category: '调色',
+    description: '明亮柔和的黑白灰阶',
+    swatch: '#c2c5c6',
+    values: { grayscale: 1, brightness: 1.08, contrast: 0.95 },
+  },
+  {
+    id: 'ink',
+    name: '墨影',
+    category: '调色',
+    description: '深黑和鲜明的明暗层次',
+    swatch: '#41494e',
+    values: { grayscale: 1, contrast: 1.45, brightness: 0.95, vignette: 0.3 },
+  },
+  {
+    id: 'night',
+    name: '深夜',
+    category: '调色',
+    description: '压低亮度并保留少量色彩',
+    swatch: '#505878',
+    values: { brightness: 0.8, contrast: 1.2, saturation: 0.55, hue: 10, vignette: 0.2 },
+  },
+  {
+    id: 'candy',
+    name: '糖果',
+    category: '调色',
+    description: '轻快明亮的丰富色彩',
+    swatch: '#c48d9f',
+    values: { brightness: 1.1, saturation: 1.45, contrast: 0.96 },
+  },
+  {
+    id: 'documentary',
+    name: '纪实',
+    category: '调色',
+    description: '克制饱和度，突出画面层次',
+    swatch: '#898b74',
+    values: { contrast: 1.12, saturation: 0.85, brightness: 1.02 },
+  },
+];
+const additionalMasks: EffectPreset[] = [
+  {
+    id: 'ellipse-mask',
+    name: '椭圆蒙版',
+    category: '蒙版',
+    description: '贴合横竖画幅的椭圆裁切',
+    swatch: '#9cae9c',
+    values: { mask: 'ellipse', maskSize: 0.8 },
+  },
+  {
+    id: 'diamond-mask',
+    name: '菱形蒙版',
+    category: '蒙版',
+    description: '四角菱形几何窗口',
+    swatch: '#c5ad84',
+    values: { mask: 'diamond', maskSize: 0.8 },
+  },
+  {
+    id: 'star-mask',
+    name: '星形蒙版',
+    category: '蒙版',
+    description: '五角星形状窗口',
+    swatch: '#c4b67b',
+    values: { mask: 'star', maskSize: 0.9 },
+  },
+  {
+    id: 'heart-mask',
+    name: '爱心蒙版',
+    category: '蒙版',
+    description: '柔和曲线的爱心窗口',
+    swatch: '#bf9b9f',
+    values: { mask: 'heart', maskSize: 0.9 },
+  },
+  {
+    id: 'band-mask',
+    name: '条带蒙版',
+    category: '蒙版',
+    description: '可旋转、移动的水平条带',
+    swatch: '#91a3b6',
+    values: { mask: 'band', maskSize: 1 },
+  },
+];
+/** Color presets replace the previous grade so a prior monochrome look cannot stick. */
+export const effectPresets: EffectPreset[] = [
+  ...presets,
+  ...additionalColors,
+  ...additionalMasks,
+].map((preset) => ({
+  ...preset,
+  values:
+    preset.category === '调色'
+      ? {
+          brightness: 1,
+          contrast: 1,
+          saturation: 1,
+          hue: 0,
+          grayscale: 0,
+          sepia: 0,
+          vignette: 0,
+          ...preset.values,
+        }
+      : preset.category === '蒙版'
+        ? {
+            maskX: 0,
+            maskY: 0,
+            maskRotation: 0,
+            maskFeather: 0,
+            maskInvert: false,
+            ...preset.values,
+          }
+        : preset.values,
+}));

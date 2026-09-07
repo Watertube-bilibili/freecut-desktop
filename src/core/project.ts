@@ -43,6 +43,11 @@ export const defaultEffects = (): Effects => ({
   flipY: false,
   mask: 'none',
   maskSize: 1,
+  maskX: 0,
+  maskY: 0,
+  maskRotation: 0,
+  maskFeather: 0,
+  maskInvert: false,
 });
 const defaultText = (): TextStyle => ({
   text: '添加文字',
@@ -96,6 +101,7 @@ export function createClip(kind: Clip['kind'], trackId: string, partial: ClipOve
     ...rest,
     transform: { ...defaultTransform(), ...partial.transform },
     effects: { ...defaultEffects(), ...partial.effects },
+    ...(partial.audio ? { audio: { ...partial.audio } } : {}),
     keyframes: Object.fromEntries(
       Object.entries(partial.keyframes ?? {}).map(([key, points]) => [
         key,
@@ -555,8 +561,13 @@ export function validateProject(input: unknown): Project {
       chromaThreshold: num(data.chromaThreshold, `${path}.chromaThreshold`, 0, 442),
       flipX: bool(data.flipX, `${path}.flipX`),
       flipY: bool(data.flipY, `${path}.flipY`),
-      mask: one(data.mask, ['none', 'circle', 'rectangle'], `${path}.mask`),
+      mask: one(data.mask, ['none', 'circle', 'rectangle', 'ellipse', 'diamond', 'star', 'heart', 'band'], `${path}.mask`),
       maskSize: num(data.maskSize, `${path}.maskSize`, 0.01, 2),
+      maskX: data.maskX === undefined ? 0 : num(data.maskX, `${path}.maskX`, -1, 1),
+      maskY: data.maskY === undefined ? 0 : num(data.maskY, `${path}.maskY`, -1, 1),
+      maskRotation: data.maskRotation === undefined ? 0 : num(data.maskRotation, `${path}.maskRotation`, -360, 360),
+      maskFeather: data.maskFeather === undefined ? 0 : num(data.maskFeather, `${path}.maskFeather`, 0, 0.25),
+      maskInvert: data.maskInvert === undefined ? false : bool(data.maskInvert, `${path}.maskInvert`),
     };
   };
   const root = object(input, 'root');
@@ -688,6 +699,15 @@ export function validateProject(input: unknown): Project {
       keyframes,
       fadeIn: num(data.fadeIn, `${p}.fadeIn`, 0, duration),
       fadeOut: num(data.fadeOut, `${p}.fadeOut`, 0, duration),
+      ...(data.audio === undefined ? {} : (() => {
+        const audio = object(data.audio, `${p}.audio`);
+        return { audio: {
+          pan: num(audio.pan, `${p}.audio.pan`, -1, 1),
+          leftGain: num(audio.leftGain, `${p}.audio.leftGain`, 0, 2),
+          rightGain: num(audio.rightGain, `${p}.audio.rightGain`, 0, 2),
+          channelMode: one(audio.channelMode, ['stereo', 'left', 'right', 'mono', 'swap'], `${p}.audio.channelMode`),
+        } };
+      })()),
       ...(assetId ? { assetId } : {}),
       ...(text ? { text } : {}),
       ...(data.color === undefined ? {} : { color: color(data.color, `${p}.color`) }),

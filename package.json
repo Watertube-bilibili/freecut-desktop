@@ -1,8 +1,8 @@
 {
   "name": "freecut-desktop",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "自由剪辑 FreeCut — 开源桌面视频编辑器",
+  "description": "水管剪辑 — 我叫我水管同学出品的开源桌面视频编辑器（FreeCut）",
   "license": "GPL-3.0-or-later",
   "author": "FreeCut contributors",
   "main": "electron/main.cjs",
@@ -10,12 +10,12 @@
     "dev": "vite --host 127.0.0.1",
     "dev:desktop": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron . --dev\"",
     "build": "tsc -b && vite build",
-    "test": "vitest run src && node --test electron/*.test.cjs",
-    "test:desktop": "npm run build && node scripts/smoke-desktop.cjs && node scripts/regression-editor.cjs && node scripts/regression-preview.cjs && node scripts/regression-home.cjs && node scripts/regression-keyframes.cjs",
+    "test": "vitest run src && node --test electron/*.test.cjs && node --test installer/backend.test.cjs",
+    "test:desktop": "npm run build && node scripts/smoke-desktop.cjs && node scripts/regression-editor.cjs && node scripts/regression-preview.cjs && node scripts/regression-home.cjs && node scripts/regression-keyframes.cjs && node scripts/regression-transform.cjs && node scripts/regression-audio.cjs && node scripts/regression-sounds.cjs && node scripts/regression-effects.cjs && node scripts/regression-update.cjs",
     "test:ai": "node scripts/smoke-ai.cjs",
     "preview": "vite preview --host 127.0.0.1",
     "start": "electron .",
-    "package:win": "npm run build && npm run prepare:ffmpeg && electron-builder --win nsis portable --x64 --publish never",
+    "package:win": "npm run build && npm run prepare:ffmpeg && electron-builder --win dir portable --x64 --publish never && node scripts/package-installer.cjs",
     "package:mac": "npm run build && npm run prepare:ffmpeg && electron-builder --mac --publish never",
     "prepare:ffmpeg": "node scripts/prepare-ffmpeg.mjs"
   },
@@ -41,5 +41,6 @@
     "vite": "^6.3.5",
     "vitest": "^3.2.4",
     "wait-on": "^8.0.4"
-  }
+  },
+  "freecutReleaseTag": "v0.3.0-preview.1"
 }

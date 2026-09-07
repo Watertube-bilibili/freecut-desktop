@@ -31,6 +31,7 @@ function validateProject(project) {
     assert(!clip.assetId || assetIds.has(clip.assetId), '片段引用了不存在的素材。');
     assert(clip.transform && properties.every((key) => finite(clip.transform[key], key === 'volume' ? 0 : -100000, key === 'volume' ? 10 : 100000)), '关键帧基础参数无效。');
     assert(finite(clip.fadeIn,0,14400) && finite(clip.fadeOut,0,14400) && clip.keyframes && typeof clip.keyframes === 'object', '片段淡入淡出参数无效。');
+    if (clip.audio !== undefined) assert(clip.audio && finite(clip.audio.pan,-1,1) && finite(clip.audio.leftGain,0,2) && finite(clip.audio.rightGain,0,2) && ['stereo','left','right','mono','swap'].includes(clip.audio.channelMode), '左右声道参数无效。');
     for (const key of properties) {
       const values = clip.keyframes[key];
       if (values === undefined) continue;
@@ -76,6 +77,15 @@ function atempoChain(speed) {
   while (remaining < 0.5) { factors.push(0.5); remaining /= 0.5; }
   factors.push(remaining); return factors.map((factor) => `atempo=${numeric(factor)}`);
 }
+function channelMatrix(audio) {
+  const {pan=0,leftGain=1,rightGain=1,channelMode='stereo'}=audio||{};
+  const left=leftGain*(pan>0?1-pan:1),right=rightGain*(pan<0?1+pan:1);
+  if(channelMode==='left')return [left,0,right,0];
+  if(channelMode==='right')return [0,left,0,right];
+  if(channelMode==='mono')return [left/2,left/2,right/2,right/2];
+  if(channelMode==='swap')return [0,left,right,0];
+  return [left,0,0,right];
+}
 function planAudio(project, duration, resolveAsset) {
   const tracks = new Map(project.tracks.map((track) => [track.id,track]));
   const assets = new Map(project.assets.map((asset) => [asset.id,asset]));
@@ -88,6 +98,11 @@ function planAudio(project, duration, resolveAsset) {
     const index = inputs.length+1, label = `audio${inputs.length}`;
     inputs.push(media.path);
     const chain = [`atrim=start=${numeric(clip.inPoint)}:end=${numeric(clip.inPoint+length*clip.speed)}`,'asetpts=PTS-STARTPTS',...atempoChain(clip.speed),`aresample=48000`,`volume='${volumeExpression(clip.keyframes.volume,clip.transform.volume)}':eval=frame`];
+    // Web Audio duplicates mono at unity; FFmpeg's default mono-to-stereo
+    // rematrix attenuates it, so explicitly duplicate before channel controls.
+    chain.push(media.audioChannels===1?'pan=stereo|c0=c0|c1=c0':'aformat=channel_layouts=stereo');
+    const [ll,lr,rl,rr]=channelMatrix(clip.audio);
+    chain.push(`pan=stereo|c0=${numeric(ll)}*c0+${numeric(lr)}*c1|c1=${numeric(rl)}*c0+${numeric(rr)}*c1`);
     if (clip.fadeIn > 0) chain.push(`afade=t=in:st=0:d=${numeric(clip.fadeIn)}`);
     if (clip.fadeOut > 0) chain.push(`afade=t=out:st=${numeric(Math.max(0,clip.duration-clip.fadeOut))}:d=${numeric(Math.min(clip.duration,clip.fadeOut))}`);
     chain.push(`atrim=duration=${numeric(length)}`,`adelay=${Math.round(clip.start*48000)}S:all=1`);
@@ -157,4 +172,4 @@ function createExporter({ ffmpegPath, resolveAsset, emitProgress, temporaryRoot 
   async function dispose() { await Promise.allSettled([...jobs.keys()].map(cancel)); }
   return {begin,writeFrame,finish,cancel,dispose};
 }
-module.exports={validateProject,validateOptions,volumeExpression,atempoChain,planAudio,validFrame,createExporter};
+module.exports={validateProject,validateOptions,volumeExpression,atempoChain,channelMatrix,planAudio,validFrame,createExporter};

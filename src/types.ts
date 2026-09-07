@@ -27,6 +27,7 @@ export interface Transform {
   opacity: number;
   volume: number;
 }
+export type MaskShape = 'none' | 'circle' | 'rectangle' | 'ellipse' | 'diamond' | 'star' | 'heart' | 'band';
 export interface Effects {
   brightness: number;
   contrast: number;
@@ -42,8 +43,14 @@ export interface Effects {
   chromaThreshold: number;
   flipX: boolean;
   flipY: boolean;
-  mask: 'none' | 'circle' | 'rectangle';
+  mask: MaskShape;
   maskSize: number;
+  /** Fractions of fitted source width/height; optional for older project files. */
+  maskX?: number;
+  maskY?: number;
+  maskRotation?: number;
+  maskFeather?: number;
+  maskInvert?: boolean;
 }
 export interface TextStyle {
   text: string;
@@ -71,6 +78,13 @@ export interface Clip {
   color?: string;
   fadeIn: number;
   fadeOut: number;
+  audio?: AudioSettings;
+}
+export interface AudioSettings {
+  pan: number;
+  leftGain: number;
+  rightGain: number;
+  channelMode: 'stereo' | 'left' | 'right' | 'mono' | 'swap';
 }
 export interface Track {
   id: string;
@@ -107,6 +121,14 @@ export interface ExportProgress {
   progress: number;
 }
 export interface DesktopAPI {
+  listSounds: () => Promise<{ id: string; name: string; category: string; duration: number; license: string }[]>;
+  createSound: (id: string) => Promise<MediaAsset>;
+  updateState: () => Promise<UpdateState>;
+  checkUpdate: () => Promise<UpdateState>;
+  setAutomaticUpdates: (value: boolean) => Promise<UpdateState>;
+  installUpdate: () => Promise<void>;
+  onUpdateState: (callback: (state: UpdateState) => void) => () => void;
+  onCloseFailed: (callback: () => void) => () => void;
   onCloseRequested: (
     callback: (request: { requestId: string; reason: 'window' | 'quit' }) => void,
   ) => () => void;
@@ -153,6 +175,16 @@ export interface ProjectSummary {
   height: number;
   clipCount: number;
   missing: boolean;
+}
+export interface UpdateState {
+  phase: 'disabled' | 'idle' | 'checking' | 'latest' | 'downloading' | 'ready' | 'installing' | 'error';
+  automatic: boolean;
+  currentVersion: string;
+  repository: string;
+  progress: number;
+  message: string;
+  version?: string;
+  checkedAt?: string;
 }
 declare global {
   interface Window {

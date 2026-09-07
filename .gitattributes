@@ -1,3 +1,6 @@
 * text=auto eol=lf
 *.png binary
 *.ico binary
+# Preserve verbatim upstream license/readme copies, including original spacing.
+docs/third-party/windows-launcher/*.txt -text -whitespace
+videos/shuiguan-launch/assets/vendor/* -text -whitespace

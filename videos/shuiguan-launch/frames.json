@@ -1,0 +1,137 @@
+[
+  {
+    "id": "01-freedom",
+    "title": "让创作，自由一点",
+    "duration": 7,
+    "blueprint": "kinetic-type-beats",
+    "type": "typography",
+    "phrases": [
+      "让创作，自由一点。",
+      "全部功能永久免费，导出没有水印。"
+    ],
+    "headline": [
+      "让创作",
+      "自由一点"
+    ],
+    "assets": [
+      "icon.png"
+    ],
+    "role": "Lead with the viewer value, free all editing features and clean exports."
+  },
+  {
+    "id": "02-maker",
+    "title": "一个初中生的真实作品",
+    "duration": 7,
+    "blueprint": "logo-assemble-lockup",
+    "type": "brand",
+    "phrases": [
+      "我是一名初中生。",
+      "使用 GPT 六和 Codex，做出了水管剪辑。"
+    ],
+    "headline": [
+      "一个初中生",
+      "把想法做成了真的"
+    ],
+    "assets": [
+      "icon.png"
+    ],
+    "role": "Introduce the maker and name the actual product."
+  },
+  {
+    "id": "03-control",
+    "title": "关键帧，点一下就会",
+    "duration": 8,
+    "blueprint": "device-surface-showcase",
+    "type": "product-demo",
+    "phrases": [
+      "关键帧，点一下就能记录。",
+      "在预览里，直接拖动、缩放、旋转。"
+    ],
+    "headline": [
+      "关键帧",
+      "点一下就会"
+    ],
+    "assets": [
+      "editor-keyframes-030.png",
+      "editor-transform-030.png"
+    ],
+    "role": "Prove accessible motion editing with real screenshots, never claim a recorded gesture."
+  },
+  {
+    "id": "04-layout",
+    "title": "两种布局，一份灵感",
+    "duration": 8,
+    "blueprint": "comparison-split",
+    "type": "product-demo",
+    "phrases": [
+      "电脑布局，手机风格，随时切换。",
+      "把常用工具摆在眼前，按自己的习惯创作。"
+    ],
+    "headline": [
+      "两种布局",
+      "一份灵感"
+    ],
+    "assets": [
+      "editor-030.png",
+      "mobile-030.png"
+    ],
+    "role": "Show the real desktop app desktop/mobile-style layout options, not native phone builds."
+  },
+  {
+    "id": "05-tools",
+    "title": "灵感之外，工具到位",
+    "duration": 10,
+    "blueprint": "grid-card-assemble",
+    "type": "features",
+    "phrases": [
+      "自动字幕、语音朗读，模型按需下载，本地运行。",
+      "还有原创音效、左右声道、蒙版和调色。"
+    ],
+    "headline": [
+      "想做的效果",
+      "慢慢变成日常"
+    ],
+    "assets": [
+      "editor-030.png"
+    ],
+    "role": "Show actual optional local AI and creative tools without universal model license claims."
+  },
+  {
+    "id": "06-open",
+    "title": "一起，把它做得更好",
+    "duration": 7,
+    "blueprint": "kinetic-type-beats",
+    "type": "community",
+    "phrases": [
+      "这是一个还在成长的开源项目。",
+      "欢迎下载试用，反馈问题，一起把它做得更好。"
+    ],
+    "headline": [
+      "开源，也开放",
+      "一起把它做得更好"
+    ],
+    "assets": [
+      "icon.png"
+    ],
+    "role": "Invite honest preview testing rather than implying mature Jianying parity."
+  },
+  {
+    "id": "07-download",
+    "title": "现在，轮到你的灵感",
+    "duration": 8,
+    "blueprint": "titlecard-reveal",
+    "type": "cta",
+    "phrases": [
+      "下载地址见简介，关注我叫我水管同学。",
+      "爱发电自愿赞助，不影响任何功能。"
+    ],
+    "headline": [
+      "下载地址见简介",
+      "现在，轮到你的灵感"
+    ],
+    "assets": [
+      "icon.png"
+    ],
+    "role": "Give accurate download destination and creator support copy with no invented support URL."
+  }
+]

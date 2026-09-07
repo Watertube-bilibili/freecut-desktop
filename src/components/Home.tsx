@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Scissors,
   FolderOpen,
   Plus,
   Settings,
@@ -18,6 +17,8 @@ import {
 } from 'lucide-react';
 import type { ProjectSummary } from '../types';
 import './home.css';
+import { UpdateSettings } from './UpdateNotice';
+import BrandIcon from './BrandIcon';
 
 interface Props {
   projects: ProjectSummary[];
@@ -71,11 +72,11 @@ export default function Home(props: Props) {
       <aside className="home-sidebar">
         <div className="home-brand">
           <span className="brand-symbol">
-            <Scissors size={24} />
+            <BrandIcon size={42} />
           </span>
           <div>
-            <strong>自由剪辑</strong>
-            <small>FreeCut</small>
+            <strong>水管剪辑</strong>
+            <small>by 我叫我水管同学</small>
           </div>
         </div>
         <nav aria-label="首页导航">
@@ -100,7 +101,7 @@ export default function Home(props: Props) {
         </nav>
         <div className="home-sidebar-bottom">
           <span className="status-dot" />
-          本地创作，自由表达<small>FreeCut {info?.version ?? '0.2.0'}</small>
+          本地创作，自由表达<small>FreeCut {info?.version ?? '0.3.0'}</small>
         </div>
       </aside>
       <main className="home-main">
@@ -299,6 +300,7 @@ export default function Home(props: Props) {
                 </button>
               </div>
             </section>
+            <UpdateSettings />
             <section className="home-settings">
               <h2>本地数据与模型</h2>
               <div className="home-setting">
@@ -324,19 +326,19 @@ export default function Home(props: Props) {
           <>
             <header className="home-heading">
               <div>
-                <span className="home-eyebrow">认识自由剪辑</span>
+                <span className="home-eyebrow">认识水管剪辑</span>
                 <h1>关于</h1>
               </div>
             </header>
             <section className="home-about">
               <span className="brand-symbol">
-                <Scissors size={40} />
+                <BrandIcon size={84} />
               </span>
               <h2>
-                自由剪辑 <span>FreeCut</span>
+                水管剪辑 <span>by 我叫我水管同学</span>
               </h2>
               <p className="home-about-version">
-                版本 {info?.version ?? '0.2.0'} ·{' '}
+                版本 {info?.version ?? '0.3.0'} ·{' '}
                 {info?.portable
                   ? 'Windows 便携版'
                   : info?.platform === 'darwin'
@@ -359,7 +361,11 @@ export default function Home(props: Props) {
                   <ExternalLink size={16} />
                 </button>
               </div>
-              <div className="home-about-address">space.bilibili.com/390310418</div>
+              <div className="home-about-address">@我叫我水管同学 · space.bilibili.com/390310418</div>
+              <p>
+                由初中生使用 GPT-6 与 Codex
+                自主制作。全部功能永久免费，不设会员，不设付费解锁，导出无水印。自愿赞助不影响任何功能使用。
+              </p>
               <p className="home-license">
                 FreeCut 以 GPL-3.0 开源。第三方组件和可选 AI 模型遵循各自许可证，详见仓库的
                 THIRD_PARTY_NOTICES。当前为预览版本，持续完善中。

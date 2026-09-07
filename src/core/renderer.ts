@@ -1,10 +1,12 @@
 import type { Clip, Project, MediaAsset } from '../types';
 import { getTransform } from './project';
+import { createAudioRouting } from './audio-routing';
+import { maskPolygon } from './masks';
 
 type Source = HTMLVideoElement | HTMLImageElement;
 const sources = new Map<string, Promise<Source>>();
 const audioSources = new Map<string, HTMLAudioElement>();
-const audioGains = new Map<string, GainNode>();
+const audioGains = new Map<string, ReturnType<typeof createAudioRouting>>();
 let audioContext: AudioContext | undefined;
 const canvasIds = new WeakMap<HTMLCanvasElement, string>();
 let cacheEpoch = 0;
@@ -277,6 +279,19 @@ function releaseSource(source: Source) {
     source.load();
   }
 }
+const featherLayer = document.createElement('canvas');
+const featherAlpha = document.createElement('canvas');
+function maskPath(clip: Clip, width: number, height: number, inverse = false) {
+  const path = new Path2D();
+  if (inverse) path.rect(-10000000, -10000000, 20000000, 20000000);
+  const points = maskPolygon(clip.effects, width, height);
+  if (points.length) {
+    path.moveTo(points[0].x, points[0].y);
+    for (const point of points.slice(1)) path.lineTo(point.x, point.y);
+    path.closePath();
+  }
+  return path;
+}
 function drawClip(
   ctx: CanvasRenderingContext2D,
   clip: Clip,
@@ -289,6 +304,37 @@ function drawClip(
   const tr = getTransform(clip, local),
     fx = clip.effects,
     s = width / project.width;
+  let dw = width, dh = height;
+  if (source) {
+    const iw = source instanceof HTMLVideoElement ? source.videoWidth : source.naturalWidth,
+      ih = source instanceof HTMLVideoElement ? source.videoHeight : source.naturalHeight;
+    const fit = Math.min(width / iw, height / ih);
+    dw = iw * fit;
+    dh = ih * fit;
+  }
+  if (fx.mask !== 'none' && (fx.maskFeather ?? 0) > 0) {
+    // Composite this clip into its own alpha surface so feathering never erases lower tracks.
+    // This synchronous path is shared by preview and strict export frames.
+    featherLayer.width = featherAlpha.width = width;
+    featherLayer.height = featherAlpha.height = height;
+    const content = featherLayer.getContext('2d')!, alpha = featherAlpha.getContext('2d')!;
+    drawClip(content, { ...clip, effects: { ...fx, mask: 'none' } }, source, local, project, width, height);
+    if (fx.maskInvert) {
+      alpha.fillStyle = '#ffffff';
+      alpha.fillRect(0, 0, width, height);
+      alpha.globalCompositeOperation = 'destination-out';
+    }
+    alpha.translate(width / 2 + tr.x * s, height / 2 + tr.y * (height / project.height));
+    alpha.rotate(tr.rotation * Math.PI / 180);
+    alpha.scale(tr.scale * (fx.flipX ? -1 : 1), tr.scale * (fx.flipY ? -1 : 1));
+    alpha.filter = `blur(${(fx.maskFeather ?? 0) * Math.min(dw, dh) * tr.scale}px)`;
+    alpha.fillStyle = '#ffffff';
+    alpha.fill(maskPath(clip, dw, dh));
+    content.globalCompositeOperation = 'destination-in';
+    content.drawImage(featherAlpha, 0, 0);
+    ctx.drawImage(featherLayer, 0, 0);
+    return;
+  }
   let fade = 1;
   if (clip.fadeIn > 0) fade = Math.min(fade, local / clip.fadeIn);
   if (clip.fadeOut > 0) fade = Math.min(fade, (clip.duration - local) / clip.fadeOut);
@@ -298,35 +344,8 @@ function drawClip(
   ctx.scale(tr.scale * (fx.flipX ? -1 : 1), tr.scale * (fx.flipY ? -1 : 1));
   ctx.globalAlpha = Math.max(0, Math.min(1, tr.opacity * fade));
   ctx.filter = `brightness(${fx.brightness}) contrast(${fx.contrast}) saturate(${fx.saturation}) hue-rotate(${fx.hue}deg) blur(${fx.blur * s}px) grayscale(${fx.grayscale}) sepia(${fx.sepia})`;
-  let dw = width,
-    dh = height;
-  if (source) {
-    const iw = source instanceof HTMLVideoElement ? source.videoWidth : source.naturalWidth,
-      ih = source instanceof HTMLVideoElement ? source.videoHeight : source.naturalHeight;
-    const fit = Math.min(width / iw, height / ih);
-    dw = iw * fit;
-    dh = ih * fit;
-  }
   if (fx.mask !== 'none') {
-    ctx.beginPath();
-    if (fx.mask === 'circle')
-      ctx.ellipse(
-        0,
-        0,
-        (Math.min(dw, dh) * fx.maskSize) / 2,
-        (Math.min(dw, dh) * fx.maskSize) / 2,
-        0,
-        0,
-        Math.PI * 2,
-      );
-    else
-      ctx.rect(
-        (-dw * fx.maskSize) / 2,
-        (-dh * fx.maskSize) / 2,
-        dw * fx.maskSize,
-        dh * fx.maskSize,
-      );
-    ctx.clip();
+    ctx.clip(maskPath(clip, dw, dh, fx.maskInvert), 'evenodd');
   }
   if (clip.kind === 'text' && clip.text) {
     const text = clip.text;
@@ -421,16 +440,16 @@ export function syncAudio(project: Project, time: number, playing: boolean) {
       media.src = asset.url;
       media.preload = 'auto';
       audioSources.set(clip.id, media);
-      audioGains.get(clip.id)?.disconnect();
+      audioGains.get(clip.id)?.dispose();
       audioGains.delete(clip.id);
     }
     const local = time - clip.start;
     const target = clip.inPoint + local * clip.speed;
     media.playbackRate = Math.max(0.0625, Math.min(16, clip.speed));
     if (audioContext && !audioGains.has(clip.id)) {
-      const gain = audioContext.createGain();
-      audioContext.createMediaElementSource(media).connect(gain).connect(audioContext.destination);
-      audioGains.set(clip.id, gain);
+      const routing = createAudioRouting(audioContext, audioContext.createMediaElementSource(media));
+      routing.output.connect(audioContext.destination);
+      audioGains.set(clip.id, routing);
     }
     const fade =
       Math.min(1, clip.fadeIn ? local / clip.fadeIn : 1) *
@@ -441,7 +460,7 @@ export function syncAudio(project: Project, time: number, playing: boolean) {
     const volume = Math.max(0, Math.min(4, getTransform(clip, local).volume * fade));
     const gain = audioGains.get(clip.id);
     if (gain) {
-      gain.gain.value = volume;
+      gain.set(clip.audio, volume);
       media.volume = 1;
     } else media.volume = Math.min(1, volume);
     if (Math.abs(media.currentTime - target) > 0.18) media.currentTime = target;
@@ -458,7 +477,7 @@ export function clearMediaCache() {
     media.load();
   }
   audioSources.clear();
-  for (const gain of audioGains.values()) gain.disconnect();
+  for (const gain of audioGains.values()) gain.dispose();
   audioGains.clear();
   for (const pending of sources.values()) void pending.then(releaseSource).catch(() => {});
   sources.clear();

@@ -330,6 +330,19 @@ async function main() {
           const missingFile = path.join(directory, 'missing.freecut');
           await fs.writeFile(missingFile, JSON.stringify(missing, null, 2));
           await openProject(missingFile, missing.name);
+          // Keep the fixture in its original file format; the loader supplies defaults
+          // for the five mask controls introduced after that format was saved.
+          const normalizedMissingClips = missing.clips.map((clip) => ({
+            ...clip,
+            effects: {
+              maskX: 0,
+              maskY: 0,
+              maskRotation: 0,
+              maskFeather: 0,
+              maskInvert: false,
+              ...clip.effects,
+            },
+          }));
           await page
             .locator('.tool-nav')
             .getByRole('button', { name: '素材', exact: true })
@@ -346,7 +359,7 @@ async function main() {
             const rejected = (await snapshot(label)).project;
             assert.equal(rejected.assets[0].missing, true);
             assert.equal(rejected.assets[0].path, missing.assets[0].path);
-            assert.deepEqual(rejected.clips, missing.clips);
+            assert.deepEqual(rejected.clips, normalizedMissingClips);
             await expect(relink).toBeVisible();
           }
           await queueOpen([compatible]);
@@ -357,7 +370,7 @@ async function main() {
           assert.equal(recovered.assets[0].missing, false);
           assert.equal(await fs.realpath(recovered.assets[0].path), await fs.realpath(compatible));
           assert.equal(recovered.assets[0].kind, 'video');
-          assert.deepEqual(recovered.clips, missing.clips);
+          assert.deepEqual(recovered.clips, normalizedMissingClips);
         },
       );
     const dialogs = await app.evaluate(() => globalThis.__regressionDialogs);

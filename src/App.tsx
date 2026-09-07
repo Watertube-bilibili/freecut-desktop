@@ -43,7 +43,7 @@ import {
   PanelRightOpen,
   House,
 } from 'lucide-react';
-import type { AnimProperty, Clip, MediaAsset, Project, ProjectSummary } from './types';
+import type { AnimProperty, Clip, MediaAsset, Project, ProjectSummary, Transform } from './types';
 import {
   createProject,
   createClip,
@@ -62,6 +62,11 @@ import Timeline, { timecode } from './components/Timeline';
 import AIPanel from './components/AIPanel';
 import ChatTTSPanel from './components/ChatTTSPanel';
 import Home from './components/Home';
+import PreviewTransform from './components/PreviewTransform';
+import { editTransform } from './core/transform-edit';
+import UpdateNotice from './components/UpdateNotice';
+import BrandIcon from './components/BrandIcon';
+import SoundLibrary from './components/SoundLibrary';
 
 const uid = () => crypto.randomUUID();
 const nav = [
@@ -133,7 +138,7 @@ function demoProject() {
       name: '副标题',
       duration: 10,
       text: {
-        text: '自由剪辑  /  FREECUT\n让灵感，从这一剪开始。',
+        text: '水管剪辑  /  FREECUT\n让灵感，从这一剪开始。',
         fontSize: 32,
         color: '#c8dad1',
         background: 'transparent',
@@ -205,6 +210,9 @@ export default function App() {
     action: () => void | Promise<void>;
   }>();
   const [navigationBusy, setNavigationBusy] = useState(false);
+  const previewGesture = useRef<
+    { id: string; before: Clip; session: number; localTime: number } | undefined
+  >(undefined);
   const history = useRef<Project[]>([]),
     future = useRef<Project[]>([]),
     projectRef = useRef(project),
@@ -242,6 +250,14 @@ export default function App() {
   useEffect(() => {
     if (home) void refreshProjects();
   }, [home, refreshProjects]);
+  useEffect(
+    () =>
+      window.freecut?.onCloseFailed?.(() => {
+        closingRef.current = false;
+        setClosing(false);
+      }),
+    [],
+  );
   useEffect(() => {
     const api = window.freecut;
     if (!api) {
@@ -256,6 +272,7 @@ export default function App() {
     }
     return api.onCloseRequested(async ({ requestId }) => {
       if (closingRef.current) return;
+      finishPreviewGesture(true);
       if (fileOperation.current) {
         await api.cancelClose(requestId);
         notify('正在处理工程文件，请完成后再退出。');
@@ -293,6 +310,7 @@ export default function App() {
     localStorage.setItem('freecut-keyframe-mode', mode);
   }
   function chooseLayout(value: boolean) {
+    finishPreviewGesture(true);
     setMobile(value);
     setInspectorOpen(!value);
     setMobileShelf(false);
@@ -306,6 +324,7 @@ export default function App() {
   }
   function navigate(action: () => void | Promise<void>) {
     if (fileOperation.current || closingRef.current) return;
+    finishPreviewGesture(true);
     setPlaying(false);
     if (JSON.stringify(projectRef.current) !== savedRef.current) setPendingNavigation({ action });
     else void action();
@@ -318,6 +337,7 @@ export default function App() {
   }, []);
   const commit = useCallback(
     (update: (p: Project) => Project) => {
+      finishPreviewGesture(false);
       const p = projectRef.current;
       const result = update(p);
       if (result === p) return;
@@ -328,6 +348,7 @@ export default function App() {
     [record],
   );
   const undo = useCallback(() => {
+    finishPreviewGesture(true);
     const previous = history.current.pop();
     if (previous) {
       future.current.push(projectRef.current);
@@ -337,6 +358,7 @@ export default function App() {
     }
   }, []);
   const redo = useCallback(() => {
+    finishPreviewGesture(true);
     const next = future.current.pop();
     if (next) {
       history.current.push(projectRef.current);
@@ -345,6 +367,75 @@ export default function App() {
       setHistoryVersion((v) => v + 1);
     }
   }, []);
+  function startPreviewGesture(id: string) {
+    if (closingRef.current || fileOperation.current || previewGesture.current) return false;
+    const p = projectRef.current,
+      target = p.clips.find((item) => item.id === id);
+    if (
+      !target ||
+      target.kind === 'audio' ||
+      p.tracks.find((track) => track.id === target.trackId)?.locked ||
+      timeRef.current < target.start ||
+      timeRef.current >= target.start + target.duration
+    )
+      return false;
+    playingRef.current = false;
+    setPlaying(false);
+    previewGesture.current = {
+      id,
+      before: structuredClone(target),
+      session: projectSession.current,
+      localTime: timeRef.current - target.start,
+    };
+    return true;
+  }
+  function changePreviewTransform(id: string, values: Partial<Transform>) {
+    const gesture = previewGesture.current;
+    if (!gesture || gesture.id !== id || gesture.session !== projectSession.current) return;
+    const p = projectRef.current,
+      target = p.clips.find((item) => item.id === id);
+    if (!target || p.tracks.find((track) => track.id === target.trackId)?.locked) {
+      finishPreviewGesture(true);
+      return;
+    }
+    try {
+      const changed = editTransform(target, values, gesture.localTime, p.fps);
+      if (changed === target) return;
+      const next = { ...p, clips: p.clips.map((item) => (item.id === id ? changed : item)) };
+      projectRef.current = next;
+      setProject(next);
+    } catch (error) {
+      finishPreviewGesture(true);
+      notify((error as Error).message);
+    }
+  }
+  function finishPreviewGesture(cancelled: boolean) {
+    const gesture = previewGesture.current;
+    if (!gesture) return;
+    previewGesture.current = undefined;
+    if (gesture.session !== projectSession.current) return;
+    const p = projectRef.current,
+      target = p.clips.find((item) => item.id === gesture.id);
+    if (
+      !target ||
+      (JSON.stringify(target.transform) === JSON.stringify(gesture.before.transform) &&
+        JSON.stringify(target.keyframes) === JSON.stringify(gesture.before.keyframes))
+    )
+      return;
+    // Undo/cancel changes only this clip; unrelated completed imports stay intact.
+    const before = {
+      ...p,
+      clips: p.clips.map((item) =>
+        item.id === gesture.id
+          ? { ...item, transform: gesture.before.transform, keyframes: gesture.before.keyframes }
+          : item,
+      ),
+    };
+    if (cancelled) {
+      projectRef.current = before;
+      setProject(before);
+    } else record(before);
+  }
   const changeClip = (update: (c: Clip) => Clip) => {
     if (!clip) return;
     if (project.tracks.find((t) => t.id === clip.trackId)?.locked) {
@@ -354,6 +445,7 @@ export default function App() {
     commit((p) => ({ ...p, clips: p.clips.map((c) => (c.id === selected ? update(c) : c)) }));
   };
   const seek = useCallback((value: number) => {
+    finishPreviewGesture(true);
     playingRef.current = false;
     timeRef.current = Math.max(0, value);
     setPlaying(false);
@@ -766,13 +858,14 @@ export default function App() {
     commit((p) => ({
       ...p,
       tracks: p.tracks.some((t) => t.id === target.id) ? p.tracks : [...p.tracks, target],
-      assets: [...p.assets, asset],
+      assets: p.assets.some((a) => a.id === asset.id) ? p.assets : [...p.assets, asset],
       clips: [...p.clips, c],
     }));
     setSelected(c.id);
-    notify('朗读音频已添加到时间线。');
+    notify('音频已添加到时间线。');
   }
   async function save() {
+    finishPreviewGesture(true);
     if (fileOperation.current) return false;
     fileOperation.current = true;
     setFileBusy(true);
@@ -800,6 +893,7 @@ export default function App() {
     }
   }
   function replaceProject(p: Project, saved = true) {
+    finishPreviewGesture(true);
     projectSession.current++;
     setPlaying(false);
     clearMediaCache();
@@ -1041,6 +1135,11 @@ export default function App() {
   }
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
+      if (previewGesture.current) {
+        if (event.key === 'Escape') finishPreviewGesture(true);
+        event.preventDefault();
+        return;
+      }
       const element = event.target as HTMLElement;
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName) || element.isContentEditable)
         return;
@@ -1184,6 +1283,16 @@ export default function App() {
     <div
       className={`app ${home ? 'home-view' : ''} ${mobile ? 'mobile-mode' : ''} ${mobileShelf ? 'shelf-open' : ''} ${!inspectorOpen ? 'inspector-collapsed' : ''}`}
     >
+      <UpdateNotice
+        busy={
+          closing ||
+          fileBusy ||
+          busy ||
+          playing ||
+          (!home && (exportOpen || aiOpen || onboarding || helpOpen)) ||
+          !!pendingNavigation
+        }
+      />
       {home ? (
         <Home
           projects={recentProjects}
@@ -1216,9 +1325,9 @@ export default function App() {
             </button>
             <div className="brand">
               <span className="brand-symbol">
-                <Scissors size={20} />
+                <BrandIcon size={36} />
               </span>
-              <strong>自由剪辑</strong>
+              <strong>水管剪辑</strong>
               <span className="brand-english">FreeCut</span>
             </div>
             <button
@@ -1396,6 +1505,9 @@ export default function App() {
                           {search ? '换一个关键词试试。' : '点击导入，然后将素材拖入下方时间线。'}
                         </p>
                       </div>
+                    )}
+                    {tab === 'audio' && (
+                      <SoundLibrary onAddAsset={addAIAudio} notify={notify} search={search} />
                     )}
                     {tab === 'audio' && (
                       <button
@@ -1632,10 +1744,33 @@ export default function App() {
                   aria-label="视频预览"
                   style={{ aspectRatio: `${project.width}/${project.height}` }}
                 />
+                <PreviewTransform
+                  canvas={canvas}
+                  project={project}
+                  time={time}
+                  selected={selected}
+                  disabled={
+                    closing ||
+                    fileBusy ||
+                    busy ||
+                    exportOpen ||
+                    aiOpen ||
+                    onboarding ||
+                    !!pendingNavigation
+                  }
+                  onSelect={(id) => {
+                    playingRef.current = false;
+                    setPlaying(false);
+                    setSelected(id);
+                  }}
+                  onStart={startPreviewGesture}
+                  onChange={changePreviewTransform}
+                  onEnd={finishPreviewGesture}
+                />
                 {!project.clips.length && (
                   <div className="stage-empty">
                     <span className="empty-mark">
-                      <Scissors size={35} />
+                      <BrandIcon size={60} />
                     </span>
                     <h1>让灵感，从这一剪开始。</h1>
                     <p>你的素材，你的节奏，你的作品。</p>
@@ -1851,7 +1986,7 @@ export default function App() {
           <footer className="statusbar">
             <span>
               <span className="status-dot" />
-              {window.freecut ? '桌面版' : '浏览器预览'} <span className="muted">0.2.0</span>
+              {window.freecut ? '桌面版' : '浏览器预览'} <span className="muted">0.3.0</span>
             </span>
             <span>
               {clip ? `已选择 ${clip.name}` : '双击素材添加到时间线'}
@@ -2084,14 +2219,14 @@ export default function App() {
                 <div className="onboard-workflow">
                   <FolderOpen size={34} />
                   <ArrowRight size={19} />
-                  <Scissors size={34} />
+                  <BrandIcon size={60} />
                   <ArrowRight size={19} />
                   <Download size={34} />
                 </div>
               )}
             </div>
             <h2 id="onboard-title">
-              {['欢迎来到自由剪辑', '熟悉的布局，由你来选', '准备好，开始第一剪'][tourStep]}
+              {['欢迎来到水管剪辑', '熟悉的布局，由你来选', '准备好，开始第一剪'][tourStep]}
             </h2>
             <p>
               {
@@ -2141,7 +2276,7 @@ export default function App() {
         <div className="modal-backdrop">
           <div className="dialog" role="dialog" aria-modal="true" aria-label="使用帮助">
             <div className="dialog-heading">
-              <h2>上手自由剪辑</h2>
+              <h2>上手水管剪辑</h2>
               <button className="icon-button" title="关闭" onClick={() => setHelpOpen(false)}>
                 <X size={19} />
               </button>

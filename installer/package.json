@@ -1,0 +1,12 @@
+{
+  "name": "freecut-installer",
+  "version": "0.3.0",
+  "private": true,
+  "description": "水管剪辑 FreeCut 独立安装器",
+  "license": "GPL-3.0-or-later",
+  "author": "FreeCut contributors",
+  "main": "main.cjs",
+  "scripts": {
+    "test": "node --test backend.test.cjs"
+  }
+}

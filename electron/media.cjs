@@ -17,7 +17,9 @@ function assertTrustedSender(event, webContents, expectedUrl) {
 }
 
 function parseProbe(stderr, filePath) {
-  const audio = /Stream[^\n]*Audio:/.test(stderr);
+  const audioLine = stderr.split(/\r?\n/).find((line) => /Stream[^\n]*Audio:/.test(line));
+  const audio = Boolean(audioLine);
+  const audioChannels = /\bmono\b|\b1 channels?\b/.test(audioLine || '') ? 1 : /\bstereo\b|\b2 channels?\b/.test(audioLine || '') ? 2 : undefined;
   const videoLine = stderr.split(/\r?\n/).find((line) => /Stream[^\n]*Video:/.test(line));
   if (!audio && !videoLine) throw safeError('无法读取此媒体，文件可能损坏或格式不受支持。');
   const match = stderr.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/);
@@ -25,7 +27,7 @@ function parseProbe(stderr, filePath) {
   const size = videoLine?.match(/(?:^|[ ,])(\d{2,5})x(\d{2,5})(?:[ ,\[]|$)/);
   const kind = IMAGE_EXTENSIONS.has(path.extname(filePath).toLowerCase()) ? 'image' : videoLine ? 'video' : 'audio';
   if (kind !== 'image' && (!Number.isFinite(duration) || duration <= 0)) throw safeError('无法确定媒体时长。请先转换为本地 MP4、WAV 或 MP3 文件。');
-  return { kind, duration: kind === 'image' ? 5 : duration, width: size ? Number(size[1]) : undefined, height: size ? Number(size[2]) : undefined, hasAudio: audio };
+  return { kind, duration: kind === 'image' ? 5 : duration, width: size ? Number(size[1]) : undefined, height: size ? Number(size[2]) : undefined, hasAudio: audio, ...(audioChannels ? { audioChannels } : {}) };
 }
 
 function probe(ffmpegPath, filePath) {
@@ -63,7 +65,7 @@ function createMediaLibrary(ffmpegPath) {
     const info = await probe(ffmpegPath, canonical);
     const token = crypto.randomUUID();
     const asset = { id: crypto.randomUUID(), name: path.basename(canonical), kind: info.kind, url: `freecut-media://asset/${token}`, path: canonical, duration: info.duration, ...(info.width ? { width: info.width, height: info.height } : {}) };
-    const record = { asset, canonical, token, hasAudio: info.hasAudio };
+    const record = { asset, canonical, token, hasAudio: info.hasAudio, audioChannels: info.audioChannels };
     byPath.set(canonical, record); byToken.set(token, record);
     return { ...asset };
   }
@@ -76,7 +78,7 @@ function createMediaLibrary(ffmpegPath) {
     if (!asset || typeof asset.path !== 'string') return null;
     const record = byPath.get(asset.path);
     if (!record) throw safeError(`素材尚未授权或已丢失：${String(asset.name || '未知素材').slice(0,120)}`);
-    return { path: validateMediaPath(record.canonical), hasAudio: record.hasAudio, kind: record.asset.kind };
+    return { path: validateMediaPath(record.canonical), hasAudio: record.hasAudio, kind: record.asset.kind, audioChannels: record.audioChannels };
   }
   async function handleRequest(request) {
     try {

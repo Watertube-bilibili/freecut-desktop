@@ -1,0 +1,58 @@
+.mask-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mask-shape-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: #aab7b0;
+}
+.mask-shape-label select {
+  flex: 1;
+  min-width: 0;
+}
+.mask-shape-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin: 5px 0 7px;
+}
+.mask-shape-grid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 49px;
+  padding: 5px 0;
+  border: 1px solid #3b4841;
+  border-radius: 5px;
+  background: #222a26;
+}
+.mask-shape-grid button span {
+  font-size: 20px;
+  line-height: 23px;
+}
+.mask-shape-grid button small {
+  font-size: 10px;
+  color: #b4c0b8;
+}
+.mask-shape-grid button.active {
+  border-color: #a6cfb9;
+  background: #364d40;
+  color: #d1f1df;
+}
+.mask-reset {
+  margin-top: 4px;
+  padding: 7px 9px;
+  border: 1px solid #465449;
+  border-radius: 5px;
+}
+.mask-help {
+  margin: 2px 0 9px;
+  color: #9eafa3;
+  font-size: 11px;
+  line-height: 1.7;
+}

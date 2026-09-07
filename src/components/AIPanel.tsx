@@ -37,7 +37,7 @@ export default function AIPanel({
   const [notice, setNotice] = useState('');
   const [language, setLanguage] = useState<'auto' | 'zh' | 'en'>('zh');
   const [asrModel, setAsrModel] = useState<'asr-sensevoice' | 'asr-zh-en'>('asr-sensevoice');
-  const [text, setText] = useState('你好，欢迎使用自由剪辑。让创意自由表达。');
+  const [text, setText] = useState('你好，欢迎使用水管剪辑。让创意自由表达。');
   const [speakerId, setSpeakerId] = useState(88);
   const [speed, setSpeed] = useState(1);
   const [subtitles, setSubtitles] = useState<{ start: number; duration: number; text: string }[]>(

@@ -1,0 +1,308 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "NotoSansSC";
+      src: url("assets/fonts/NotoSansSC-Regular.otf") format("opentype");
+      font-style: normal;
+      font-weight: 400;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "NotoSansSC";
+      src: url("assets/fonts/NotoSansSC-Bold.otf") format("opentype");
+      font-style: normal;
+      font-weight: 700;
+      font-display: block;
+    }
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      container-type: size;
+      color: #091C19;
+      font-family: "NotoSansSC";
+      pointer-events: none;
+    }
+    .clip {
+      position: absolute;
+      inset: 0;
+    }
+    .f02-background {
+      background: #F4F3E8;
+    }
+    .f02-title-layout {
+      position: absolute;
+      left: 5cqw;
+      top: 15cqh;
+      width: 90cqw;
+      height: 21.48cqh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 1.04cqw;
+      box-sizing: border-box;
+    }
+    .f02-title {
+      display: flex;
+      align-items: center;
+      gap: 0.94cqw;
+      margin: 0;
+      font-size: 7.5cqw;
+      font-weight: 700;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .f02-title-mask {
+      display: flex;
+      align-items: center;
+      height: 8.85cqw;
+      overflow: hidden;
+    }
+    .f02-title-part {
+      display: inline-block;
+    }
+    .f02-title-marker {
+      display: flex;
+      align-items: center;
+      padding: 0 0.625cqw;
+      background: #78E4BC;
+      border: 0.4cqw solid #091C19;
+      box-shadow: 1.25cqw 1.25cqw 0 #78E4BC,
+        1.25cqw 1.25cqw 0 0.2cqw #091C19;
+    }
+    .f02-support-mask {
+      position: absolute;
+      left: 5cqw;
+      top: 38.52cqh;
+      width: 90cqw;
+      height: 6.48cqh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .f02-support {
+      margin: 0;
+      font-size: 2.1875cqw;
+      font-weight: 400;
+      line-height: 0.92;
+      white-space: nowrap;
+    }
+    .f02-lockup {
+      position: absolute;
+      left: 32.1875cqw;
+      top: 47.7778cqh;
+      width: 35.625cqw;
+      height: 11.6667cqw;
+      transform-origin: 50% 50%;
+    }
+    .f02-impact-ring {
+      position: absolute;
+      left: 2.1875cqw;
+      top: 2.1875cqw;
+      width: 7.2917cqw;
+      height: 7.2917cqw;
+      box-sizing: border-box;
+      border: 0.4cqw solid #FF8D73;
+      border-radius: 50%;
+      transform-origin: 50% 50%;
+      z-index: 0;
+    }
+    .f02-icon {
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 11.6667cqw;
+      height: 11.6667cqw;
+      object-fit: contain;
+      z-index: 2;
+    }
+    .f02-wordmark-mask {
+      position: absolute;
+      left: 13.9583cqw;
+      top: 2.1875cqw;
+      width: 22.9167cqw;
+      height: 7.2917cqw;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .f02-wordmark {
+      display: flex;
+      margin: 0;
+      font-size: 5.4167cqw;
+      font-weight: 700;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .f02-wordmark-letter {
+      display: inline-block;
+    }
+    .f02-tools-box {
+      position: absolute;
+      left: 30.2083cqw;
+      top: 74.2593cqh;
+      width: 20.8333cqw;
+      height: 6.4815cqh;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #091C19;
+      color: #F4F3E8;
+    }
+    .f02-tools-copy {
+      margin: 0;
+      font-size: 2.0833cqw;
+      font-weight: 400;
+      line-height: 0.92;
+      white-space: nowrap;
+    }
+    .f02-credit-mask {
+      position: absolute;
+      left: 53.5417cqw;
+      top: 74.2593cqh;
+      width: 24cqw;
+      height: 6.4815cqh;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      border-bottom: 0.4cqw solid #FF8D73;
+    }
+    .f02-credit {
+      margin: 0;
+      font-size: 1.875cqw;
+      font-weight: 400;
+      line-height: 0.92;
+      white-space: nowrap;
+    }
+  </style>
+
+  <div data-hf-id="hf-usoz" id="root" data-composition-id="02-maker" data-duration="7" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-ti19" id="f-02-maker-clip-1" class="clip f02-background" data-start="0" data-duration="7" data-track-index="0"></div>
+
+    <div data-hf-id="hf-ttc9" id="f-02-maker-clip-2" class="clip f02-title-layer" data-start="0" data-duration="7" data-track-index="1">
+      <div data-hf-id="hf-2ez0" class="f02-title-layout">
+        <h1 data-hf-id="hf-rn7x" class="f02-title" aria-label="一个初中生">
+          <span data-hf-id="hf-7vjf" class="f02-title-mask"><span data-hf-id="hf-viu4" class="f02-title-part f02-title-one">一个</span></span>
+          <span data-hf-id="hf-z5b9" class="f02-title-marker">
+            <span data-hf-id="hf-2s0b" class="f02-title-mask"><span data-hf-id="hf-5dtb" class="f02-title-part f02-title-chu">初</span></span>
+            <span data-hf-id="hf-2dpa" class="f02-title-mask"><span data-hf-id="hf-a305" class="f02-title-part f02-title-zhong">中</span></span>
+            <span data-hf-id="hf-1ze9" class="f02-title-mask"><span data-hf-id="hf-gk7i" class="f02-title-part f02-title-sheng">生</span></span>
+          </span>
+        </h1>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-qd6p" id="f-02-maker-clip-3" class="clip f02-support-layer" data-start="1.1" data-duration="5.9" data-track-index="2">
+      <div data-hf-id="hf-bo5b" class="f02-support-mask"><p data-hf-id="hf-tmnu" class="f02-support">把想法做成了真的</p></div>
+    </div>
+
+    <div data-hf-id="hf-icur" id="f-02-maker-clip-4" class="clip f02-brand-layer" data-start="2.1" data-duration="4.9" data-track-index="3">
+      <div data-hf-id="hf-16ez" class="f02-lockup">
+        <div data-hf-id="hf-hmr5" class="f02-impact-ring" aria-hidden="true"></div>
+        <img data-hf-id="hf-l7wl" class="f02-icon" src="assets/icon.png" alt="水管剪辑应用图标" width="224" height="224">
+        <div data-hf-id="hf-jder" class="f02-wordmark-mask">
+          <h2 data-hf-id="hf-zpys" class="f02-wordmark" aria-label="水管剪辑">
+            <span data-hf-id="hf-cl06" class="f02-wordmark-letter f02-brand-shui">水</span><span data-hf-id="hf-qr17" class="f02-wordmark-letter f02-brand-guan">管</span><span data-hf-id="hf-pjyb" class="f02-wordmark-letter f02-brand-jian">剪</span><span data-hf-id="hf-iww1" class="f02-wordmark-letter f02-brand-ji">辑</span>
+          </h2>
+        </div>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-hjp1" id="f-02-maker-clip-5" class="clip f02-tools-layer" data-start="3.3" data-duration="3.7" data-track-index="4">
+      <div data-hf-id="hf-yob2" class="f02-tools-box"><p data-hf-id="hf-u4mx" class="f02-tools-copy">GPT-6 + Codex</p></div>
+    </div>
+
+    <div data-hf-id="hf-xgi2" id="f-02-maker-clip-6" class="clip f02-credit-layer" data-start="5" data-duration="2" data-track-index="5">
+      <div data-hf-id="hf-lywr" class="f02-credit-mask"><p data-hf-id="hf-q2p1" class="f02-credit">我叫我水管同学出品</p></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // Content-aware sequencing is calculated once. The locked four phases
+      // remain 0–1.1, 1.1–3.3, 3.3–5, and 5–7 seconds.
+      var content = [
+        { key: "maker", body: "一个初中生", hold: 0.25 },
+        { key: "product", body: "把想法做成了真的", hold: 1.2 },
+        { key: "tools", body: "GPT-6 + Codex", hold: 0.45 },
+        { key: "credit", body: "我叫我水管同学出品", hold: 1.1 }
+      ];
+      var cursor = 0;
+      var phases = content.map(function (entry) {
+        var duration = 0.6 + Array.from(entry.body).length * 0.05 + entry.hold;
+        var phase = { key: entry.key, start: cursor, end: cursor + duration };
+        cursor = phase.end;
+        return phase;
+      });
+
+      var tl = gsap.timeline({ paused: true });
+      var frame = 1 / 60;
+      gsap.set(".f02-title-part, .f02-title-marker, .f02-wordmark-letter", { opacity: 0 });
+      gsap.set(".f02-impact-ring", { scale: 0.34, opacity: 0 });
+
+      // Waterfall: binary visibility, one upward axis, shorter overlapping
+      // arrivals. Each word rises through its own fixed overflow mask.
+      function arrive(target, time, distance, duration) {
+        tl.set(target, { opacity: 1 }, time);
+        tl.fromTo(target,
+          { y: distance },
+          { y: 0, duration: duration, ease: "power4.out" },
+          time);
+      }
+
+      var headlineStart = phases[0].start + 0.08;
+      var second = headlineStart + 0.18 + 2 * frame;
+      var third = second + 0.15 - frame;
+      var fourth = third + 0.14 - frame;
+      arrive(".f02-title-one", headlineStart, 80, 0.18);
+      tl.set(".f02-title-marker", { opacity: 1 }, second);
+      arrive(".f02-title-chu", second, 50, 0.15);
+      arrive(".f02-title-zhong", third, 70, 0.14);
+      arrive(".f02-title-sheng", fourth, 70, 0.12);
+      arrive(".f02-support", phases[1].start, 48, 0.18);
+
+      // Adapted from the installed logo-sting primitive: the original icon
+      // and wordmark settle from 1.15 to 1 over 0.55 s, then one impact ring
+      // expands over 0.40 s. The optional flash is omitted.
+      var brandStart = phases[1].start + 1;
+      var impact = brandStart + 0.55;
+      tl.fromTo(".f02-lockup",
+        { scale: 1.15 },
+        { scale: 1, duration: 0.55, ease: "expo.out" },
+        brandStart);
+      arrive(".f02-brand-shui", brandStart, 80, 0.18);
+      arrive(".f02-brand-guan", brandStart + 0.18 - frame, 48, 0.15);
+      arrive(".f02-brand-jian", brandStart + 0.33 - 2 * frame, 70, 0.14);
+      arrive(".f02-brand-ji", brandStart + 0.47 - 3 * frame, 70, 0.12);
+      tl.set(".f02-impact-ring", { opacity: 0.92 }, impact);
+      tl.fromTo(".f02-impact-ring",
+        { scale: 0.34, opacity: 0.92 },
+        { scale: 2.4, opacity: 0, duration: 0.4, ease: "power3.out" },
+        impact);
+
+      // Proof arrives across the back half; established content stays in place.
+      arrive(".f02-tools-copy", phases[2].start, 48, 0.18);
+      arrive(".f02-credit", phases[3].start, 44, 0.16);
+      tl.addLabel("final-readable-proof", 6);
+      // A nonvisual driver makes the full 7 s hold explicit without an exit.
+      var clock = { progress: 0 };
+      tl.to(clock, { progress: 1, duration: 7, ease: "none" }, 0);
+      tl.addLabel("end", 7);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["02-maker"] = tl;
+      tl.seek(0);
+    })();
+  </script>
+</template>

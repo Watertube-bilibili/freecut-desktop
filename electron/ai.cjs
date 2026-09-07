@@ -52,53 +52,100 @@ async function verifyFile(filename, spec) {
   const expected = spec.sha256 || spec.integrity.split('-')[1];
   return await digest(filename, spec.sha256 ? 'sha256' : 'sha512', spec.sha256 ? 'hex' : 'base64') === expected;
 }
-async function request(url, signal, redirects = 0) {
+async function request(url, signal, redirects = 0, headers = {}) {
   const parsed = new URL(url);
   if (parsed.protocol !== 'https:' || parsed.username || parsed.password || (parsed.port && parsed.port !== '443') || !HOSTS.has(parsed.hostname)) throw Error('下载源不在允许列表');
   if (redirects > 6) throw Error('下载重定向过多');
-  const response = await fetch(url, { signal, redirect: 'manual' });
+  const response = await fetch(url, { signal, redirect: 'manual', headers });
   if ([301, 302, 303, 307, 308].includes(response.status)) {
     await response.body?.cancel();
-    return request(new URL(response.headers.get('location'), url).href, signal, redirects + 1);
+    return request(new URL(response.headers.get('location'), url).href, signal, redirects + 1, headers);
   }
   if (!response.ok || !response.body) throw Error(`下载失败（HTTP ${response.status}），请重试`);
   return response;
 }
+function errorCode(error) {
+  for (let current = error, depth = 0; current && depth < 5; current = current.cause, depth++) if (typeof current.code === 'string') return current.code;
+}
+function describeError(error) {
+  const code = errorCode(error);
+  if (String(error?.message).includes('已下载部分已保留')) return error.message;
+  if (code === 'ENOSPC') return '磁盘空间不足，请清理模型所在磁盘的空间后重试';
+  if (['EACCES', 'EPERM'].includes(code)) return '模型目录无法写入，请检查文件夹权限及安全软件拦截记录后重试';
+  if (['ECONNRESET', 'UND_ERR_SOCKET'].includes(code)) return `下载连接中断（${code}），再次点击下载安装可继续`;
+  if (['ETIMEDOUT', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_HEADERS_TIMEOUT'].includes(code)) return `下载连接超时（${code}），请检查网络后重试`;
+  return String(error?.message || error || '未知错误') + (code && !String(error?.message).includes(code) ? `（${code}）` : '');
+}
 async function download(spec, cache, progress, signal) {
+  if (!Number.isSafeInteger(spec.size) || spec.size <= 0) throw Error('下载文件缺少固定大小，未开始下载');
   await fsp.mkdir(cache, { recursive: true });
   const key = crypto.createHash('sha256').update(spec.url).digest('hex').slice(0, 20);
   const final = path.join(cache, key + '-' + spec.name);
   if (await verifyFile(final, spec)) return final;
   const partial = final + '.part';
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  const chunkSize = 4 * 1024 * 1024;
+  let failures = 0, corruptions = 0;
+  async function partialSize() {
+    const stat = await fsp.lstat(partial).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+    if (stat && (!stat.isFile() || stat.isSymbolicLink())) throw Error('模型临时下载路径无效');
+    if (stat && spec.size && stat.size > spec.size) { await fsp.rm(partial); return 0; }
+    return stat?.size || 0;
+  }
+  while (true) {
     signal.throwIfAborted();
-    let timeout;
+    let timeout, offset = await partialSize();
+    if (offset && spec.size && offset === spec.size) {
+      progress({ phase: 'verifying', message: `校验 ${spec.name}`, received: offset, total: spec.size, progress: 1 });
+      if (await verifyFile(partial, spec)) { await fsp.rename(partial, final); return final; }
+      await fsp.rm(partial, { force: true });
+      if (++corruptions >= 3) throw Error(`下载文件散列校验失败，未安装：${spec.name}`);
+      offset = 0;
+    }
     try {
       const transfer = new AbortController();
       const stop = () => transfer.abort();
       signal.addEventListener('abort', stop, { once: true });
-      const refresh = () => { clearTimeout(timeout); timeout = setTimeout(() => transfer.abort(), 60000); };
+      const refresh = () => { clearTimeout(timeout); timeout = setTimeout(() => transfer.abort(Error('下载超过 60 秒未收到数据，已保留下载进度')), 60000); };
       refresh();
       try {
-        const response = await request(spec.url, transfer.signal);
+        const ranged = spec.size > chunkSize || offset > 0;
+        const end = spec.size ? Math.min(offset + chunkSize, spec.size) - 1 : undefined;
+        const response = await request(spec.url, transfer.signal, 0, ranged ? { Range: `bytes=${offset}-${end}` } : {});
+        let maximum = (spec.size || 120000000) - offset;
+        if (response.status === 206) {
+          const range = /^bytes (\d+)-(\d+)\/(\d+)$/.exec(response.headers.get('content-range') || '');
+          if (!range || Number(range[1]) !== offset || Number(range[2]) !== end || Number(range[3]) !== spec.size) {
+            await response.body.cancel(); throw Error('下载服务器返回的分段范围不一致，未使用该数据');
+          }
+          maximum = end - offset + 1;
+        } else if (offset) {
+          // Some mirrors ignore Range. Restart safely; never append a whole file
+          // to a cached prefix and silently corrupt the model.
+          await response.body.cancel(); await fsp.rm(partial, { force: true });
+          throw Error('下载服务器不支持续传，已从头重新准备下载');
+        }
         let received = 0; let reportedAt = 0;
         const total = spec.size || Number(response.headers.get('content-length')) || 0;
         const meter = new Transform({ transform(chunk, enc, cb) {
           received += chunk.length; refresh();
-          if (received > (spec.size || 120000000)) return cb(Error('下载文件超过预定大小'));
-          if (Date.now() - reportedAt > 120 || received === total) { reportedAt = Date.now(); progress({ phase: 'downloading', message: `下载 ${spec.name}（第 ${attempt} 次）`, received, total, progress: total ? received / total : 0 }); } cb(null, chunk);
+          if (received > maximum) return cb(Error('下载文件超过预定大小'));
+          const completed = offset + received;
+          if (Date.now() - reportedAt > 120 || completed === total) { reportedAt = Date.now(); progress({ phase: 'downloading', message: `${offset ? '续传' : '下载'} ${spec.name}`, received: completed, total, progress: total ? completed / total : 0 }); } cb(null, chunk);
         } });
-        await pipeline(Readable.fromWeb(response.body), meter, fs.createWriteStream(partial, { flags: 'w', mode: 0o600 }), { signal: transfer.signal });
+        await pipeline(Readable.fromWeb(response.body), meter, fs.createWriteStream(partial, { flags: offset ? 'a' : 'w', mode: 0o600 }), { signal: transfer.signal });
+        if (received !== maximum) throw Error('下载提前中断，已保留已接收的数据');
+      } catch (error) {
+        if (transfer.signal.aborted && !signal.aborted && transfer.signal.reason instanceof Error) throw transfer.signal.reason;
+        throw error;
       } finally { clearTimeout(timeout); signal.removeEventListener('abort', stop); }
-      progress({ phase: 'verifying', message: `校验 ${spec.name}`, progress: 1 });
-      if (!await verifyFile(partial, spec)) throw Error('下载文件散列校验失败，未安装');
-      await fsp.rm(final, { force: true });
-      await fsp.rename(partial, final);
-      return final;
+      failures = 0;
+      // A complete range is committed to the prefix; verify the full pinned
+      // file only when every byte has arrived, before exposing it to installation.
     } catch (error) {
-      clearTimeout(timeout); await fsp.rm(partial, { force: true });
-      if (signal.aborted) throw Error('已取消');
-      if (attempt === 3) throw error;
+      clearTimeout(timeout);
+      if (signal.aborted) { await fsp.rm(partial, { force: true }); throw Error('已取消'); }
+      if (++failures >= 3) throw new Error(`${describeError(error)}；${spec.name} 的已下载部分已保留，再次点击可继续`, { cause: error });
+      progress({ phase: 'downloading', message: `连接中断，重试 ${spec.name}（${failures}/3）`, received: await partialSize(), total: spec.size || 0, progress: spec.size ? (await partialSize()) / spec.size : 0 });
     }
   }
 }
@@ -166,15 +213,28 @@ function createAIService({ app, ffmpegPath, importPath, validateMediaPath }) {
   const native = NATIVE[`${process.platform}-${process.arch}`];
   const modelPath = id => path.join(base, id + '-v1');
   let active;
-  const status = async () => ({ supported: !!native, platform: `${process.platform}-${process.arch}`, runtimeReady: await installed(runtime), busy: !!active,
-    models: await Promise.all(Object.entries(MODELS).map(async ([id, m]) => ({ id, name: m.name, bytes: m.bytes, diskBytes: m.diskBytes, license: m.license, installed: await installed(modelPath(id)) }))) });
-  async function operation(progress, fn) {
+  const status = async () => ({ supported: !!native, platform: `${process.platform}-${process.arch}`, runtimeReady: await installed(runtime, true), busy: !!active,
+    models: await Promise.all(Object.entries(MODELS).map(async ([id, m]) => ({ id, name: m.name, bytes: m.bytes, diskBytes: m.diskBytes, license: m.license, installed: await installed(modelPath(id), true) }))) });
+  async function diagnostic(entry) {
+    try {
+      await fsp.mkdir(base, { recursive: true });
+      const file = path.join(base, 'diagnostics.jsonl');
+      if ((await fsp.stat(file).catch(() => null))?.size > 65536) await fsp.rename(file, file + '.previous');
+      await fsp.appendFile(file, JSON.stringify({ time: new Date().toISOString(), platform: `${process.platform}-${process.arch}`, ...entry }) + '\n', { mode: 0o600 });
+    } catch { /* Diagnostics must never mask the original installation error. */ }
+  }
+  async function operation(progress, fn, context = {}) {
     if (active) throw Error('已有 AI 任务运行中，请等待或取消');
     if (!native) throw Error('当前仅支持 Windows x64 和 macOS x64 / arm64');
     const controller = new AbortController(); active = controller;
-    const emit = data => { if (!controller.signal.aborted) progress(data); };
-    try { const result = await fn(controller.signal, emit); controller.signal.throwIfAborted(); emit({ phase: 'done', message: '已完成', progress: 1 }); return result; }
-    catch (error) { progress({ phase: 'error', message: controller.signal.aborted ? '已取消' : error.message, progress: 0 }); throw Error(controller.signal.aborted ? '已取消' : error.message); }
+    let phase = '准备';
+    const emit = data => { phase = data.message || data.phase; if (!controller.signal.aborted) progress(data); };
+    try { const result = await fn(controller.signal, emit); controller.signal.throwIfAborted(); if (context.operation === 'install') await diagnostic({ ...context, result: 'installed' }); emit({ phase: 'done', message: '已完成', progress: 1 }); return result; }
+    catch (error) {
+      const message = controller.signal.aborted ? '已取消' : describeError(error);
+      await diagnostic({ ...context, result: controller.signal.aborted ? 'cancelled' : 'failed', phase, error: message.slice(0, 4000), code: errorCode(error) });
+      progress({ phase: 'error', message, progress: 0 }); throw Error(message);
+    }
     finally { active = undefined; }
   }
   async function installOne(target, build, signal) {
@@ -205,10 +265,11 @@ function createAIService({ app, ffmpegPath, importPath, validateMediaPath }) {
         else await fsp.copyFile(source, path.join(stage, spec.name));
       }
     }, signal);
-    return status();
-  });
+    return { ...await status(), busy: false };
+  }, { operation: 'install', modelId: id });
   async function ready(id) {
-    if (!await installed(runtime, true) || !await installed(modelPath(id), true)) throw Error('组件未安装或完整性检查失败，请点击下载安装/修复');
+    if (!await installed(runtime, true)) throw Error('语音引擎文件缺失或损坏，请点击“校验 / 修复”；已下载的模型可以继续使用');
+    if (!await installed(modelPath(id), true)) throw Error('模型文件缺失或完整性检查失败，请点击“校验 / 修复”');
   }
   function childJob(data, signal, emit) {
     signal.throwIfAborted();
@@ -248,7 +309,7 @@ function createAIService({ app, ffmpegPath, importPath, validateMediaPath }) {
       await convert(source, wav, inPoint, duration, signal);
       return await childJob({ type: 'asr', modelId, wav, language }, signal, emit);
     } finally { if (inside(base, work)) await fsp.rm(work, { recursive: true, force: true }); }
-  });
+  }, { operation: 'transcribe', modelId: request?.modelId || 'asr-zh-en' });
   const speak = (request, progress) => operation(progress, async (signal, emit) => {
     const { text, speakerId, speed } = request || {};
     if (typeof text !== 'string' || !text.trim() || text.length > 3000 || !Number.isInteger(speakerId) || speakerId < 0 || speakerId > 173 || !Number.isFinite(speed) || speed < 0.5 || speed > 2) throw Error('请输入 1 至 3000 字，音色 0 至 173，速度 0.5 至 2 倍');
@@ -256,7 +317,7 @@ function createAIService({ app, ffmpegPath, importPath, validateMediaPath }) {
     const output = path.join(folder, '朗读-' + crypto.randomUUID() + '.wav');
     try { await childJob({ type: 'tts', modelId: 'tts-zh', text: text.trim(), speakerId, speed, output }, signal, emit); signal.throwIfAborted(); return await importPath(output); }
     catch (error) { await fsp.rm(output, { force: true }); throw error; }
-  });
+  }, { operation: 'speak', modelId: 'tts-zh' });
   return { status, install, transcribe, speak, cancel: () => { active?.abort(); } };
 }
 
@@ -327,5 +388,5 @@ function speechSpans(samples, rate) {
   return spans;
 }
 
-module.exports = { registerAI, createAIService, MODELS, NATIVE, verifyFile, extract, speechSpans };
+module.exports = { registerAI, createAIService, MODELS, NATIVE, verifyFile, extract, speechSpans, download, describeError };
 if (process.argv.includes('--freecut-ai-worker') && process.send) process.once('message', request => worker(request).then(value => { process.send({ type: 'result', value }, () => process.exit(0)); }).catch(error => { process.send({ type: 'error', message: error.message }, () => process.exit(1)); }));

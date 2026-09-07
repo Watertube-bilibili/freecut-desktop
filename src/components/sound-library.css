@@ -1,0 +1,12 @@
+.sound-library { margin-top: 20px; border-top: 1px solid #343a3b; padding-top: 16px; }
+.sound-library h3 { display: flex; align-items: center; gap: 7px; font-size: 14px; margin: 0 0 8px; }
+.sound-library h3 small { font-size: 10px; font-weight: 400; margin-left: auto; color: #96aaa5; }
+.sound-library > p { color: #9ba8a5; font-size: 11px; line-height: 1.6; }
+.sound-list { display: grid; gap: 5px; }
+.sound-row { display: flex; align-items: center; gap: 5px; border: 1px solid #303839; border-radius: 8px; padding: 3px 5px; }
+.sound-preview { flex: 1; min-width: 0; display: flex; gap: 9px; align-items: center; text-align: left; padding: 8px 5px; border: 0; background: transparent; }
+.sound-preview > svg { flex-shrink: 0; color: #94ddc4; }
+.sound-preview strong, .sound-preview small { display: block; }
+.sound-preview strong { font-size: 12px; font-weight: 500; }
+.sound-preview small { color: #899a96; font-size: 10px; margin-top: 3px; }
+.sound-library .sound-license { font-size: 10px; }

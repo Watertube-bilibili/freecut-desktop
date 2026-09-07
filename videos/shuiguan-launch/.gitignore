@@ -1,0 +1,15 @@
+node_modules/
+.hyperframes/
+.hyperframes/worker-logs/
+.hyperframes/cache/
+.hyperframes/preview*
+.hyperframes/render*
+.media/
+.thumbnails/
+assets/raw-voice/
+renders/*.mp4
+renders/*.mov
+renders/*.mkv
+renders/*.wav
+snapshots/
+*.log

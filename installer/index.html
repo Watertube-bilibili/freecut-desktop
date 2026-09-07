@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>水管剪辑 · 安装</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="renderer.js" defer></script>
+  </head>
+  <body>
+    <div class="installer">
+      <aside class="identity">
+        <div class="brand">
+          <img src="icon.png" alt="" width="44" height="44" />
+          <div>水管剪辑<span>我叫我水管同学出品</span></div>
+        </div>
+        <div class="artwork" aria-hidden="true">
+          <div class="frame"><i></i><b></b><span></span></div>
+          <div class="timeline-art"><i></i><i></i><i></i><b></b><b></b></div>
+          <div class="playhead-art"></div>
+        </div>
+        <div class="identity-copy">
+          <p>把灵感，<br />留在画面里。</p>
+          <span>离线剪辑 · 自由表达</span>
+        </div>
+        <div class="edition" id="edition">Windows 安装器</div>
+      </aside>
+      <main>
+        <header>
+          <span class="section-mark" id="sectionMark">开始创作</span>
+          <h1 id="heading">安装水管剪辑</h1>
+          <p id="intro">选择一个位置，让创作开始。</p>
+        </header>
+        <section id="locationView">
+          <div class="drive-options" role="group" aria-label="选择安装磁盘">
+            <button class="drive" id="driveC" data-drive="C" aria-pressed="false">
+              <span class="drive-letter">C<span>盘</span></span
+              ><span class="drive-action">一键安装到 C 盘</span><span class="drive-path">正在读取安装目录…</span><i aria-hidden="true">✓</i>
+            </button>
+            <button class="drive" id="driveD" data-drive="D" aria-pressed="false">
+              <span class="drive-letter">D<span>盘</span></span
+              ><span class="drive-action">一键安装到 D 盘</span><span class="drive-path">D:\FreeCut</span><i aria-hidden="true">✓</i>
+            </button>
+          </div>
+          <p class="drive-note" id="driveNote"></p>
+          <button class="choose-folder" id="choose">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h6l2 2h10v11H3z" /></svg
+            ><span>自定义安装目录</span><b aria-hidden="true">↗</b>
+          </button>
+        </section>
+        <section class="destination" id="destination">
+          <span>安装位置</span><output id="target" aria-live="polite">尚未选择</output
+          ><small id="size">正在读取程序信息…</small>
+        </section>
+        <section id="progressView" hidden aria-live="polite">
+          <div class="progress-top">
+            <span id="progressLabel">正在准备</span><b id="percentage">0%</b>
+          </div>
+          <progress id="progress" value="0" max="100" aria-label="安装进度"></progress>
+          <p id="progressDetail"></p>
+        </section>
+        <section class="complete" id="completeView" hidden>
+          <div class="complete-mark" aria-hidden="true">✓</div>
+          <h2>可以开始创作了。</h2>
+          <p>桌面和开始菜单中都能找到 FreeCut。</p>
+        </section>
+        <div class="error" id="error" role="alert" hidden></div>
+        <div class="warnings" id="warnings" hidden></div>
+        <footer>
+          <p class="footnote" id="footnote">程序与按需下载的 AI 模型分开安装。</p>
+          <div class="actions">
+            <button class="secondary" id="cancel" hidden>取消安装</button
+            ><button class="primary" id="primary" disabled>
+              选择安装位置 <span aria-hidden="true">→</span></button
+            ><button class="secondary" id="done" hidden>完成</button>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

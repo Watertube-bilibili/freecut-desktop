@@ -15,6 +15,8 @@ import type { AnimProperty, Clip, Easing, Effects, Project } from '../types';
 import { defaultEffects, evaluate, trimClip } from '../core/project';
 import { canRecordFrame, frameNavigation, recordFrame, removeFrame } from '../core/easy-keyframes';
 import './inspector-easy.css';
+import AudioControls from './AudioControls';
+import MaskControls from './MaskControls';
 
 const properties: {
   key: AnimProperty;
@@ -290,6 +292,7 @@ export default function Inspector({
           {mode === 'easy' && (tab === 'basic' || tab === 'keyframes') && easyControls}
           {tab === 'basic' && (
             <>
+              {['audio', 'video'].includes(clip.kind) && <AudioControls audio={clip.audio} change={audio => update({ audio })} />}
               {mode === 'pro' && (
                 <section>
                   <h3>
@@ -584,29 +587,7 @@ export default function Inspector({
               </section>
               <section>
                 <h3>蒙版</h3>
-                <select
-                  aria-label="蒙版形状"
-                  value={clip.effects.mask}
-                  onChange={(e) => effect('mask', e.target.value as Effects['mask'])}
-                >
-                  <option value="none">无蒙版</option>
-                  <option value="circle">圆形</option>
-                  <option value="rectangle">矩形</option>
-                </select>
-                {clip.effects.mask !== 'none' && (
-                  <div className="range-control">
-                    <label>蒙版大小</label>
-                    <input
-                      aria-label="蒙版大小"
-                      type="range"
-                      min={0.05}
-                      max={1}
-                      step={0.01}
-                      value={clip.effects.maskSize}
-                      onChange={(e) => effect('maskSize', +e.target.value)}
-                    />
-                  </div>
-                )}
+                <MaskControls effects={clip.effects} onChange={values => change(c => ({ ...c, effects: { ...c.effects, ...values } }))} />
                 <div className="segmented">
                   <button
                     className={clip.effects.flipX ? 'active' : ''}

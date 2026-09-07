@@ -46,16 +46,19 @@ if(mode==='verify'){
     assert.equal(assets.length,13);
     const sums=assets.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(asset=>`${asset.sha256}  ${asset.name}`).join('\n')+'\n';
     await fs.writeFile(path.join(out,'SHA256SUMS.txt'),sums);assets.push({name:'SHA256SUMS.txt',size:Buffer.byteLength(sums),sha256:await digest(path.join(out,'SHA256SUMS.txt'))});
-    const notes=`自由剪辑 FreeCut ${version} 预览版。新增启动首页，并修复保存退出与时间线预览体验。
+    const notes=`水管剪辑 ${version} 预览版，我叫我水管同学出品。FreeCut 保留为仓库、安装文件和旧工程的兼容代号。
 
 ## 本次更新
 
-- 首页包含「我的项目」、搜索与排序、新建/打开/继续编辑、设置和关于。最近工程会跨次启动保留；从列表移除会保留原文件。
-- 关于页提供「我的 B站主页」和 GitHub 入口；设置页可记住工作台布局和关键帧模式。
-- 有未保存修改时，关闭窗口/退出应用会询问「保存并退出 / 不保存 / 取消」。取消保存或保存失败会保留工程；返回首页、新建和打开另一个工程也有保存提示。
-- 修复拖动播放头、切换手机布局时画面变黑的问题：新画面准备好后再显示，快速拖动时优先处理最新位置。
-- 关键帧默认「普通（易用）」模式，一键记录当前画面，支持前后跳转、整组删除、常用滑块和一键动画；可随时切换专业模式，继续精确编辑。
-- 保留多轨剪辑、无水印导出，以及按需下载安装的自动字幕、中文朗读和 ChatTTS。
+- 原创 3D 图标和独立品牌界面。由初中生自主使用 GPT-6 与 Codex 制作。全部功能永久免费，不设会员、不设付费解锁，导出无水印；自愿赞助不影响任何功能使用。
+- 在预览中直接选中、拖动、用角点缩放和旋转；一次拖动一次撤销。普通模式一键记录画面，专业模式可继续精确编辑。
+- 修复短窗口中右侧控件滚不到底的问题，保持手机布局和时间线定位的实时画面。
+- 7 种几何蒙版，支持位置、旋转、羽化与反转；19 种原创调色。没有打包竞品滤镜、模板或付费素材。
+- 16 种本地原创音效可直接试听、加入时间线；新增左右声道音量、平衡、仅左/仅右、单声道与左右交换。
+- SenseVoice 下载增加分段续传、完整散列复验和本地诊断，支持失败重试。原用户环境的立即报错未复现，不宣称已定位所有原因。
+- Windows 安装页面独立设计，一键安装 C 盘、D 盘与自定义安装，首次不预选磁盘；选根目录自动补 FreeCut 子目录，后端拒绝直接安装到根目录。
+- 自动检查本仓库 Release，按平台下载并校验后空闲安装。可暂缓或关闭，更新前仍询问是否保存，取消/保存失败不退出，不中断导出。
+- 保留项目首页、双布局、多轨剪辑、易用关键帧、按需下载的自动字幕和语音朗读。
 
 ## 该下载哪个文件？
 
@@ -63,13 +66,15 @@ if(mode==='verify'){
 
 | 你的电脑 / 使用方式 | 推荐下载 | 说明 |
 | --- | --- | --- |
-| Windows 10/11，日常使用 | FreeCut-${version}-win-x64-Setup.exe | 安装版，有安装向导和快捷方式。 |
+| Windows 10/11，日常使用 | FreeCut-${version}-win-x64-Setup.exe | 独立安装页面，选择 C/D 或自定义目录，创建快捷方式。 |
 | Windows 10/11，希望免安装或随盘携带 | FreeCut-${version}-win-x64-Portable.exe | 便携版，放到可写文件夹后直接运行。设置、最近列表与模型保存在旁边的 FreeCutData，移动时一起保留。 |
 | Mac，Apple 芯片（M 系列） | FreeCut-${version}-mac-arm64.dmg | 打开 DMG，把 FreeCut 拖到 Applications。 |
 | Mac，Intel 处理器 | FreeCut-${version}-mac-x64.dmg | 适用于 Intel Mac，安装方式同上。 |
 | Mac，需要压缩包形式 | 对应芯片的 mac-arm64.zip 或 mac-x64.zip | 解压得到同一版本的 FreeCut.app；DMG 和 ZIP 任选其一。 |
 
 Mac 可在「 → 关于本机」查看芯片。Windows 当前提供 x64 构建。手机风格是桌面内的布局，不是 Android/iOS 安装包。工程 .freecut 引用源素材，搬迁工程时也要保留媒体文件。
+
+从 0.2.0 旧安装版迁移时，先从 Windows 设置卸载旧程序，或另选目录。新版不会直接覆盖缺少归属清单的旧安装。项目、素材和模型应保留。Mac 自动更新需先把应用移出只读 DMG。
 
 FreeCut-project-source-*.tar.gz 是本次应用源码，FreeCut-ffmpeg-source-*.tar.gz 是视频引擎对应源码；普通使用无需下载它们。FreeCut-Quickstart-zh.md 为中文教程，SHA256SUMS.txt 用于校验下载完整性。
 
@@ -78,6 +83,10 @@ FreeCut-project-source-*.tar.gz 是本次应用源码，FreeCut-ffmpeg-source-*.
 Windows x64、Mac arm64、Mac x64 的构建均通过核心/宿主测试、实际桌面回归及打包应用的导入、保存重开和 MP4 导出。详见[本次构建记录](https://github.com/${repo}/actions/runs/${runId})与随附源码的 docs/VERIFICATION.md。源码提交：${build.head_sha}。
 
 Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按各自许可另行下载，ChatTTS 官方模型为 CC BY-NC 4.0，仅限非商业用途；Mac 的可选模型推理仍需设备验收。本项目为持续开发的预览版，功能范围与尚未完成能力见 docs/FEATURE-MATRIX.md。
+
+来源、依赖许可、品牌及专利边界排查见 docs/RELEASE-REVIEW-030.md；工程核查不等于商标核准、专利自由实施意见或零诉讼风险承诺。免费剪辑不改变第三方模型的用途限制。
+
+欢迎下载体验和支持开源：[B站 @我叫我水管同学](https://space.bilibili.com/390310418)。爱发电支持入口请以作者本人发布的真实链接为准。
 `;
     await fs.writeFile(path.join(out,'release-notes.md'),notes);await fs.writeFile(path.join(out,'release-manifest.json'),JSON.stringify({runId,tag,head:build.head_sha,assets},null,2));console.log(`Prepared ${assets.length} verified assets`);
   }else if(mode==='publish'){
@@ -87,7 +96,7 @@ Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按�
     const refs=api('git/matching-refs/tags/'+encodeURIComponent(tag)).filter(ref=>ref.ref===`refs/tags/${tag}`);
     if(refs.length){let object=refs[0].object;for(let i=0;object.type==='tag'&&i<5;i++)object=api(`git/tags/${object.sha}`).object;assert.equal(object.sha,build.head_sha,'Existing git tag targets a different commit');}
     const releases=JSON.parse(command('gh',['api','--paginate','--slurp',`repos/${repo}/releases?per_page=100`])).flat();const matches=releases.filter(release=>release.tag_name===tag);assert(matches.length<=1);let release=matches[0];if(release)assert.equal(release.draft,true,'Published releases cannot be overwritten');
-    const body={tag_name:tag,target_commitish:build.head_sha,name:`FreeCut ${tag}`,body:await fs.readFile(path.join(out,'release-notes.md'),'utf8'),draft:true,prerelease:true};
+    const body={tag_name:tag,target_commitish:build.head_sha,name:`水管剪辑 ${tag} · FreeCut`,body:await fs.readFile(path.join(out,'release-notes.md'),'utf8'),draft:true,prerelease:true};
     release=release?api(`releases/${release.id}`,'PATCH',body):api('releases','POST',body);
     assert.equal(release.draft,true);assert.equal(release.target_commitish,build.head_sha);
     // --clobber replaces only the explicitly named assets; unrelated draft assets remain intact.

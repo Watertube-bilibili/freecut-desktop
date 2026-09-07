@@ -27,7 +27,7 @@ export default function ChatTTSPanel({ onAddAsset }: { onAddAsset: (asset: Media
   const api = window.freecut as (DesktopAPI & Partial<ChatTTSAPI>) | undefined;
   const available = Boolean(api?.chatttsStatus && api?.chatttsInstall && api?.chatttsGenerate);
   const [status, setStatus] = useState<ChatTTSStatus>(initial);
-  const [text, setText] = useState('你好，欢迎使用自由剪辑。让每一个灵感，都有自己的声音。');
+  const [text, setText] = useState('你好，欢迎使用水管剪辑。让每一个灵感，都有自己的声音。');
   const [seed, setSeed] = useState(42);
   const [speed, setSpeed] = useState(5);
   const [audio, setAudio] = useState<MediaAsset | null>(null);

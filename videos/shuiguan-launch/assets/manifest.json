@@ -1,0 +1,94 @@
+{
+  "files": [
+    {
+      "path": "assets/editor-030.png",
+      "bytes": 246966,
+      "sha256": "8387cdc5137ed0c471210870bb4c63a9fcef8af1d71625b2d2fb922dfb10f714"
+    },
+    {
+      "path": "assets/editor-keyframes-030.png",
+      "bytes": 254817,
+      "sha256": "56fd0b6d8c7f6269b66e2e647f56f499299dead4294c38a04aede79e1ddcc480"
+    },
+    {
+      "path": "assets/editor-transform-030.png",
+      "bytes": 247077,
+      "sha256": "8d542c70832ecaf22ba016184be585a0918d6cb3869b4dd717bcbf7b2b502cc0"
+    },
+    {
+      "path": "assets/fonts/LICENSE-NOTO.txt",
+      "bytes": 4301,
+      "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+    },
+    {
+      "path": "assets/fonts/NotoSansSC-Bold.otf",
+      "bytes": 8543168,
+      "sha256": "c6cb5a93abaa9edc8ee7463b7ebb7f42d618d40e6ed2f7a5371c97b0b64767c0"
+    },
+    {
+      "path": "assets/fonts/NotoSansSC-Regular.otf",
+      "bytes": 8331336,
+      "sha256": "faa6c9df652116dde789d351359f3d7e5d2285a2b2a1f04a2d7244df706d5ea9"
+    },
+    {
+      "path": "assets/icon.png",
+      "bytes": 1814069,
+      "sha256": "2bd399856aeb2be777026b692fdd9e9354a3adf9b685e10c270faeeed4d2b304"
+    },
+    {
+      "path": "assets/mobile-030.png",
+      "bytes": 198086,
+      "sha256": "b1727301432e239c17fe0475e99564f035e55261cc2a458122f518e09488759f"
+    },
+    {
+      "path": "assets/music/mint-launch-original.wav",
+      "bytes": 10560044,
+      "sha256": "60519c30519abb3b023a9c80e5cfa3bedc3131c7d270f3bb2519d00f257d857b"
+    },
+    {
+      "path": "assets/vendor/gsap.min.js",
+      "bytes": 72779,
+      "sha256": "c174bfce53a729418d57a8ad8625e7247c793a22fef8e2851e3cfa3de9cd8280"
+    },
+    {
+      "path": "assets/vendor/LICENSE-GSAP.txt",
+      "bytes": 4526,
+      "sha256": "31ab01719fd63f004d531d9fbe06ca33457fc802102204c2d0fdd8f272420392"
+    },
+    {
+      "path": "assets/voice/01-freedom.wav",
+      "bytes": 672078,
+      "sha256": "747e7c679a871c08408fc3a83890ea20853596b7e9b5a945edca70f44ae82fd8"
+    },
+    {
+      "path": "assets/voice/02-maker.wav",
+      "bytes": 672078,
+      "sha256": "6aa84c74d8e2fb92b07929bd0383a95d480d66a93d613e28e5c71042d78c25c8"
+    },
+    {
+      "path": "assets/voice/03-control.wav",
+      "bytes": 768078,
+      "sha256": "f6d944f8b06c621d6222c42456defb2dd5700d21d251467086c88c39a94c5ace"
+    },
+    {
+      "path": "assets/voice/04-layout.wav",
+      "bytes": 768078,
+      "sha256": "188eaeda514ce6b8502773098d23059002c8e7933b17260cc12bc656ed4aa475"
+    },
+    {
+      "path": "assets/voice/05-tools.wav",
+      "bytes": 960078,
+      "sha256": "5c0a5a3ba91cba75470ba9dd256c780d4ac93d450f52c92e8c3aaeda4c2b545f"
+    },
+    {
+      "path": "assets/voice/06-open.wav",
+      "bytes": 672078,
+      "sha256": "d454fc0f1aa46beb42906c6d716562ceb560d086113c1f3fe29e31e8ee918e2f"
+    },
+    {
+      "path": "assets/voice/07-download.wav",
+      "bytes": 768078,
+      "sha256": "074ade89605fd93265336609978674a79d64081bb03358f8e5e4b74b902026e3"
+    }
+  ]
+}
