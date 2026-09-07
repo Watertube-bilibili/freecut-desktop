@@ -14,6 +14,33 @@
 body {
   margin: 0;
 }
+main {
+  position: relative;
+}
+.language-control {
+  position: absolute;
+  right: 30px;
+  top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.language-control select {
+  font: inherit;
+  color: #edf5f0;
+  background: #182a21;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+html[lang='en'] .drive-action {
+  font-size: 12px;
+}
+html[lang='en'] .identity-copy p {
+  font-size: 28px;
+}
 button {
   font: inherit;
   cursor: pointer;
@@ -470,4 +497,9 @@ h2 {
     transition: none;
   }
 }
-.drive-action { display:block; font-size:13px; margin:8px 0 6px; color:#d6ebe0; }
+.drive-action {
+  display: block;
+  font-size: 13px;
+  margin: 8px 0 6px;
+  color: #d6ebe0;
+}

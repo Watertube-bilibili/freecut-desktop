@@ -9,6 +9,7 @@ const { pathToFileURL } = require('node:url');
 const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
 const backend = require('./backend.cjs');
+const { translate } = require('./i18n.js');
 
 const args = process.argv.slice(1);
 const option = (name) => {
@@ -42,8 +43,9 @@ let window,
   allowClose = false,
   starting = false;
 const state = {
+  language: 'zh-CN',
   mode: uninstallMode ? 'uninstall' : updateMode ? 'update' : 'install',
-  version: '0.3.0',
+  version: '0.3.1',
   target: '',
   busy: false,
   phase: 'ready',
@@ -495,9 +497,9 @@ else {
         if (!state.cancellable) return;
         const answer = await dialog.showMessageBox(window, {
           type: 'question',
-          title: '取消安装',
-          message: '要取消这次安装吗？',
-          buttons: ['继续安装', '取消安装'],
+          title: translate('取消安装', state.language),
+          message: translate('要取消这次安装吗？', state.language),
+          buttons: ['继续安装', '取消安装'].map((text) => translate(text, state.language)),
           defaultId: 0,
           cancelId: 0,
         });
@@ -507,11 +509,23 @@ else {
         validateSender(event);
         return state;
       });
+      ipcMain.handle('freecut-installer:language', (event, language) => {
+        validateSender(event);
+        if (!['zh-CN', 'en'].includes(language)) throw Error('Invalid installer language');
+        publish({ language });
+        window.setTitle(
+          translate(
+            uninstallMode ? '卸载水管剪辑' : updateMode ? '更新水管剪辑' : '安装水管剪辑',
+            language,
+          ),
+        );
+        return language;
+      });
       ipcMain.handle('freecut-installer:choose', async (event) => {
         validateSender(event);
         if (state.busy || updateMode || uninstallMode) return null;
         const result = await dialog.showOpenDialog(window, {
-          title: '选择安装目录',
+          title: translate('选择安装目录', state.language),
           properties: ['openDirectory', 'createDirectory'],
           defaultPath: state.target || undefined,
         });

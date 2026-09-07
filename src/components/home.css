@@ -459,3 +459,21 @@
     flex-wrap: wrap;
   }
 }
+.home-language {
+  display: grid;
+  gap: 7px;
+  flex: 0 0 auto;
+  max-width: 100%;
+  color: var(--muted, #899695);
+  font-size: 12px;
+}
+.home-language select {
+  min-width: 170px;
+  max-width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #354343;
+  border-radius: 8px;
+  background: #172222;
+  color: #e5eeee;
+  font: inherit;
+}

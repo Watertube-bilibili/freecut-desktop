@@ -1,6 +1,39 @@
 'use strict';
 const api = window.freecutInstaller;
 const byId = (id) => document.getElementById(id);
+let language = localStorage.getItem('freecut-installer-language') === 'en' ? 'en' : 'zh-CN';
+const rememberedText = new WeakMap(),
+  rememberedAttributes = new WeakMap();
+function translatedValue(record, value) {
+  const original = record && value === record.translated ? record.original : value;
+  const trimmed = original.trim();
+  const translated = original.replace(
+    trimmed,
+    window.FreeCutInstallerI18n.translate(trimmed, language),
+  );
+  return { original, translated };
+}
+function translateView() {
+  document.documentElement.lang = language;
+  byId('language').value = language;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!node.textContent.trim() || node.parentElement.closest('script,style,option')) continue;
+    const record = translatedValue(rememberedText.get(node), node.textContent);
+    rememberedText.set(node, record);
+    node.textContent = record.translated;
+  }
+  for (const element of document.querySelectorAll('[title],[aria-label]')) {
+    const records = rememberedAttributes.get(element) || {};
+    for (const name of ['title', 'aria-label']) {
+      if (!element.hasAttribute(name)) continue;
+      records[name] = translatedValue(records[name], element.getAttribute(name));
+      element.setAttribute(name, records[name].translated);
+    }
+    rememberedAttributes.set(element, records);
+  }
+}
 let state,
   selection = '';
 const formatBytes = (bytes) =>
@@ -10,6 +43,7 @@ const formatBytes = (bytes) =>
 function showError(error) {
   byId('error').hidden = false;
   byId('error').textContent = error.message ?? String(error);
+  translateView();
 }
 function choose(value) {
   selection = value;
@@ -95,7 +129,19 @@ function render(next) {
           ? '安装水管剪辑 →'
           : '选择安装位置 →';
   byId('done').hidden = !complete;
+  translateView();
 }
+byId('language').addEventListener('change', async (event) => {
+  language = event.target.value === 'en' ? 'en' : 'zh-CN';
+  localStorage.setItem('freecut-installer-language', language);
+  if (state) render(state);
+  else translateView();
+  try {
+    await api.setLanguage(language);
+  } catch (error) {
+    showError(error);
+  }
+});
 document.querySelectorAll('[data-drive]').forEach((button) =>
   button.addEventListener('click', async () => {
     const drive = state.drives.find((item) => item.letter === button.dataset.drive);
@@ -128,8 +174,10 @@ byId('primary').addEventListener('click', async () => {
 byId('cancel').addEventListener('click', () => api.cancel().catch(showError));
 byId('done').addEventListener('click', () => api.close().catch(showError));
 api.onProgress(render);
+translateView();
 api
-  .state()
+  .setLanguage(language)
+  .then(() => api.state())
   .then((next) => {
     // A caller-supplied, backend-validated --install-dir is an explicit choice;
     // ordinary first launch still leaves selection empty until a user acts.

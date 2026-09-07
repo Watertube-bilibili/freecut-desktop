@@ -23,6 +23,8 @@ extraResources:
       - main.cjs
       - preload.cjs
       - backend.cjs
+      - legacy.cjs
+      - i18n.js
       - index.html
       - styles.css
       - renderer.js

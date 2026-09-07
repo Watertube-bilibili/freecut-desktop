@@ -2,6 +2,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('freecutInstaller', {
   state: () => ipcRenderer.invoke('freecut-installer:state'),
+  setLanguage: (language) => ipcRenderer.invoke('freecut-installer:language', language),
   choose: () => ipcRenderer.invoke('freecut-installer:choose'),
   install: (target) => ipcRenderer.invoke('freecut-installer:install', target),
   cancel: () => ipcRenderer.invoke('freecut-installer:cancel'),

@@ -16,6 +16,8 @@ const { createRecentProjects } = require('./recent-projects.cjs');
 const { createUpdater } = require('./updater.cjs');
 const { prepareUpdateInstall } = require('./update-install.cjs');
 const appVersion = require('../package.json').version;
+let uiLanguage = 'zh-CN';
+const uiText = (chinese, english) => uiLanguage === 'en' ? english : chinese;
 
 const portable = process.platform === 'win32' && Boolean(process.env.PORTABLE_EXECUTABLE_DIR);
 if (portable) {
@@ -146,9 +148,9 @@ async function rememberProject(project, file) {
 async function saveProject(project) {
   validateProject(project);
   const result = await dialog.showSaveDialog(window, {
-    title: '保存 FreeCut 工程',
+    title: uiText('保存 FreeCut 工程', 'Save FreeCut project'),
     defaultPath: `${safeName(project.name)}.freecut`,
-    filters: [{ name: 'FreeCut 工程', extensions: ['freecut'] }],
+    filters: [{ name: uiText('FreeCut 工程', 'FreeCut project'), extensions: ['freecut'] }],
   });
   if (result.canceled || !result.filePath) return null;
   const saved = structuredClone(project);
@@ -217,6 +219,12 @@ function completeQuit() {
 }
 
 function installIPC() {
+  handle('freecut:set-language', (language) => {
+    if (language !== 'zh-CN' && language !== 'en') throw Error('Unsupported interface language');
+    uiLanguage = language;
+    if (window && !window.isDestroyed()) window.setTitle(uiText('水管剪辑 FreeCut', 'FreeCut'));
+    return uiLanguage;
+  });
   recentProjects = createRecentProjects({ userData: app.getPath('userData') });
   exporter = createExporter({
     ffmpegPath,
@@ -228,9 +236,9 @@ function installIPC() {
   });
   handle('freecut:import-media', async () => {
     const result = await dialog.showOpenDialog(window, {
-      title: '导入视频、音频或图片',
+      title: uiText('导入视频、音频或图片', 'Import video, audio, or images'),
       properties: ['openFile', 'multiSelections'],
-      filters: [{ name: '媒体文件', extensions: [...MEDIA_EXTENSIONS].map((ext) => ext.slice(1)) }],
+      filters: [{ name: uiText('媒体文件', 'Media files'), extensions: [...MEDIA_EXTENSIONS].map((ext) => ext.slice(1)) }],
     });
     if (result.canceled) return [];
     const assets = [],
@@ -245,7 +253,7 @@ function installIPC() {
     if (errors.length)
       await dialog.showMessageBox(window, {
         type: 'warning',
-        title: '部分素材未能导入',
+        title: uiText('部分素材未能导入', 'Some media could not be imported'),
         message: errors.slice(0, 10).join('\n'),
       });
     return assets;
@@ -253,9 +261,9 @@ function installIPC() {
   handle('freecut:save-project', saveProject);
   handle('freecut:open-project', async () => {
     const result = await dialog.showOpenDialog(window, {
-      title: '打开 FreeCut 工程',
+      title: uiText('打开 FreeCut 工程', 'Open FreeCut project'),
       properties: ['openFile'],
-      filters: [{ name: 'FreeCut 工程', extensions: ['freecut', 'json'] }],
+      filters: [{ name: uiText('FreeCut 工程', 'FreeCut project'), extensions: ['freecut', 'json'] }],
     });
     if (result.canceled || !result.filePaths[0]) return null;
     return openProjectPath(result.filePaths[0]);
@@ -331,9 +339,9 @@ function installIPC() {
     if (!fs.existsSync(ffmpegPath))
       throw new Error('内置 FFmpeg 未准备好。开发环境请执行 node scripts/prepare-ffmpeg.mjs。');
     const result = await dialog.showSaveDialog(window, {
-      title: '导出视频',
+      title: uiText('导出视频', 'Export video'),
       defaultPath: `${safeName(options.project.name)}.mp4`,
-      filters: [{ name: 'MP4 视频', extensions: ['mp4'] }],
+      filters: [{ name: uiText('MP4 视频', 'MP4 video'), extensions: ['mp4'] }],
     });
     if (result.canceled || !result.filePath) return null;
     const output = result.filePath.toLowerCase().endsWith('.mp4')
@@ -402,7 +410,7 @@ function createWindow() {
     minWidth: 1100,
     minHeight: 720,
     backgroundColor: '#101014',
-    title: '水管剪辑 FreeCut',
+    title: uiText('水管剪辑 FreeCut', 'FreeCut'),
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
@@ -429,10 +437,10 @@ function createWindow() {
     chooseAction: async (project) => {
       const result = await dialog.showMessageBox(target, {
         type: 'question',
-        title: '保存更改',
-        message: `是否保存对“${project.name}”的更改？`,
-        detail: '未保存的更改会丢失。',
-        buttons: ['保存并退出', '不保存', '取消'],
+        title: uiText('保存更改', 'Save changes'),
+        message: uiText(`是否保存对“${project.name}”的更改？`, `Save changes to “${project.name}”?`),
+        detail: uiText('未保存的更改会丢失。', 'Unsaved changes will be lost.'),
+        buttons: uiLanguage === 'en' ? ['Save and quit', 'Discard', 'Cancel'] : ['保存并退出', '不保存', '取消'],
         defaultId: 0,
         cancelId: 2,
         noLink: true,
@@ -443,7 +451,7 @@ function createWindow() {
     reportError: (message) => {
       deferUpdate();
       if (!target.isDestroyed())
-        void dialog.showMessageBox(target, { type: 'error', title: '暂时无法关闭', message });
+        void dialog.showMessageBox(target, { type: 'error', title: uiText('暂时无法关闭', 'Could not close the editor'), message });
     },
   });
   closeGuard = guard;

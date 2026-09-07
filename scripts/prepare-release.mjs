@@ -43,22 +43,28 @@ if(mode==='verify'){
     assert(projectHashes.every(hash=>hash===projectHashes[0]),'Application source archives differ between platforms');
     for(const name of ['LICENSE','THIRD_PARTY_NOTICES.md'])await add(path.join(source,name));
     await add(path.join(source,'docs','QUICKSTART.md'),'FreeCut-Quickstart-zh.md');
-    assert.equal(assets.length,13);
+    await add(path.join(source,'docs','QUICKSTART.en.md'),'FreeCut-Quickstart-en.md');
+    assert.equal(assets.length,14);
     const sums=assets.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(asset=>`${asset.sha256}  ${asset.name}`).join('\n')+'\n';
     await fs.writeFile(path.join(out,'SHA256SUMS.txt'),sums);assets.push({name:'SHA256SUMS.txt',size:Buffer.byteLength(sums),sha256:await digest(path.join(out,'SHA256SUMS.txt'))});
-    const notes=`水管剪辑 ${version} 预览版，我叫水管同学出品。FreeCut 保留为仓库、安装文件和旧工程的兼容代号。
+    const notes=`水管剪辑 / FreeCut ${version} 预览版，我叫水管同学出品。
 
 ## 本次更新
 
-- 原创 3D 图标和独立品牌界面。由初中生自主使用 GPT-6 与 Codex 制作。全部功能永久免费，不设会员、不设付费解锁，导出无水印；自愿赞助不影响任何功能使用。
-- 在预览中直接选中、拖动、用角点缩放和旋转；一次拖动一次撤销。普通模式一键记录画面，专业模式可继续精确编辑。
-- 修复短窗口中右侧控件滚不到底的问题，保持手机布局和时间线定位的实时画面。
-- 7 种几何蒙版，支持位置、旋转、羽化与反转；19 种原创调色。没有打包竞品滤镜、模板或付费素材。
-- 16 种本地原创音效可直接试听、加入时间线；新增左右声道音量、平衡、仅左/仅右、单声道与左右交换。
-- SenseVoice 下载增加分段续传、完整散列复验和本地诊断，支持失败重试。原用户环境的立即报错未复现，不宣称已定位所有原因。
-- Windows 安装页面独立设计，一键安装 C 盘、D 盘与自定义安装，首次不预选磁盘；选根目录自动补 FreeCut 子目录，后端拒绝直接安装到根目录。
-- 自动检查本仓库 Release，按平台下载并校验后空闲安装。可暂缓或关闭，更新前仍询问是否保存，取消/保存失败不退出，不中断导出。
-- 保留项目首页、双布局、多轨剪辑、易用关键帧、按需下载的自动字幕和语音朗读。
+- 新增片段、轨道、预览、素材库和时间线右键菜单，支持复制、剪切、粘贴、分割、删除、翻转与轨道操作；复制和粘贴保留动画数据，锁轨限制继续生效。
+- 新增英文界面与英文安装页面，首次默认简体中文，可切换并记住选择。工程中的用户文字、素材名不会被自动翻译。英文界面只引导 GitHub Star。
+- 修复可验证的旧版 FreeCut 安装目录被误报为未知文件：允许覆盖升级，仅替换新包对应程序文件，保留工程、模型和其他个人文件；无法确认归属的程序仍拒绝覆盖。
+- 自动创建不存在的安装目录及父目录，区分磁盘不存在、无写入权限和安装包文件缺失。选根目录自动补 FreeCut 子目录，后端禁止直接安装到根目录。
+- 同步中英文 README、版本选择说明与英文宣传片。全部功能永久免费，不设会员、不设付费解锁，导出无水印。
+- 保留双布局、直接拖动/缩放/旋转、易用关键帧、7 种几何蒙版、19 种原创调色、16 种原创音效、左右声道、自动字幕和语音朗读。
+
+## English
+
+FreeCut is a free, open-source desktop video editor created by a junior high school student using GPT-6 and Codex. All features are free forever, with no membership, paid unlocks or export watermark.
+
+This update adds context menus, clip copy/cut/paste, a persistent English interface, a bilingual custom Windows installer, and verified legacy-install upgrades that preserve personal files. The first launch defaults to Simplified Chinese: choose English in Home → Settings → Language, or the editor's language selector. Your project text is never translated automatically.
+
+Download one app package below. Windows: Setup for installation, Portable for a writable folder without installation. Mac: arm64 for Apple silicon, x64 for Intel; choose either DMG or ZIP. Read FreeCut-Quickstart-en.md and [English README](https://github.com/${repo}/blob/main/README.en.md). If FreeCut helps you, please give the repository a Star.
 
 ## 该下载哪个文件？
 
@@ -74,9 +80,9 @@ if(mode==='verify'){
 
 Mac 可在「 → 关于本机」查看芯片。Windows 当前提供 x64 构建。手机风格是桌面内的布局，不是 Android/iOS 安装包。工程 .freecut 引用源素材，搬迁工程时也要保留媒体文件。
 
-从 0.2.0 旧安装版迁移时，先从 Windows 设置卸载旧程序，或另选目录。新版不会直接覆盖缺少归属清单的旧安装。项目、素材和模型应保留。Mac 自动更新需先把应用移出只读 DMG。
+从可验证的旧 0.2.0 FreeCut 安装版迁移时，可以选择原目录覆盖升级，无需先卸载。新版检查旧程序的真实包身份，再仅替换新包对应程序路径；保留个人工程、模型、未知文件和旧卸载器。升级后请使用新版卸载入口，勿对新目录运行残留旧卸载器。Mac 自动更新需先把应用移出只读 DMG。
 
-FreeCut-project-source-*.tar.gz 是本次应用源码，FreeCut-ffmpeg-source-*.tar.gz 是视频引擎对应源码；普通使用无需下载它们。FreeCut-Quickstart-zh.md 为中文教程，SHA256SUMS.txt 用于校验下载完整性。
+FreeCut-project-source-*.tar.gz 是本次应用源码，FreeCut-ffmpeg-source-*.tar.gz 是视频引擎对应源码；普通使用无需下载它们。FreeCut-Quickstart-zh.md / FreeCut-Quickstart-en.md 为中英文教程，SHA256SUMS.txt 用于校验下载完整性。
 
 ## 发布验证与说明
 
@@ -86,11 +92,11 @@ Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按�
 
 来源、依赖许可、品牌及专利边界排查见 docs/RELEASE-REVIEW-030.md；工程核查不等于商标核准、专利自由实施意见或零诉讼风险承诺。免费剪辑不改变第三方模型的用途限制。
 
-欢迎下载体验和支持开源：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。爱发电支持入口请以作者本人发布的真实链接为准。
+欢迎下载体验和支持开源：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。[爱发电自愿支持](https://afdian.com/a/watertube)不影响任何功能使用。
 `;
     await fs.writeFile(path.join(out,'release-notes.md'),notes);await fs.writeFile(path.join(out,'release-manifest.json'),JSON.stringify({runId,tag,head:build.head_sha,assets},null,2));console.log(`Prepared ${assets.length} verified assets`);
   }else if(mode==='publish'){
-    const manifest=JSON.parse(await fs.readFile(path.join(out,'release-manifest.json'),'utf8'));assert.equal(manifest.runId,runId);assert.equal(manifest.tag,tag);assert.equal(manifest.head,build.head_sha);assert.equal(manifest.assets.length,14);
+    const manifest=JSON.parse(await fs.readFile(path.join(out,'release-manifest.json'),'utf8'));assert.equal(manifest.runId,runId);assert.equal(manifest.tag,tag);assert.equal(manifest.head,build.head_sha);assert.equal(manifest.assets.length,15);
     for(const asset of manifest.assets){assert(/^[A-Za-z0-9_.-]+$/.test(asset.name));assert.equal(await digest(path.join(out,asset.name)),asset.sha256);}
     // A pre-existing tag must already resolve to this build. Never silently move a published git ref.
     const refs=api('git/matching-refs/tags/'+encodeURIComponent(tag)).filter(ref=>ref.ref===`refs/tags/${tag}`);

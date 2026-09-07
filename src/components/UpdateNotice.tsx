@@ -1,9 +1,11 @@
+import { statusText, useI18n } from '../i18n';
 import { useEffect, useRef, useState } from 'react';
 import { Download, RefreshCw, X } from 'lucide-react';
 import type { UpdateState } from '../types';
 import './update-notice.css';
 
 export function UpdateSettings() {
+  const { t } = useI18n();
   const [state, setState] = useState<UpdateState>();
   useEffect(() => {
     const api = window.freecut;
@@ -15,13 +17,15 @@ export function UpdateSettings() {
   const pending = ['checking', 'downloading', 'installing'].includes(state.phase);
   return (
     <section className="home-settings update-settings">
-      <h2>软件更新</h2>
+      <h2>{t('软件更新')}</h2>
       <div className="home-setting">
         <div>
-          <strong>自动检查、下载并安装更新</strong>
+          <strong>{t('自动检查、下载并安装更新')}</strong>
           <p>
-            连接 Watertube-bilibili/freecut-desktop 的 GitHub
-            Release。安装前仍会询问是否保存修改；忙碌时等待，不中断导出。
+            {' '}
+            {t(
+              '连接 Watertube-bilibili/freecut-desktop 的 GitHub Release。安装前仍会询问是否保存修改；忙碌时等待，不中断导出。',
+            )}{' '}
           </p>
         </div>
         <button
@@ -29,14 +33,16 @@ export function UpdateSettings() {
           aria-checked={state.automatic}
           onClick={() => void window.freecut!.setAutomaticUpdates(!state.automatic).then(setState)}
         >
-          {state.automatic ? '已开启' : '已关闭'}
+          {state.automatic ? t('已开启') : t('已关闭')}
         </button>
       </div>
       <div className="home-setting">
         <div>
-          <strong>{state.version ? `发现 ${state.version}` : state.currentVersion}</strong>
+          <strong>
+            {state.version ? t('发现 {v0}', { v0: state.version }) : state.currentVersion}
+          </strong>
           <p role="status">
-            {state.message}
+            {statusText(state.message)}
             {state.phase === 'downloading' && ` ${Math.round(state.progress * 100)}%`}
           </p>
         </div>
@@ -51,7 +57,7 @@ export function UpdateSettings() {
           }
         >
           <RefreshCw size={15} />
-          {state.phase === 'ready' ? '安装并重启' : '检查更新'}
+          {state.phase === 'ready' ? t('安装并重启') : t('检查更新')}
         </button>
       </div>
     </section>
@@ -59,6 +65,7 @@ export function UpdateSettings() {
 }
 
 export default function UpdateNotice({ busy }: { busy: boolean }) {
+  const { t } = useI18n();
   const [state, setState] = useState<UpdateState>();
   const [remaining, setRemaining] = useState(20);
   const [deferred, setDeferred] = useState('');
@@ -102,27 +109,28 @@ export default function UpdateNotice({ busy }: { busy: boolean }) {
   if (!state || hidden || !['downloading', 'ready', 'installing'].includes(state.phase))
     return null;
   return (
-    <aside className="update-notice" aria-label="FreeCut 软件更新">
+    <aside className="update-notice" aria-label={t('FreeCut 软件更新')}>
       <Download size={18} />
       <div>
         <strong>
-          {state.version} {state.phase === 'downloading' ? '正在下载' : '更新已就绪'}
+          {state.version} {state.phase === 'downloading' ? t('正在下载') : t('更新已就绪')}
         </strong>
         <p>
           {state.phase === 'downloading'
-            ? `${Math.round(state.progress * 100)}% · 下载后自动校验`
+            ? t('{v0}% · 下载后自动校验', { v0: Math.round(state.progress * 100) })
             : busy
-              ? '当前任务结束后安装，工程保存提示仍会保留。'
+              ? t('当前任务结束后安装，工程保存提示仍会保留。')
               : auto
-                ? `${remaining} 秒后准备重启安装；有修改会先询问保存。`
-                : state.message}
+                ? t('{v0} 秒后准备重启安装；有修改会先询问保存。', { v0: remaining })
+                : statusText(state.message)}
         </p>
         {state.phase === 'downloading' && <progress max={1} value={state.progress} />}
       </div>
       {state.phase === 'ready' && (
         <>
           <button disabled={!canInstall} onClick={() => void install()}>
-            立即安装
+            {' '}
+            {t('立即安装')}{' '}
           </button>
           <button
             onClick={() => {
@@ -130,12 +138,13 @@ export default function UpdateNotice({ busy }: { busy: boolean }) {
               setHidden(true);
             }}
           >
-            稍后
+            {' '}
+            {t('稍后')}{' '}
           </button>
         </>
       )}
       {state.phase === 'downloading' && (
-        <button className="icon-button" title="收起更新进度" onClick={() => setHidden(true)}>
+        <button className="icon-button" title={t('收起更新进度')} onClick={() => setHidden(true)}>
           <X size={16} />
         </button>
       )}

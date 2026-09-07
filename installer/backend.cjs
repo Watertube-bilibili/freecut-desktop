@@ -9,6 +9,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { Transform } = require('node:stream');
 const { pipeline } = require('node:stream/promises');
+const { identifyLegacy } = require('./legacy.cjs');
 
 const PRODUCT = 'org.freecut.desktop';
 const OWNERSHIP = '.freecut-install.json';
@@ -222,6 +223,7 @@ async function pruneEmpty(target, relatives) {
 
 async function inspectTarget(input, options = {}) {
   const target = validateTarget(input, options);
+  await assertVolumeAvailable(target);
   await assertNoLinks(target);
   if (await exists(target)) {
     if (!(await fs.lstat(target)).isDirectory()) fail('安装目标已被一个文件占用。');
@@ -238,6 +240,21 @@ async function inspectTarget(input, options = {}) {
   if (options.update && !installed)
     fail('自动更新仅支持有 FreeCut 安装清单的现有安装，请手动选择安装目录。');
   return { target, installed };
+}
+
+async function assertVolumeAvailable(target) {
+  if (process.platform !== 'win32') return;
+  const root = path.parse(target).root;
+  try {
+    if (!(await fs.stat(root)).isDirectory()) throw Object.assign(Error(), { code: 'ENOENT' });
+  } catch (error) {
+    if (['ENOENT', 'ENOTDIR', 'ENODEV'].includes(error.code))
+      throw Object.assign(
+        Error(`${root.slice(0, 1)} 盘不存在或未连接，请选择这台电脑上可用的磁盘。`),
+        { code: 'FREECUT_DRIVE_MISSING' },
+      );
+    throw error;
+  }
 }
 
 async function install({
@@ -262,27 +279,48 @@ async function install({
     fail('内置安装清单不能包含自身。');
   const { target, installed } = await inspectTarget(input, {
     ...options,
-    update,
+    // Legacy migration is supported by installation only. Uninstall still
+    // requires a committed ownership marker and never guesses which files to delete.
+    update: false,
     forbiddenRoots: [payload, ...(options.forbiddenRoots ?? [])],
   });
+  const legacy = !installed ? await identifyLegacy(target, assertNoLinks) : null;
+  if (update && !installed && !legacy)
+    fail('自动更新仅支持可识别的 FreeCut 安装，请手动选择安装目录。');
   const parent = path.dirname(target);
   await assertNoLinks(parent);
-  await fs.mkdir(parent, { recursive: true });
+  try {
+    await fs.mkdir(parent, { recursive: true });
+  } catch (error) {
+    await assertVolumeAvailable(target);
+    error.message = `无法创建安装目录 ${parent}。请确认有写入权限，或选择其他目录。\n${error.message}`;
+    throw error;
+  }
   const id = crypto.randomUUID();
   const stage = path.join(parent, `.freecut-stage-${id}`),
     backup = path.join(parent, `.freecut-backup-${id}`);
   const owned = new Map((installed?.files ?? []).map((entry) => [entry.path.toLowerCase(), entry]));
+  const legacyFiles = [];
   for (const entry of manifest.files) {
     const destination = path.join(target, entry.path);
     await assertNoLinks(destination);
     if (await exists(destination)) {
-      if (!owned.has(entry.path.toLowerCase()))
+      if (!owned.has(entry.path.toLowerCase()) && !legacy)
         fail(
           entry.path.toLowerCase() === 'freecut.exe'
             ? '此目录已有 FreeCut.exe，但没有新版安装清单。请先从 Windows 设置卸载旧版，或选择另一个文件夹；原文件未修改。'
             : `目标目录里已有不属于 FreeCut 的同名文件：${entry.path}。请换一个目录，原文件未修改。`,
         );
       if (!(await fs.lstat(destination)).isFile()) fail(`程序文件位置被目录占用：${entry.path}`);
+      if (legacy) {
+        // Only incoming known payload paths may be replaced. Never enumerate,
+        // adopt or remove other files in an old/mixed installation directory.
+        legacyFiles.push({
+          path: entry.path,
+          size: (await fs.stat(destination)).size,
+          sha256: await sha256(destination),
+        });
+      }
     }
     let ancestor = path.dirname(destination);
     while (ancestor !== target && ancestor.startsWith(target + path.sep)) {
@@ -313,6 +351,8 @@ async function install({
   try {
     aborted(signal);
     await fs.mkdir(stage, { mode: 0o700 });
+    if (legacy)
+      emit('checking', `正在升级 FreeCut ${legacy.version}，个人工程和模型会保留。`, 0, true);
     emit('copying', '正在展开并校验程序文件', 0, true);
     for (const entry of manifest.files) {
       aborted(signal);
@@ -321,7 +361,10 @@ async function install({
           : path.join(payload, 'application', entry.path),
         destination = path.join(stage, entry.path);
       await assertNoLinks(source);
-      const stat = await fs.lstat(source);
+      const stat = await fs.lstat(source).catch((error) => {
+        if (error.code === 'ENOENT') fail(`安装包缺少程序文件：${entry.path}。请重新下载安装器。`);
+        throw error;
+      });
       if (!stat.isFile() || stat.size !== entry.size) fail(`安装文件大小不匹配：${entry.path}`);
       await fs.mkdir(path.dirname(destination), { recursive: true });
       const hash = crypto.createHash('sha256');
@@ -353,6 +396,17 @@ async function install({
     aborted(signal);
     if (beforeCommit) await beforeCommit({ target, stage });
     aborted(signal);
+    for (const entry of legacyFiles) {
+      const file = path.join(target, entry.path);
+      await assertNoLinks(file);
+      if (
+        !(await exists(file)) ||
+        !(await fs.lstat(file)).isFile() ||
+        (await fs.stat(file)).size !== entry.size ||
+        (await sha256(file)) !== entry.sha256
+      )
+        fail('旧版程序文件在安装期间发生变化，请关闭 FreeCut 后重试；原文件未修改。');
+    }
     // Cancellation is disabled only for the short replacement transaction. A
     // failure restores all backed-up files before it is reported to the UI.
     committing = true;
@@ -360,7 +414,7 @@ async function install({
     await assertNoLinks(target);
     await fs.mkdir(target, { recursive: true });
     await fs.mkdir(backup, { mode: 0o700 });
-    for (const entry of installed?.files ?? []) {
+    for (const entry of installed?.files ?? legacyFiles) {
       const source = path.join(target, entry.path);
       await assertNoLinks(source);
       if (!(await exists(source))) continue;
@@ -388,6 +442,7 @@ async function install({
       installId: installed?.installId ?? crypto.randomUUID(),
       installedAt: new Date().toISOString(),
       target,
+      ...(legacy ? { migratedFrom: legacy.version } : {}),
     };
     delete installation.totalBytes;
     await fs.writeFile(path.join(stage, OWNERSHIP), JSON.stringify(installation, null, 2), {

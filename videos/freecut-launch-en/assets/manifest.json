@@ -1,0 +1,66 @@
+{
+  "files": [
+    {
+      "path": "assets/icon.png",
+      "bytes": 1814069,
+      "sha256": "2bd399856aeb2be777026b692fdd9e9354a3adf9b685e10c270faeeed4d2b304"
+    },
+    {
+      "path": "assets/fonts/NotoSansSC-Regular.otf",
+      "bytes": 8331336,
+      "sha256": "faa6c9df652116dde789d351359f3d7e5d2285a2b2a1f04a2d7244df706d5ea9"
+    },
+    {
+      "path": "assets/fonts/NotoSansSC-Bold.otf",
+      "bytes": 8543168,
+      "sha256": "c6cb5a93abaa9edc8ee7463b7ebb7f42d618d40e6ed2f7a5371c97b0b64767c0"
+    },
+    {
+      "path": "assets/fonts/LICENSE-NOTO.txt",
+      "bytes": 4301,
+      "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+    },
+    {
+      "path": "assets/vendor/gsap.min.js",
+      "bytes": 72779,
+      "sha256": "c174bfce53a729418d57a8ad8625e7247c793a22fef8e2851e3cfa3de9cd8280"
+    },
+    {
+      "path": "assets/vendor/LICENSE-GSAP.txt",
+      "bytes": 4526,
+      "sha256": "31ab01719fd63f004d531d9fbe06ca33457fc802102204c2d0fdd8f272420392"
+    },
+    {
+      "path": "assets/editor-en.png",
+      "bytes": 251475,
+      "sha256": "bf6e0cb6bcfd7fec3d9892db1f877503ecdd46b7ebb4818746c9113c043786bd",
+      "uiLanguage": "en",
+      "source": "assets/capture-provenance.json; ../../scripts/regression-language.cjs --capture-promo",
+      "captureApplicationVersion": "0.3.1"
+    },
+    {
+      "path": "assets/editor-keyframes-en.png",
+      "bytes": 256538,
+      "sha256": "e06d286d0522607c17675223fd6183ed8377170a3b91f0e7790dfbe22c8c68ec",
+      "uiLanguage": "en",
+      "source": "assets/capture-provenance.json; ../../scripts/regression-language.cjs --capture-promo",
+      "captureApplicationVersion": "0.3.1"
+    },
+    {
+      "path": "assets/editor-transform-en.png",
+      "bytes": 251258,
+      "sha256": "444390bcf3e9be195dfd795fe502f51d5de22044ac82ed632ba1517cb99bb938",
+      "uiLanguage": "en",
+      "source": "assets/capture-provenance.json; ../../scripts/regression-language.cjs --capture-promo",
+      "captureApplicationVersion": "0.3.1"
+    },
+    {
+      "path": "assets/mobile-en.png",
+      "bytes": 198695,
+      "sha256": "cc1a8923a3d5fdcd7f4fe9ad78e80f081deeb8fbd5f9bd135c6319a1471c4269",
+      "uiLanguage": "en",
+      "source": "assets/capture-provenance.json; ../../scripts/regression-language.cjs --capture-promo",
+      "captureApplicationVersion": "0.3.1"
+    }
+  ]
+}

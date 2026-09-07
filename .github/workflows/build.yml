@@ -89,6 +89,10 @@ jobs:
         run: node skills/shuiguan-cut/scripts/shuiguan-cut.cjs demo --repo . --out-dir artifacts/skill-smoke
       - name: Verify editor regressions in isolated desktop profile
         run: node scripts/regression-editor.cjs
+      - name: Verify context menus, clipboard, locked tracks and export
+        run: node scripts/regression-context-menu.cjs
+      - name: Verify default Chinese and persisted English interface
+        run: node scripts/regression-language.cjs
       - name: Verify preview seeking and layout changes with real video
         run: node scripts/regression-preview.cjs
       - name: Verify home, recent projects and unsaved exit protection

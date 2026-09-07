@@ -1,0 +1,93 @@
+{
+  "sourceProject": "../shuiguan-launch-instrumental",
+  "operation": "Translate on-screen copy, adapt English text sizes, preserve seven visual scenes and 55 seconds; use only actual English screenshots; no audio or caption tracks; GitHub-only CTA.",
+  "copied": [
+    {
+      "path": "hyperframes.json",
+      "bytes": 525,
+      "sha256": "c1438ef769990bbe2901599924d47a263c822a3197a2d68f7e388f96356ad47a"
+    },
+    {
+      "path": "hyperframes.lock.json",
+      "bytes": 116,
+      "sha256": "c06993221231af2c324c174dbb2e212cefdb2c2c9284471f1c1be2c916f12dd5"
+    },
+    {
+      "path": "LICENSE-GPL-3.0.txt",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "path": "assets/icon.png",
+      "bytes": 1814069,
+      "sha256": "2bd399856aeb2be777026b692fdd9e9354a3adf9b685e10c270faeeed4d2b304"
+    },
+    {
+      "path": "assets/fonts/NotoSansSC-Regular.otf",
+      "bytes": 8331336,
+      "sha256": "faa6c9df652116dde789d351359f3d7e5d2285a2b2a1f04a2d7244df706d5ea9"
+    },
+    {
+      "path": "assets/fonts/NotoSansSC-Bold.otf",
+      "bytes": 8543168,
+      "sha256": "c6cb5a93abaa9edc8ee7463b7ebb7f42d618d40e6ed2f7a5371c97b0b64767c0"
+    },
+    {
+      "path": "assets/fonts/LICENSE-NOTO.txt",
+      "bytes": 4301,
+      "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+    },
+    {
+      "path": "assets/vendor/gsap.min.js",
+      "bytes": 72779,
+      "sha256": "c174bfce53a729418d57a8ad8625e7247c793a22fef8e2851e3cfa3de9cd8280"
+    },
+    {
+      "path": "assets/vendor/LICENSE-GSAP.txt",
+      "bytes": 4526,
+      "sha256": "31ab01719fd63f004d531d9fbe06ca33457fc802102204c2d0fdd8f272420392"
+    },
+    {
+      "path": "compositions/components/logo-sting.html",
+      "bytes": 6717,
+      "sha256": "8c60f46928c1c99ec85a2b14b96245751372da8a1c85f3f6caaa101a873d5efe"
+    }
+  ],
+  "modified": [
+    {
+      "path": "compositions/frames/01-freedom.html",
+      "sourceSha256": "07b6903f123593f14c2cddf8dc24eb08d57ae8bc40af09d9b0b6ec68da8176ac",
+      "englishSha256": "8c73253eb6cde155cd3edfac0e4b22b5bf7a75d750ef147ed3c42f7cf3e32cf5"
+    },
+    {
+      "path": "compositions/frames/02-maker.html",
+      "sourceSha256": "58831b0c754604ab1f3513d04667ad8fda837b732bc17a562b17b32665bb47c1",
+      "englishSha256": "42e6f47505b44d2057fe0e59bacdcf18963814e3d1b1e49469cb2469f71ae17a"
+    },
+    {
+      "path": "compositions/frames/03-control.html",
+      "sourceSha256": "cfaf999c1b43df105f65281c446b9da1899f8d20d992fb2b9509d96a02461bf7",
+      "englishSha256": "44ca33031a4c29aa455ecffbd1f1e27c8ae1644535358983836eddce27f9ce64"
+    },
+    {
+      "path": "compositions/frames/04-layout.html",
+      "sourceSha256": "ba859405cda5cc9823f12c0436af383714c7dc51b1abc3688be10722f4c7013c",
+      "englishSha256": "95839a5678b3a659068cb14b0d9eed8765d0592a4e4554b4fdc2db848b4cffb9"
+    },
+    {
+      "path": "compositions/frames/05-tools.html",
+      "sourceSha256": "54e5131335fbea2abe16b2affddc57eaf4de752cf4ed6855de769fd1813467b3",
+      "englishSha256": "1c3603d3a0fa8413861b5accbc68fea16363bf1aa08d41937fb33d3a5349877e"
+    },
+    {
+      "path": "compositions/frames/06-open.html",
+      "sourceSha256": "f851ab068040a8672f019b8f6a36cfb9e2dc31bda1a1e025f29b7372a9cfe67c",
+      "englishSha256": "d9daf7fdf645c1bf1115643081402d80343cf6ed294dbc7aa0ea49a4306f995b"
+    },
+    {
+      "path": "compositions/frames/07-download.html",
+      "sourceSha256": "9f4ca9d607a009fdad5e4223838daa63295df55c3891f81ee7755e70a4028b84",
+      "englishSha256": "ddd1e6d96c83104472916ab3d9f25d48af1da2b72bf54c526f96c816198cb82e"
+    }
+  ]
+}

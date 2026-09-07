@@ -1,0 +1,74 @@
+{
+  "capturedAt": "2026-09-07T14:45:25.718Z",
+  "applicationVersion": "0.3.1",
+  "script": "scripts/regression-language.cjs",
+  "method": "Real Electron desktop screenshot with original locally drawn artwork, English text clips, and a synthesized audio fixture. No UI compositing.",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "checks": [
+    {
+      "name": "Fresh profile defaults to Simplified Chinese, independent of system locale",
+      "passed": true
+    },
+    {
+      "name": "English switch updates Home and About without a donation request",
+      "passed": true
+    },
+    {
+      "name": "English selection persists across a real Electron restart",
+      "passed": true
+    },
+    {
+      "name": "Native locale IPC rejects unsupported values without changing the selected language",
+      "passed": true
+    },
+    {
+      "name": "Real English demo renders in the desktop layout",
+      "passed": true
+    },
+    {
+      "name": "Professional keyframe properties, values and easing are in English",
+      "passed": true
+    },
+    {
+      "name": "Direct preview transform produces real English controls",
+      "passed": true
+    },
+    {
+      "name": "Mobile layout works in English at 1920 and a narrow desktop viewport",
+      "passed": true
+    },
+    {
+      "name": "Native save dialog receives English options and preserves English project text",
+      "passed": true
+    },
+    {
+      "name": "Native quit guard asks to save in English; Cancel keeps the project open",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "editor-en.png",
+      "bytes": 251475,
+      "sha256": "bf6e0cb6bcfd7fec3d9892db1f877503ecdd46b7ebb4818746c9113c043786bd"
+    },
+    {
+      "file": "editor-keyframes-en.png",
+      "bytes": 256538,
+      "sha256": "e06d286d0522607c17675223fd6183ed8377170a3b91f0e7790dfbe22c8c68ec"
+    },
+    {
+      "file": "editor-transform-en.png",
+      "bytes": 251258,
+      "sha256": "444390bcf3e9be195dfd795fe502f51d5de22044ac82ed632ba1517cb99bb938"
+    },
+    {
+      "file": "mobile-en.png",
+      "bytes": 198695,
+      "sha256": "cc1a8923a3d5fdcd7f4fe9ad78e80f081deeb8fbd5f9bd135c6319a1471c4269"
+    }
+  ]
+}

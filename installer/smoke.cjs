@@ -115,7 +115,7 @@ async function main() {
     report.checks.push(name);
     console.log(`PASS: ${name}`);
   };
-  const launch = async (args = [], explicitProfile = true) => {
+  const launch = async (args = [], explicitProfile = true, testHome = integrationHome) => {
     const profile = explicitProfile
       ? path.join(directory, `profile-${report.profiles.length}`)
       : path.join(integrationHome, 'FreeCut Installer');
@@ -123,7 +123,7 @@ async function main() {
     const env = {
       ...process.env,
       FREECUT_INSTALLER_PAYLOAD_DIR: payloadRoot,
-      FREECUT_INSTALLER_TEST_HOME: integrationHome,
+      FREECUT_INSTALLER_TEST_HOME: testHome,
     };
     delete env.ELECTRON_RUN_AS_NODE;
     delete env.PORTABLE_EXECUTABLE_DIR;
@@ -163,6 +163,83 @@ async function main() {
     application = undefined;
   };
   try {
+    await check(
+      'Installer defaults to Simplified Chinese and persists English with translated native dialogs and path errors',
+      async () => {
+        await launch([], false);
+        await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
+        await expect(page.locator('#heading')).toHaveText('安装水管剪辑');
+        await page.getByLabel('Language / 语言', { exact: true }).selectOption('en');
+        await expect(page.locator('#heading')).toHaveText('Install FreeCut');
+        await expect(page.locator('#choose')).toContainText('Choose another folder');
+        await expect(page.locator('#driveD')).toContainText('Install on D drive');
+        await application.evaluate(({ dialog }) => {
+          dialog.showOpenDialog = async (_window, options) => {
+            globalThis.__installerLanguageDialog = options;
+            return { canceled: true, filePaths: [] };
+          };
+        });
+        await page.locator('#choose').click();
+        assert.equal(
+          (await application.evaluate(() => globalThis.__installerLanguageDialog)).title,
+          'Choose an installation folder',
+        );
+        await page.evaluate(
+          (value) => window.freecutInstaller.install(value),
+          path.parse(target).root,
+        );
+        await expect(page.locator('#error')).toContainText(
+          'Do not install directly into a drive root',
+        );
+        await expect(page.locator('#heading')).toHaveText('Install FreeCut');
+        await page.screenshot({ path: path.join(directory, 'installer-english.png') });
+        await application.close();
+        application = undefined;
+        await launch([], false);
+        await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+        await expect(page.locator('#heading')).toHaveText('Install FreeCut');
+        await page.getByLabel('Language / 语言', { exact: true }).selectOption('zh-CN');
+        await expect(page.locator('#heading')).toHaveText('安装水管剪辑');
+        await expect(page.locator('#choose')).toContainText('自定义安装目录');
+        await application.close();
+        application = undefined;
+      },
+    );
+    await check(
+      'English installer creates missing nested folders on the workspace drive and completes through the real UI',
+      async () => {
+        await fs.mkdir(path.join(root, '.cache'), { recursive: true });
+        const volumeDirectory = await fs.mkdtemp(path.join(root, '.cache', 'installer-volume-ui-'));
+        const freshTarget = path.join(volumeDirectory, 'not created yet', '中文 子目录', 'FreeCut');
+        await assert.rejects(fs.stat(path.dirname(freshTarget)), { code: 'ENOENT' });
+        await launch(
+          ['--install-dir', freshTarget],
+          true,
+          path.join(volumeDirectory, 'integrations'),
+        );
+        await page.getByLabel('Language / 语言', { exact: true }).selectOption('en');
+        await expect(page.locator('#target')).toHaveText(freshTarget);
+        await expect(page.locator('#primary')).toHaveText('Install FreeCut →');
+        await page.locator('#primary').click();
+        await expect(page.locator('#completeView')).toBeVisible();
+        await expect(page.locator('#completeView')).toContainText('Ready to create.');
+        await expect(page.locator('#primary')).toHaveText('Launch FreeCut →');
+        assert.equal(
+          await fs.readFile(path.join(freshTarget, 'resources/app.asar'), 'utf8'),
+          entries['resources/app.asar'],
+        );
+        report.freshInstallation = {
+          drive: path.parse(freshTarget).root,
+          target: freshTarget,
+          createdMissingParents: true,
+          english: true,
+        };
+        await page.screenshot({ path: path.join(directory, 'installer-english-complete.png') });
+        await closeCompleted();
+        await backend.uninstall({ target: freshTarget });
+        await assert.rejects(fs.stat(freshTarget), { code: 'ENOENT' });
+      },
+    );
     await check(
       'Custom installer starts with no selected disk and normalizes native root selection',
       async () => {

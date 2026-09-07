@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import {
   X,
   Diamond,
@@ -80,6 +81,7 @@ export default function Inspector({
   toggleKey,
   seek,
 }: Props) {
+  const { t } = useI18n();
   const local = clip ? Math.max(0, Math.min(clip.duration, time - clip.start)) : 0;
   const hasPixels = clip?.kind === 'video' || clip?.kind === 'image';
   const visibleProperties = properties.filter((p) =>
@@ -92,13 +94,15 @@ export default function Inspector({
   const navigation = clip ? frameNavigation(clip, local, project.fps) : undefined;
   const easyControls = clip && navigation && (
     <>
-      <section className="easy-keyframes" aria-label="一键关键帧">
+      <section className="easy-keyframes" aria-label={t('一键关键帧')}>
         <div className="easy-keyframe-position">
-          <span>片段内 {local.toFixed(2)} 秒</span>
+          <span>
+            {t('片段内')} {local.toFixed(2)} {t('秒')}
+          </span>
           <span className={navigation.current !== undefined ? 'recorded' : ''}>
             {navigation.current !== undefined
-              ? '此处已记录'
-              : `${navigation.times.length} 处关键帧`}
+              ? t('此处已记录')
+              : t('{v0} 处关键帧', { v0: navigation.times.length })}
           </span>
         </div>
         <button
@@ -107,52 +111,50 @@ export default function Inspector({
           onClick={() => change((c) => recordFrame(c, local, project.fps))}
         >
           <Diamond size={19} fill={navigation.current !== undefined ? 'currentColor' : 'none'} />
-          {clip.kind === 'audio' ? '记录当前音量' : '记录当前画面'}
+          {clip.kind === 'audio' ? t('记录当前音量') : t('记录当前画面')}
         </button>
         <p className="easy-help">
-          {locked ? '轨道已锁定，请先解锁。' : '记录起点，移动播放头，调整后再记录。'}
+          {locked ? t('轨道已锁定，请先解锁。') : t('记录起点，移动播放头，调整后再记录。')}
         </p>
         <div className="easy-keyframe-navigation">
           <button
-            title="上一个关键帧"
-            aria-label="上一个关键帧"
+            title={t('上一个关键帧')}
+            aria-label={t('上一个关键帧')}
             disabled={navigation.previous === undefined}
             onClick={() =>
               navigation.previous !== undefined && seek(clip.start + navigation.previous)
             }
           >
-            <ChevronLeft size={15} />
-            上一处
+            <ChevronLeft size={15} /> {t('上一处')}{' '}
           </button>
           <button
-            title="删除当前整组关键帧"
-            aria-label="删除当前整组关键帧"
+            title={t('删除当前整组关键帧')}
+            aria-label={t('删除当前整组关键帧')}
             disabled={locked || navigation.current === undefined}
             onClick={() => change((c) => removeFrame(c, local, project.fps))}
           >
-            <Trash2 size={14} />
-            删除此处
+            <Trash2 size={14} /> {t('删除此处')}{' '}
           </button>
           <button
-            title="下一个关键帧"
-            aria-label="下一个关键帧"
+            title={t('下一个关键帧')}
+            aria-label={t('下一个关键帧')}
             disabled={navigation.next === undefined}
             onClick={() => navigation.next !== undefined && seek(clip.start + navigation.next)}
           >
-            下一处
-            <ChevronRight size={15} />
+            {' '}
+            {t('下一处')} <ChevronRight size={15} />
           </button>
         </div>
       </section>
       <section className="easy-adjustments">
-        <h3>{clip.kind === 'audio' ? '调整声音' : '调整画面'}</h3>
+        <h3>{clip.kind === 'audio' ? t('调整声音') : t('调整画面')}</h3>
         {[
           ...(clip.kind === 'audio'
             ? []
             : [
                 {
                   prop: 'scale' as const,
-                  label: '画面大小',
+                  label: t('画面大小'),
                   min: 10,
                   max: 400,
                   factor: 100,
@@ -160,7 +162,7 @@ export default function Inspector({
                 },
                 {
                   prop: 'x' as const,
-                  label: '左右移动',
+                  label: t('左右移动'),
                   min: -project.width,
                   max: project.width,
                   factor: 1,
@@ -168,7 +170,7 @@ export default function Inspector({
                 },
                 {
                   prop: 'y' as const,
-                  label: '上下移动',
+                  label: t('上下移动'),
                   min: -project.height,
                   max: project.height,
                   factor: 1,
@@ -176,7 +178,7 @@ export default function Inspector({
                 },
                 {
                   prop: 'opacity' as const,
-                  label: '不透明度',
+                  label: t('不透明度'),
                   min: 0,
                   max: 100,
                   factor: 100,
@@ -187,7 +189,7 @@ export default function Inspector({
             ? [
                 {
                   prop: 'volume' as const,
-                  label: '声音大小',
+                  label: t('声音大小'),
                   min: 0,
                   max: 400,
                   factor: 100,
@@ -219,17 +221,16 @@ export default function Inspector({
       </section>
       <section className="easy-motion-presets">
         <h3>
-          <Sparkles size={14} />
-          一键动画
+          <Sparkles size={14} /> {t('一键动画')}{' '}
         </h3>
         <div>
           {(clip.kind === 'audio'
-            ? [{ id: 'fade', label: '音量淡入淡出' }]
+            ? [{ id: 'fade', label: t('音量淡入淡出') }]
             : [
-                { id: 'zoom', label: '缓慢放大' },
-                { id: 'slide', label: '从左移入' },
-                { id: 'fade', label: '淡入淡出' },
-                { id: 'pop', label: '缩放出现' },
+                { id: 'zoom', label: t('缓慢放大') },
+                { id: 'slide', label: t('从左移入') },
+                { id: 'fade', label: t('淡入淡出') },
+                { id: 'pop', label: t('缩放出现') },
               ]
           ).map((preset) => (
             <button key={preset.id} disabled={locked} onClick={() => applyMotion(preset.id)}>
@@ -243,24 +244,26 @@ export default function Inspector({
   return (
     <aside className={`inspector inspector-${mode}`}>
       <div className="panel-heading">
-        <span>属性检查器</span>
-        <div className="inspector-mode" role="group" aria-label="属性检查器模式">
+        <span>{t('属性检查器')}</span>
+        <div className="inspector-mode" role="group" aria-label={t('属性检查器模式')}>
           <button aria-pressed={mode === 'easy'} onClick={() => setMode('easy')}>
-            普通
+            {' '}
+            {t('普通')}{' '}
           </button>
           <button aria-pressed={mode === 'pro'} onClick={() => setMode('pro')}>
-            专业
+            {' '}
+            {t('专业')}{' '}
           </button>
         </div>
-        <button className="icon-button" title="关闭属性检查器" onClick={onClose}>
+        <button className="icon-button" title={t('关闭属性检查器')} onClick={onClose}>
           <X size={15} />
         </button>
       </div>
       <div className="inspector-tabs">
         {[
-          ['basic', '基础'],
-          ['effects', '调色 / 蒙版'],
-          ['keyframes', '关键帧'],
+          ['basic', t('基础')],
+          ['effects', t('调色 / 蒙版')],
+          ['keyframes', t('关键帧')],
         ].map(([id, label]) => (
           <button key={id} className={tab === id ? 'active' : ''} onClick={() => setTab(id)}>
             {label}
@@ -270,17 +273,19 @@ export default function Inspector({
       {!clip ? (
         <div className="inspector-empty">
           <Move size={30} />
-          <h3>让每一帧恰到好处</h3>
-          <p>选择时间线中的片段，调整画面、声音或添加关键帧。</p>
+          <h3>{t('让每一帧恰到好处')}</h3>
+          <p>{t('选择时间线中的片段，调整画面、声音或添加关键帧。')}</p>
           <div className="project-facts">
-            <span>画布</span>
+            <span>{t('画布')}</span>
             <b>
               {project.width} × {project.height}
             </b>
-            <span>帧率</span>
+            <span>{t('帧率')}</span>
             <b>{project.fps} fps</b>
-            <span>素材</span>
-            <b>{project.assets.length} 个</b>
+            <span>{t('素材')}</span>
+            <b>
+              {project.assets.length} {t('个')}
+            </b>
           </div>
         </div>
       ) : (
@@ -292,11 +297,13 @@ export default function Inspector({
           {mode === 'easy' && (tab === 'basic' || tab === 'keyframes') && easyControls}
           {tab === 'basic' && (
             <>
-              {['audio', 'video'].includes(clip.kind) && <AudioControls audio={clip.audio} change={audio => update({ audio })} />}
+              {['audio', 'video'].includes(clip.kind) && (
+                <AudioControls audio={clip.audio} change={(audio) => update({ audio })} />
+              )}
               {mode === 'pro' && (
                 <section>
                   <h3>
-                    <Move size={14} /> 变换 <small>点击菱形添加关键帧</small>
+                    <Move size={14} /> {t('变换')} <small>{t('点击菱形添加关键帧')}</small>
                   </h3>
                   {visibleProperties.map((p) => {
                     const value = evaluate(clip, p.key, local),
@@ -305,9 +312,9 @@ export default function Inspector({
                       );
                     return (
                       <div className="anim-control" key={p.key}>
-                        <label htmlFor={`prop-${p.key}`}>{p.label}</label>
+                        <label htmlFor={`prop-${p.key}`}>{t(p.label)}</label>
                         <input
-                          aria-label={p.label}
+                          aria-label={t(p.label)}
                           id={`prop-${p.key}`}
                           type="number"
                           step={p.step}
@@ -325,7 +332,10 @@ export default function Inspector({
                         <span className="unit">{p.unit}</span>
                         <button
                           className={`icon-button key-button ${exists ? 'keyed' : ''}`}
-                          title={`${exists ? '删除' : '添加'}${p.label}关键帧`}
+                          title={t('{v0}{v1}关键帧', {
+                            v0: t(exists ? '删除' : '添加'),
+                            v1: t(p.label),
+                          })}
                           onClick={() => toggleKey(p.key)}
                         >
                           <Diamond size={14} fill={exists ? 'currentColor' : 'none'} />
@@ -338,19 +348,20 @@ export default function Inspector({
               {clip.kind === 'text' && clip.text && (
                 <section>
                   <h3>
-                    <Type size={14} /> 文字
+                    <Type size={14} /> {t('文字')}{' '}
                   </h3>
                   <textarea
-                    aria-label="文字内容"
+                    aria-label={t('文字内容')}
                     value={clip.text.text}
                     onChange={(e) => update({ text: { ...clip.text!, text: e.target.value } })}
                     rows={3}
                   />
                   <div className="two-controls">
                     <label>
-                      字号
+                      {' '}
+                      {t('字号')}{' '}
                       <input
-                        aria-label="字号"
+                        aria-label={t('字号')}
                         type="number"
                         min={8}
                         max={400}
@@ -366,9 +377,10 @@ export default function Inspector({
                       />
                     </label>
                     <label>
-                      文字颜色
+                      {' '}
+                      {t('文字颜色')}{' '}
                       <input
-                        aria-label="文字颜色"
+                        aria-label={t('文字颜色')}
                         type="color"
                         value={clip.text.color}
                         onChange={(e) => update({ text: { ...clip.text!, color: e.target.value } })}
@@ -380,7 +392,8 @@ export default function Inspector({
                       className={clip.text.bold ? 'active' : ''}
                       onClick={() => update({ text: { ...clip.text!, bold: !clip.text!.bold } })}
                     >
-                      加粗
+                      {' '}
+                      {t('加粗')}{' '}
                     </button>
                     <button
                       className={clip.text.stroke ? 'active' : ''}
@@ -388,7 +401,8 @@ export default function Inspector({
                         update({ text: { ...clip.text!, stroke: !clip.text!.stroke } })
                       }
                     >
-                      描边
+                      {' '}
+                      {t('描边')}{' '}
                     </button>
                     <button
                       className={clip.text.background !== 'transparent' ? 'active' : ''}
@@ -402,20 +416,22 @@ export default function Inspector({
                         })
                       }
                     >
-                      底色
+                      {' '}
+                      {t('底色')}{' '}
                     </button>
                   </div>
                   <label className="inline-field">
-                    对齐
+                    {' '}
+                    {t('对齐')}{' '}
                     <select
                       value={clip.text.align}
                       onChange={(e) =>
                         update({ text: { ...clip.text!, align: e.target.value as 'center' } })
                       }
                     >
-                      <option value="left">左对齐</option>
-                      <option value="center">居中</option>
-                      <option value="right">右对齐</option>
+                      <option value="left">{t('左对齐')}</option>
+                      <option value="center">{t('居中')}</option>
+                      <option value="right">{t('右对齐')}</option>
                     </select>
                   </label>
                 </section>
@@ -423,9 +439,10 @@ export default function Inspector({
               {clip.kind === 'shape' && (
                 <section>
                   <label className="inline-field">
-                    色卡颜色
+                    {' '}
+                    {t('色卡颜色')}{' '}
                     <input
-                      aria-label="色卡颜色"
+                      aria-label={t('色卡颜色')}
                       type="color"
                       value={clip.color}
                       onChange={(e) => update({ color: e.target.value })}
@@ -435,11 +452,12 @@ export default function Inspector({
               )}
               {mode === 'pro' && (
                 <section>
-                  <h3>时间与速度</h3>
+                  <h3>{t('时间与速度')}</h3>
                   <label className="inline-field">
-                    所在轨道
+                    {' '}
+                    {t('所在轨道')}{' '}
                     <select
-                      aria-label="所在轨道"
+                      aria-label={t('所在轨道')}
                       value={clip.trackId}
                       onChange={(e) => update({ trackId: e.target.value })}
                     >
@@ -452,27 +470,29 @@ export default function Inspector({
                           }
                         >
                           {track.name}
-                          {track.locked ? '（已锁定）' : ''}
+                          {track.locked ? t('（已锁定）') : ''}
                         </option>
                       ))}
                     </select>
                   </label>
                   <label className="inline-field">
-                    开始时间
+                    {' '}
+                    {t('开始时间')}{' '}
                     <input
-                      aria-label="开始时间"
+                      aria-label={t('开始时间')}
                       type="number"
                       min={0}
                       step={0.1}
                       value={Number(clip.start.toFixed(3))}
                       onChange={(e) => update({ start: Math.max(0, +e.target.value) })}
                     />
-                    <span>秒</span>
+                    <span>{t('秒')}</span>
                   </label>
                   <label className="inline-field">
-                    片段时长
+                    {' '}
+                    {t('片段时长')}{' '}
                     <input
-                      aria-label="片段时长"
+                      aria-label={t('片段时长')}
                       type="number"
                       min={0.1}
                       step={0.1}
@@ -487,11 +507,12 @@ export default function Inspector({
                         change((c) => trimClip(c, 0, c.duration - duration));
                       }}
                     />
-                    <span>秒</span>
+                    <span>{t('秒')}</span>
                   </label>
                   {['video', 'audio'].includes(clip.kind) && (
                     <label className="inline-field">
-                      常规变速
+                      {' '}
+                      {t('常规变速')}{' '}
                       <select
                         value={clip.speed}
                         onChange={(e) => {
@@ -524,13 +545,13 @@ export default function Inspector({
               {mode === 'pro' && (
                 <section>
                   <h3>
-                    <Volume2 size={14} /> 淡入淡出
+                    <Volume2 size={14} /> {t('淡入淡出')}{' '}
                   </h3>
                   {(['fadeIn', 'fadeOut'] as const).map((key, i) => (
                     <label className="inline-field" key={key}>
-                      {i === 0 ? '淡入' : '淡出'}
+                      {i === 0 ? t('淡入') : t('淡出')}
                       <input
-                        aria-label={i === 0 ? '淡入' : '淡出'}
+                        aria-label={i === 0 ? t('淡入') : t('淡出')}
                         type="number"
                         min={0}
                         max={clip.duration}
@@ -540,7 +561,7 @@ export default function Inspector({
                           update({ [key]: Math.max(0, Math.min(clip.duration, +e.target.value)) })
                         }
                       />
-                      <span>秒</span>
+                      <span>{t('秒')}</span>
                     </label>
                   ))}
                 </section>
@@ -549,16 +570,18 @@ export default function Inspector({
           )}
           {tab === 'effects' && clip.kind === 'audio' && (
             <p className="keyframe-intro">
-              音频片段可在“基础”和“关键帧”中调整音量、速度及淡入淡出。
+              {' '}
+              {t('音频片段可在“基础”和“关键帧”中调整音量、速度及淡入淡出。')}{' '}
             </p>
           )}
           {tab === 'effects' && clip.kind !== 'audio' && (
             <>
               <section>
                 <h3>
-                  画面调整
+                  {' '}
+                  {t('画面调整')}{' '}
                   <button
-                    title="重置全部效果"
+                    title={t('重置全部效果')}
                     className="icon-button"
                     onClick={() => update({ effects: defaultEffects() })}
                   >
@@ -570,11 +593,11 @@ export default function Inspector({
                   .map((p) => (
                     <div className="range-control" key={p.key}>
                       <label>
-                        {p.label}
+                        {t(p.label)}
                         <output>{Number(clip.effects[p.key]).toFixed(p.step < 1 ? 2 : 0)}</output>
                       </label>
                       <input
-                        aria-label={p.label}
+                        aria-label={t(p.label)}
                         type="range"
                         min={p.min}
                         max={p.max}
@@ -586,28 +609,36 @@ export default function Inspector({
                   ))}
               </section>
               <section>
-                <h3>蒙版</h3>
-                <MaskControls effects={clip.effects} onChange={values => change(c => ({ ...c, effects: { ...c.effects, ...values } }))} />
+                <h3>{t('蒙版')}</h3>
+                <MaskControls
+                  effects={clip.effects}
+                  onChange={(values) =>
+                    change((c) => ({ ...c, effects: { ...c.effects, ...values } }))
+                  }
+                />
                 <div className="segmented">
                   <button
                     className={clip.effects.flipX ? 'active' : ''}
                     onClick={() => effect('flipX', !clip.effects.flipX)}
                   >
-                    水平镜像
+                    {' '}
+                    {t('水平镜像')}{' '}
                   </button>
                   <button
                     className={clip.effects.flipY ? 'active' : ''}
                     onClick={() => effect('flipY', !clip.effects.flipY)}
                   >
-                    垂直镜像
+                    {' '}
+                    {t('垂直镜像')}{' '}
                   </button>
                 </div>
               </section>
               {hasPixels && (
                 <section>
-                  <h3>色度抠像</h3>
+                  <h3>{t('色度抠像')}</h3>
                   <label className="inline-field">
-                    启用抠像
+                    {' '}
+                    {t('启用抠像')}{' '}
                     <input
                       type="checkbox"
                       checked={clip.effects.chroma}
@@ -617,9 +648,10 @@ export default function Inspector({
                   {clip.effects.chroma && (
                     <>
                       <label className="inline-field">
-                        移除颜色
+                        {' '}
+                        {t('移除颜色')}{' '}
                         <input
-                          aria-label="移除颜色"
+                          aria-label={t('移除颜色')}
                           type="color"
                           value={clip.effects.chromaColor}
                           onChange={(e) => effect('chromaColor', e.target.value)}
@@ -627,10 +659,11 @@ export default function Inspector({
                       </label>
                       <div className="range-control">
                         <label>
-                          容差 <output>{clip.effects.chromaThreshold}</output>
+                          {' '}
+                          {t('容差')} <output>{clip.effects.chromaThreshold}</output>
                         </label>
                         <input
-                          aria-label="抠像容差"
+                          aria-label={t('抠像容差')}
                           type="range"
                           min={0}
                           max={350}
@@ -648,34 +681,38 @@ export default function Inspector({
             <>
               <div className="keyframe-intro">
                 <Diamond size={20} />
-                <p>移动播放头，再改变参数。已有关键帧的属性会自动记录动画。</p>
+                <p>{t('移动播放头，再改变参数。已有关键帧的属性会自动记录动画。')}</p>
               </div>
               <div className="local-time">
-                片段内时间 <b>{local.toFixed(2)} s</b>
+                {' '}
+                {t('片段内时间')} <b>{local.toFixed(2)} s</b>
               </div>
               {visibleProperties.map((prop) => (
                 <section className="keyframe-property" key={prop.key}>
                   <h3>
-                    {prop.label}
+                    {t(prop.label)}
                     <button className="text-button" onClick={() => toggleKey(prop.key)}>
-                      添加关键帧
+                      {' '}
+                      {t('添加关键帧')}{' '}
                     </button>
                   </h3>
                   {!clip.keyframes[prop.key]?.length ? (
-                    <p className="muted small">暂无关键帧 · 当前 {clip.transform[prop.key]}</p>
+                    <p className="muted small">
+                      {t('暂无关键帧 · 当前')} {clip.transform[prop.key]}
+                    </p>
                   ) : (
                     clip.keyframes[prop.key]!.map((k) => (
                       <div className="keyframe-row" key={k.id}>
                         <button
                           className="time-link"
-                          title="跳转至此关键帧"
+                          title={t('跳转至此关键帧')}
                           onClick={() => seek(clip.start + k.time)}
                         >
                           <Diamond size={11} />
                           {k.time.toFixed(2)}s
                         </button>
                         <input
-                          aria-label={`${prop.label}关键帧值`}
+                          aria-label={t('{v0}关键帧值', { v0: t(prop.label) })}
                           type="number"
                           step={prop.step}
                           value={k.value}
@@ -700,7 +737,7 @@ export default function Inspector({
                           }
                         />
                         <select
-                          aria-label="缓动方式"
+                          aria-label={t('缓动方式')}
                           value={k.easing}
                           onChange={(e) =>
                             change((c) => ({
@@ -714,15 +751,15 @@ export default function Inspector({
                             }))
                           }
                         >
-                          <option value="linear">线性</option>
-                          <option value="ease-in">缓入</option>
-                          <option value="ease-out">缓出</option>
-                          <option value="ease-in-out">缓入缓出</option>
-                          <option value="hold">保持</option>
+                          <option value="linear">{t('线性')}</option>
+                          <option value="ease-in">{t('缓入')}</option>
+                          <option value="ease-out">{t('缓出')}</option>
+                          <option value="ease-in-out">{t('缓入缓出')}</option>
+                          <option value="hold">{t('保持')}</option>
                         </select>
                         <button
                           className="icon-button"
-                          title="删除关键帧"
+                          title={t('删除关键帧')}
                           onClick={() =>
                             change((c) => ({
                               ...c,
@@ -741,7 +778,7 @@ export default function Inspector({
                 </section>
               ))}
               <p className="muted small">
-                <ChevronRight size={12} /> 缓动方式控制从此关键帧到下一帧的变化。
+                <ChevronRight size={12} /> {t('缓动方式控制从此关键帧到下一帧的变化。')}{' '}
               </p>
             </>
           )}

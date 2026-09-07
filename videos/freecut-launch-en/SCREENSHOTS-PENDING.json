@@ -1,0 +1,14 @@
+{
+  "status": "ready",
+  "expected": [
+    "editor-en.png",
+    "editor-keyframes-en.png",
+    "editor-transform-en.png",
+    "mobile-en.png"
+  ],
+  "minimumWidth": 1920,
+  "minimumHeight": 1080,
+  "renderAllowed": true,
+  "review": "All four real English UI screenshots visually inspected; no Chinese UI placeholders.",
+  "provenance": "assets/capture-provenance.json"
+}

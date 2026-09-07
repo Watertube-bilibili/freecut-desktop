@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import { useRef } from 'react';
 import {
   Eye,
@@ -27,6 +28,9 @@ interface Props {
   record: (p: Project) => void;
   addAsset: (id: string, trackId: string, start: number) => void;
   addTrack: () => void;
+  onClipContextMenu: (event: React.MouseEvent, clipId: string) => void;
+  onTrackContextMenu: (event: React.MouseEvent, trackId: string, atTime?: number) => void;
+  onTimelineContextMenu: (event: React.MouseEvent, atTime: number) => void;
 }
 export function timecode(time: number, fps = 30) {
   const t = Math.max(0, time);
@@ -45,7 +49,11 @@ export default function Timeline({
   record,
   addAsset,
   addTrack,
+  onClipContextMenu,
+  onTrackContextMenu,
+  onTimelineContextMenu,
 }: Props) {
+  const { t } = useI18n();
   const scroller = useRef<HTMLDivElement>(null),
     headerScroller = useRef<HTMLDivElement>(null);
   const layouts = new Map(
@@ -66,6 +74,34 @@ export default function Timeline({
   const total = Math.max(30, durationOf(project) + 8);
   const width = total * zoom;
   const step = zoom < 30 ? 5 : zoom < 80 ? 2 : 1;
+  const contextTime = (event: React.MouseEvent) =>
+    Math.max(
+      0,
+      Math.round(
+        ((event.clientX - event.currentTarget.getBoundingClientRect().left) / zoom) * project.fps,
+      ) / project.fps,
+    );
+  const keyboardContextMenu = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.dispatchEvent(
+      new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        button: 2,
+        clientX: Math.max(
+          0,
+          Math.min(window.innerWidth - 1, rect.left + Math.min(24, rect.width / 2)),
+        ),
+        clientY: Math.max(
+          0,
+          Math.min(window.innerHeight - 1, rect.top + Math.min(24, rect.height / 2)),
+        ),
+      }),
+    );
+  };
   function startDrag(e: React.PointerEvent, clip: Clip, mode: 'move' | 'left' | 'right') {
     if (e.button !== 0 || project.tracks.find((t) => t.id === clip.trackId)?.locked) return;
     e.preventDefault();
@@ -135,6 +171,7 @@ export default function Timeline({
   const changeTrack = (id: string, values: Partial<Track>) =>
     commit((p) => ({ ...p, tracks: p.tracks.map((t) => (t.id === id ? { ...t, ...values } : t)) }));
   const scrub = (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
     const element = e.currentTarget as HTMLElement;
     const rect = element.getBoundingClientRect();
     seek(Math.max(0, (e.clientX - rect.left) / zoom));
@@ -152,8 +189,8 @@ export default function Timeline({
     <div className="timeline-content">
       <div className="track-headers" ref={headerScroller}>
         <div className="track-header-top">
-          <span>轨道</span>
-          <button className="icon-button" title="添加叠加轨道" onClick={addTrack}>
+          <span>{t('轨道')}</span>
+          <button className="icon-button" title={t('添加叠加轨道')} onClick={addTrack}>
             <Plus size={14} />
           </button>
         </div>
@@ -161,7 +198,17 @@ export default function Timeline({
           <div
             key={track.id}
             className={`track-header ${track.kind}`}
+            data-track-id={track.id}
             style={{ height: layouts.get(track.id)!.height }}
+            role="group"
+            tabIndex={0}
+            aria-label={t('轨道 {v0}', { v0: track.name })}
+            onKeyDown={keyboardContextMenu}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onTrackContextMenu(event, track.id);
+            }}
           >
             <div className="track-name">
               {track.kind === 'audio' ? (
@@ -176,21 +223,21 @@ export default function Timeline({
             <div className="track-toggles">
               <button
                 className={`icon-button ${track.hidden ? 'toggled' : ''}`}
-                title={track.hidden ? '显示轨道' : '隐藏轨道'}
+                title={track.hidden ? t('显示轨道') : t('隐藏轨道')}
                 onClick={() => changeTrack(track.id, { hidden: !track.hidden })}
               >
                 {track.hidden ? <EyeOff size={13} /> : <Eye size={13} />}
               </button>
               <button
                 className={`icon-button ${track.muted ? 'toggled' : ''}`}
-                title={track.muted ? '取消静音' : '轨道静音'}
+                title={track.muted ? t('取消静音') : t('轨道静音')}
                 onClick={() => changeTrack(track.id, { muted: !track.muted })}
               >
                 {track.muted ? <VolumeX size={13} /> : <Volume2 size={13} />}
               </button>
               <button
                 className={`icon-button ${track.locked ? 'toggled' : ''}`}
-                title={track.locked ? '解锁轨道' : '锁定轨道'}
+                title={track.locked ? t('解锁轨道') : t('锁定轨道')}
                 onClick={() => changeTrack(track.id, { locked: !track.locked })}
               >
                 {track.locked ? <LockKeyhole size={13} /> : <UnlockKeyhole size={13} />}
@@ -207,7 +254,15 @@ export default function Timeline({
         }}
       >
         <div className="timeline-inner" style={{ width, minHeight: '100%' }}>
-          <div className="ruler" onPointerDown={scrub}>
+          <div
+            className="ruler"
+            onPointerDown={scrub}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onTimelineContextMenu(event, contextTime(event));
+            }}
+          >
             {Array.from({ length: Math.floor(total / step) + 1 }, (_, i) => (
               <span key={i} style={{ left: i * step * zoom }}>
                 {timecode(i * step, project.fps)}
@@ -218,8 +273,14 @@ export default function Timeline({
             <div
               key={track.id}
               className={`track-lane ${track.hidden ? 'hidden-track' : ''}`}
+              data-track-id={track.id}
               style={{ height: layouts.get(track.id)!.height }}
               onClick={() => select(undefined)}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onTrackContextMenu(event, track.id, contextTime(event));
+              }}
               onDragOver={(e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'copy';
@@ -242,18 +303,25 @@ export default function Timeline({
                   <div
                     key={clip.id}
                     className={`timeline-clip ${clip.kind} ${selected === clip.id ? 'selected' : ''}`}
+                    data-clip-id={clip.id}
                     style={{
                       left: clip.start * zoom,
                       width: Math.max(8, clip.duration * zoom),
                       top: 7 + layouts.get(track.id)!.lanes.get(clip.id)! * 56,
                       height: 49,
                     }}
-                    title={`${clip.name} · ${clip.duration.toFixed(2)} 秒`}
+                    title={t('{v0} · {v1} 秒', { v0: clip.name, v1: clip.duration.toFixed(2) })}
                     role="button"
                     tabIndex={0}
-                    aria-label={`片段 ${clip.name}`}
+                    aria-label={t('片段 {v0}', { v0: clip.name })}
                     onKeyDown={(e) => {
+                      keyboardContextMenu(e);
                       if (e.key === 'Enter') select(clip.id);
+                    }}
+                    onContextMenu={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onClipContextMenu(event, clip.id);
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -263,7 +331,7 @@ export default function Timeline({
                   >
                     <div
                       className="trim-handle left"
-                      title="拖动修剪开始"
+                      title={t('拖动修剪开始')}
                       onPointerDown={(e) => startDrag(e, clip, 'left')}
                     />
                     <div className="clip-label">
@@ -277,13 +345,15 @@ export default function Timeline({
                       <span>{clip.name}</span>
                     </div>
                     {clip.kind === 'audio' ? (
-                      <div className="audio-stripe">音频 · {clip.speed}×</div>
+                      <div className="audio-stripe">
+                        {t('音频 ·')} {clip.speed}×
+                      </div>
                     ) : (
                       <div className="clip-detail">
                         {clip.kind === 'text'
                           ? clip.text?.text
                           : clip.kind === 'shape'
-                            ? '纯色色卡'
+                            ? t('纯色色卡')
                             : `${clip.speed}× · ${clip.duration.toFixed(1)}s`}
                       </div>
                     )}
@@ -297,7 +367,7 @@ export default function Timeline({
                               <button
                                 key={k.id}
                                 className="timeline-key"
-                                title={`跳到关键帧 ${k.time.toFixed(2)}秒`}
+                                title={t('跳到关键帧 {v0}秒', { v0: k.time.toFixed(2) })}
                                 style={{ left: k.time * zoom }}
                                 onPointerDown={(e) => e.stopPropagation()}
                                 onClick={(e) => {
@@ -311,7 +381,7 @@ export default function Timeline({
                         )}
                     <div
                       className="trim-handle right"
-                      title="拖动修剪结尾"
+                      title={t('拖动修剪结尾')}
                       onPointerDown={(e) => startDrag(e, clip, 'right')}
                     />
                   </div>
@@ -324,7 +394,7 @@ export default function Timeline({
           {project.clips.length === 0 && (
             <div className="timeline-hint">
               <Film size={20} />
-              <span>将素材拖到轨道，开始你的第一剪</span>
+              <span>{t('将素材拖到轨道，开始你的第一剪')}</span>
             </div>
           )}
         </div>

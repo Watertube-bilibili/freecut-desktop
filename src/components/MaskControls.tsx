@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import type { Effects } from '../types';
 import { maskShapes } from '../core/masks';
 import './mask-controls.css';
@@ -9,6 +10,7 @@ export default function MaskControls({
   effects: Effects;
   onChange: (values: Partial<Effects>) => void;
 }) {
+  const { t } = useI18n();
   const controls: {
     key: 'maskSize' | 'maskX' | 'maskY' | 'maskRotation' | 'maskFeather';
     label: string;
@@ -26,33 +28,34 @@ export default function MaskControls({
   return (
     <div className="mask-controls">
       <label className="mask-shape-label">
-        形状
+        {' '}
+        {t('形状')}{' '}
         <select
-          aria-label="蒙版形状"
+          aria-label={t('蒙版形状')}
           value={effects.mask}
           onChange={(e) => onChange({ mask: e.target.value as Effects['mask'] })}
         >
           {maskShapes.map((shape) => (
             <option key={shape.value} value={shape.value}>
-              {shape.label}
+              {t(shape.label)}
             </option>
           ))}
         </select>
       </label>
-      <div className="mask-shape-grid" aria-label="常用蒙版形状">
+      <div className="mask-shape-grid" aria-label={t('常用蒙版形状')}>
         {maskShapes
           .filter((shape) => shape.value !== 'none')
           .map((shape) => (
             <button
               key={shape.value}
               type="button"
-              aria-label={`使用${shape.label}蒙版`}
+              aria-label={t('使用{v0}蒙版', { v0: t(shape.label) })}
               aria-pressed={effects.mask === shape.value}
               className={effects.mask === shape.value ? 'active' : ''}
               onClick={() => onChange({ mask: shape.value })}
             >
               <span aria-hidden="true">{shape.symbol}</span>
-              <small>{shape.label}</small>
+              <small>{t(shape.label)}</small>
             </button>
           ))}
       </div>
@@ -61,7 +64,7 @@ export default function MaskControls({
           {controls.map((control) => (
             <div className="range-control" key={control.key}>
               <label>
-                {control.label}
+                {t(control.label)}
                 <output>
                   {control.key === 'maskRotation'
                     ? `${effects[control.key] ?? 0}°`
@@ -69,7 +72,7 @@ export default function MaskControls({
                 </output>
               </label>
               <input
-                aria-label={control.label}
+                aria-label={t(control.label)}
                 type="range"
                 min={control.min}
                 max={control.max}
@@ -80,10 +83,11 @@ export default function MaskControls({
             </div>
           ))}
           <label className="inline-field">
-            反转蒙版
+            {' '}
+            {t('反转蒙版')}{' '}
             <input
               type="checkbox"
-              aria-label="反转蒙版"
+              aria-label={t('反转蒙版')}
               checked={effects.maskInvert ?? false}
               onChange={(e) => onChange({ maskInvert: e.target.checked })}
             />
@@ -102,9 +106,10 @@ export default function MaskControls({
               })
             }
           >
-            重置蒙版位置与边缘
+            {' '}
+            {t('重置蒙版位置与边缘')}{' '}
           </button>
-          <p className="mask-help">蒙版随画面的位置、缩放和旋转关键帧一起运动。</p>
+          <p className="mask-help">{t('蒙版随画面的位置、缩放和旋转关键帧一起运动。')}</p>
         </>
       )}
     </div>

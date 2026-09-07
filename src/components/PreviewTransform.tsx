@@ -1,5 +1,11 @@
+import { useI18n } from '../i18n';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
+import type {
+  PointerEvent as ReactPointerEvent,
+  MouseEvent as ReactMouseEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+  RefObject,
+} from 'react';
 import type { Project, Transform } from '../types';
 import {
   angleDelta,
@@ -26,6 +32,7 @@ export interface PreviewTransformProps {
   onStart: (id: string) => void | boolean;
   onChange: (id: string, values: Partial<Transform>) => void;
   onEnd: (cancelled: boolean) => void;
+  onContextMenu: (event: ReactMouseEvent, clipId?: string) => void;
 }
 type Box = { element: HTMLCanvasElement; left: number; top: number; width: number; height: number };
 type Gesture = {
@@ -55,11 +62,13 @@ const point = (event: { clientX: number; clientY: number }): Point => ({
 });
 
 export default function PreviewTransform(props: PreviewTransformProps) {
+  const { t } = useI18n();
   const { canvas, project, time, selected, disabled = false } = props;
   const callbacks = useRef(props);
   callbacks.current = props;
   const overlay = useRef<HTMLDivElement>(null);
   const gesture = useRef<Gesture | null>(null);
+  const keyboardMenu = useRef<{ clipId?: string } | null>(null);
   const [box, setBox] = useState<Box | null>(null);
   const [dragging, setDragging] = useState(false);
   const [hovering, setHovering] = useState(false);
@@ -165,6 +174,64 @@ export default function PreviewTransform(props: PreviewTransformProps) {
     const clip = project.clips.find((item) => item.id === selected);
     return clip ? getClipGeometry(project, clip, time, measureText) : null;
   }, [project, time, selected, measureText]);
+  // Context menus can inspect locked objects; editing still uses the original
+  // project and getClipGeometry's existing lock guard.
+  const contextProject = useMemo(
+    () => ({
+      ...project,
+      tracks: project.tracks.map((track) => (track.locked ? { ...track, locked: false } : track)),
+    }),
+    [project],
+  );
+  function openContextMenu(event: ReactMouseEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (disabled || !box) return;
+    if (gesture.current) finish(true);
+    const keyboard = keyboardMenu.current;
+    const geometry = keyboard
+      ? null
+      : hitTestProject(
+          contextProject,
+          time,
+          pointerToProject(point(event), box.element.getBoundingClientRect(), project),
+          measureText,
+        );
+    callbacks.current.onContextMenu(event, keyboard ? keyboard.clipId : geometry?.clip.id);
+  }
+  function openKeyboardMenu(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+    if (disabled || !box) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const clip = project.clips.find((item) => item.id === selected);
+    const geometry = clip ? getClipGeometry(contextProject, clip, time, measureText) : null;
+    const rect = box.element.getBoundingClientRect();
+    const position = geometry?.origin ?? { x: project.width / 2, y: project.height / 2 };
+    keyboardMenu.current = { clipId: selected };
+    try {
+      event.currentTarget.dispatchEvent(
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true,
+          button: 2,
+          clientX: Math.max(
+            0,
+            Math.min(window.innerWidth - 1, rect.left + (position.x * rect.width) / project.width),
+          ),
+          clientY: Math.max(
+            0,
+            Math.min(
+              window.innerHeight - 1,
+              rect.top + (position.y * rect.height) / project.height,
+            ),
+          ),
+        }),
+      );
+    } finally {
+      keyboardMenu.current = null;
+    }
+  }
   function begin(event: ReactPointerEvent<HTMLDivElement>) {
     if (disabled || !box || event.button !== 0 || gesture.current) return;
     const rect = box.element.getBoundingClientRect();
@@ -278,11 +345,13 @@ export default function PreviewTransform(props: PreviewTransformProps) {
       ref={overlay}
       className={`preview-transform-overlay ${dragging ? 'is-dragging' : hovering ? 'is-hovering' : ''}`}
       data-testid="preview-transform-overlay"
-      aria-label="画面变换工具"
+      aria-label={t('画面变换工具')}
       role="group"
       tabIndex={0}
       style={{ left: box.left, top: box.top, width: box.width, height: box.height }}
       onPointerDown={begin}
+      onContextMenu={openContextMenu}
+      onKeyDown={openKeyboardMenu}
       onPointerMove={update}
       onPointerUp={(event) => {
         if (gesture.current?.pointerId === event.pointerId) {
@@ -327,8 +396,8 @@ export default function PreviewTransform(props: PreviewTransformProps) {
               key={corner}
               type="button"
               className={`preview-transform-handle scale-${corner}`}
-              aria-label={handleLabels[corner]}
-              title={handleLabels[corner]}
+              aria-label={t(handleLabels[corner])}
+              title={t(handleLabels[corner])}
               data-testid={`preview-scale-${corner}`}
               data-transform-handle={corner}
               style={{ left: outline[index].x, top: outline[index].y }}
@@ -338,8 +407,8 @@ export default function PreviewTransform(props: PreviewTransformProps) {
             <button
               type="button"
               className="preview-transform-handle preview-transform-rotate"
-              aria-label="旋转选中对象"
-              title="旋转选中对象 · Shift 吸附 15°"
+              aria-label={t('旋转选中对象')}
+              title={t('旋转选中对象 · Shift 吸附 15°')}
               data-testid="preview-rotate"
               data-transform-handle="rotate"
               style={{ left: rotationHandle.x, top: rotationHandle.y }}

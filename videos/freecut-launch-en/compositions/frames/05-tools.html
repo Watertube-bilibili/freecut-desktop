@@ -1,0 +1,268 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "NotoSansSC";
+      src: url("assets/fonts/NotoSansSC-Regular.otf") format("opentype");
+      font-style: normal;
+      font-weight: 400;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "NotoSansSC";
+      src: url("assets/fonts/NotoSansSC-Bold.otf") format("opentype");
+      font-style: normal;
+      font-weight: 700;
+      font-display: block;
+    }
+    #root {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      container-type: size;
+      color: #091C19;
+      font-family: "NotoSansSC";
+      font-weight: 400;
+    }
+    .clip {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+    .f05-background {
+      background: #F4F3E8;
+      z-index: 0;
+    }
+    .f05-content {
+      z-index: 1;
+    }
+    .f05-title-mask {
+      position: absolute;
+      left: 5cqw;
+      top: 5.729167cqw;
+      width: 49cqw;
+      height: 9.375cqw;
+      overflow: hidden;
+    }
+    .f05-title {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      margin: 0;
+      font-size: 7.291667cqw;
+      font-weight: 700;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .f05-title-word {
+      display: inline-block;
+      flex: none;
+      padding: 0.625cqw 0;
+    }
+    .f05-title-effect {
+      background: #78E4BC;
+    }
+    .f05-title-effect-first {
+      padding-left: 0.416667cqw;
+      margin-left: 0.416667cqw;
+    }
+    .f05-title-effect-last {
+      padding-right: 0.416667cqw;
+    }
+    .f05-support-mask {
+      position: absolute;
+      left: 59.375cqw;
+      top: 10.833333cqw;
+      width: 35.625cqw;
+      height: 3.75cqw;
+      overflow: hidden;
+    }
+    .f05-support {
+      margin: 0;
+      padding-top: 0.520833cqw;
+      font-size: 2.1875cqw;
+      font-weight: 400;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .f05-rule {
+      position: absolute;
+      left: 5cqw;
+      top: 15.104167cqw;
+      width: 90cqw;
+      height: 0.15625cqw;
+      background: #091C19;
+      transform-origin: left center;
+    }
+    .f05-evidence {
+      position: absolute;
+      left: 5cqw;
+      top: 16.145833cqw;
+      width: 52.083333cqw;
+      margin: 0;
+      border: 0.4cqw solid #091C19;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: #091C19;
+    }
+    .f05-screenshot {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+    }
+    .f05-ledger {
+      position: absolute;
+      left: 59.375cqw;
+      top: 16.875cqw;
+      width: 35.625cqw;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.833333cqw;
+    }
+    .f05-row {
+      display: flex;
+      align-items: center;
+      min-height: 5.729167cqw;
+      height: 5.729167cqw;
+      box-sizing: border-box;
+      padding: 0 1.458333cqw;
+      border: 0.4cqw solid #091C19;
+      background: #F4F3E8;
+      color: #091C19;
+    }
+    .f05-row-creative {
+      background: #FFB9A9;
+    }
+    .f05-row[data-f05-active="true"] {
+      background: #78E4BC;
+    }
+    .f05-row-finish {
+      box-shadow: 1.25cqw 1.25cqw 0 #78E4BC,
+                  1.25cqw 1.25cqw 0 0.2cqw #091C19;
+    }
+    .f05-row-label {
+      display: block;
+      min-height: 2.375cqw;
+      font-size: 1.979167cqw;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .f05-license {
+      position: absolute;
+      left: 59.375cqw;
+      top: 44.166667cqw;
+      margin: 0;
+      font-size: 1.666667cqw;
+      font-weight: 400;
+      line-height: 1.2;
+      color: #2A2A2A;
+      white-space: nowrap;
+    }
+  
+/* English copy fits the established scene; original motion is preserved. */
+.f05-title{font-size:5.4cqw}.f05-support{font-size:1.75cqw}.f05-row-label{font-size:1.45cqw}.f05-license{left:59.375cqw;width:35.625cqw;font-size:1.12cqw;white-space:normal;line-height:1.4}
+</style>
+
+  <div data-hf-id="hf-p6lh" id="root" data-composition-id="05-tools" data-start="0" data-duration="10" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-wj34" id="f-05-tools-clip-1" class="clip f05-background" data-start="0" data-duration="10" data-track-index="0"></div>
+    <div data-hf-id="hf-invb" id="f-05-tools-clip-2" class="clip f05-content" data-start="0" data-duration="10" data-track-index="1">
+      <div data-hf-id="hf-5qfn" class="f05-title-mask">
+        <h1 data-hf-id="hf-i8s0" class="f05-title" aria-label="MORE TOOLS"><span data-hf-id="hf-s6q9" class="f05-title-word f05-title-anchor">MORE </span><span data-hf-id="hf-2t6t" class="f05-title-word f05-title-effect f05-title-effect-first">TO</span><span data-hf-id="hf-37e9" class="f05-title-word f05-title-effect f05-title-effect-last">OLS</span></h1>
+      </div>
+      <div data-hf-id="hf-pfti" class="f05-support-mask">
+        <p data-hf-id="hf-o0nt" class="f05-support">For everyday creativity</p>
+      </div>
+      <div data-hf-id="hf-nkt7" class="f05-rule" aria-hidden="true"></div>
+      <figure data-hf-id="hf-4q1u" class="f05-evidence">
+        <img data-hf-id="hf-k4mv" class="f05-screenshot" src="assets/editor-en.png" width="1920" height="1080" alt="Actual FreeCut editor with the English interface">
+      </figure>
+      <div data-hf-id="hf-e5fr" class="f05-ledger">
+        <div data-hf-id="hf-2y2q" class="f05-row f05-row-ai" data-f05-active="false"><span data-hf-id="hf-41fx" class="f05-row-label">Auto captions / Text to speech</span></div>
+        <div data-hf-id="hf-1fv7" class="f05-row f05-row-local" data-f05-active="false"><span data-hf-id="hf-43by" class="f05-row-label">Download once. Run locally.</span></div>
+        <div data-hf-id="hf-626r" class="f05-row f05-row-creative" data-f05-active="false"><span data-hf-id="hf-13w0" class="f05-row-label">Original sounds / Stereo controls</span></div>
+        <div data-hf-id="hf-2uxh" class="f05-row f05-row-finish" data-f05-active="false"><span data-hf-id="hf-6xtm" class="f05-row-label">7 masks / 19 original color looks</span></div>
+      </div>
+      <p data-hf-id="hf-9box" class="f05-license">Model licenses apply. ChatTTS: non-commercial.</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const DURATION = 10;
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["05-tools"] = tl;
+
+      // Arrivals use binary opacity and a masked, upward waterfall.
+      // Starting states live on the seekable timeline, never in hidden CSS.
+      gsap.set(".f05-title-word, .f05-support, .f05-evidence, .f05-row, .f05-license", { opacity: 0 });
+      tl.set(".f05-row", { attr: { "data-f05-active": "false" } }, 0);
+      tl.fromTo(".f05-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.36, ease: "power4.out" }, 0.38);
+
+      function arrive(selector, start, distance, duration) {
+        tl.set(selector, { opacity: 1 }, start);
+        tl.fromTo(selector,
+          { y: distance },
+          { y: 0, duration: duration, ease: "power4.out", immediateRender: false },
+          start
+        );
+      }
+
+      const F = 1 / 60;
+      const anchorStart = 0.04;
+      const effectStart = anchorStart + 0.18 - F;
+      const finalStart = effectStart + 0.16 - 2 * F;
+      arrive(".f05-title-anchor", anchorStart, 80, 0.18);
+      arrive(".f05-title-effect-first", effectStart, 70, 0.16);
+      arrive(".f05-title-effect-last", finalStart, 70, 0.14);
+      arrive(".f05-support", 1.1, 45, 0.15);
+      arrive(".f05-evidence", 1.4, 16, 0.2);
+
+      // Content-aware sequencing is calculated once, inside the locked scene.
+      // The longer final entry receives more reading time; 9–10s is a still hold.
+      const CONTENT = [
+        { selector: ".f05-row-ai", body: "Auto captions / Text to speech", hold: 0.65 },
+        { selector: ".f05-row-local", body: "Download once. Run locally.", hold: 0.9 },
+        { selector: ".f05-row-creative", body: "Original sounds / Stereo controls", hold: 0.65 },
+        { selector: ".f05-row-finish", body: "7 masks / 19 original color looks", hold: 1.25 }
+      ];
+      const START = 1.6;
+      const READ_END = 9;
+      const BASE_DURATION = 0.75;
+      const SEC_PER_CHAR = 0.04;
+      const weights = CONTENT.map(function (entry) {
+        return BASE_DURATION + entry.body.length * SEC_PER_CHAR + entry.hold;
+      });
+      const timeScale = (READ_END - START) / weights.reduce(function (sum, value) { return sum + value; }, 0);
+      let cumulative = START;
+      const TIMELINE = CONTENT.map(function (entry, index) {
+        const start = cumulative;
+        cumulative += weights[index] * timeScale;
+        return { selector: entry.selector, start: start, end: cumulative };
+      });
+
+      // Compile state transitions into GSAP sets. No per-frame DOM swapping;
+      // forward and backward seeks work even when callbacks are suppressed.
+      TIMELINE.forEach(function (entry, index) {
+        const distance = [60, 48, 44, 48][index];
+        const duration = [0.18, 0.16, 0.14, 0.16][index];
+        arrive(entry.selector, entry.start, distance, duration);
+        tl.set(entry.selector, { attr: { "data-f05-active": "true" } }, entry.start);
+        if (index > 0) {
+          tl.set(TIMELINE[index - 1].selector, { attr: { "data-f05-active": "false" } }, entry.start);
+        }
+      });
+      arrive(".f05-license", TIMELINE[1].start + 0.19, 12, 0.12);
+
+      // A nonvisual clock fixes the timeline length without an exit or drift.
+      const clock = { time: 0 };
+      tl.to(clock, { time: DURATION, duration: DURATION, ease: "none" }, 0);
+    })();
+  </script>
+</template>

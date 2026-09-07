@@ -67,6 +67,43 @@ import { editTransform } from './core/transform-edit';
 import UpdateNotice from './components/UpdateNotice';
 import BrandIcon from './components/BrandIcon';
 import SoundLibrary from './components/SoundLibrary';
+import ContextMenu, { type ContextMenuItem } from './components/ContextMenu';
+import { t, useI18n, type Language } from './i18n';
+import { version as appVersion } from '../package.json';
+
+type MenuTarget =
+  | { kind: 'clip' | 'preview'; id?: string }
+  | { kind: 'track'; id: string; atTime?: number }
+  | { kind: 'timeline'; atTime: number }
+  | { kind: 'asset'; id: string }
+  | { kind: 'library' };
+type EditorMenu = {
+  target: MenuTarget;
+  x: number;
+  y: number;
+  returnFocus: HTMLElement;
+  session: number;
+};
+
+function cloneClipForPlacement(source: Clip, trackId: string, start: number): Clip {
+  const clone = structuredClone(source);
+  clone.id = crypto.randomUUID();
+  clone.trackId = trackId;
+  clone.start = start;
+  Object.values(clone.keyframes).forEach((frames) =>
+    frames?.forEach((frame) => (frame.id = crypto.randomUUID())),
+  );
+  return clone;
+}
+
+function createLocalizedProject() {
+  const p = createProject();
+  return {
+    ...p,
+    name: t(p.name),
+    tracks: p.tracks.map((track) => ({ ...track, name: t(track.name) })),
+  };
+}
 
 const uid = () => crypto.randomUUID();
 const nav = [
@@ -91,14 +128,14 @@ function downloadFile(name: string, text: string, type = 'application/json') {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 function demoProject() {
-  const p = createProject();
-  p.name = '每一帧，都有你的想法 · 示例';
+  const p = createLocalizedProject();
+  p.name = t('每一帧，都有你的想法 · 示例');
   const video = p.tracks.find((t) => t.kind === 'video')!.id,
     over = p.tracks.find((t) => t.kind === 'overlay')!.id;
   p.clips = [
-    createClip('shape', video, { name: '松石色背景', duration: 10, color: '#254c49' }),
+    createClip('shape', video, { name: t('松石色背景'), duration: 10, color: '#254c49' }),
     createClip('shape', over, {
-      name: '暖橙色块',
+      name: t('暖橙色块'),
       duration: 10,
       color: '#dd9865',
       transform: { x: 560, y: 80, scale: 0.25, rotation: -12, opacity: 1, volume: 1 },
@@ -110,10 +147,10 @@ function demoProject() {
       },
     }),
     createClip('text', over, {
-      name: '主标题',
+      name: t('主标题'),
       duration: 10,
       text: {
-        text: '每一帧，\n都有你的想法。',
+        text: t('每一帧，\n都有你的想法。'),
         fontSize: 124,
         color: '#f1efe4',
         background: 'transparent',
@@ -135,10 +172,10 @@ function demoProject() {
       fadeOut: 0.6,
     }),
     createClip('text', over, {
-      name: '副标题',
+      name: t('副标题'),
       duration: 10,
       text: {
-        text: '水管剪辑  /  FREECUT\n让灵感，从这一剪开始。',
+        text: t('水管剪辑  /  FREECUT\n让灵感，从这一剪开始。'),
         fontSize: 32,
         color: '#c8dad1',
         background: 'transparent',
@@ -155,12 +192,16 @@ function demoProject() {
 }
 
 export default function App() {
+  const { language, setLanguage } = useI18n();
+  const [contextMenu, setContextMenu] = useState<EditorMenu>();
+  const [clipboard, setClipboard] = useState<Clip>();
+  const closeContextMenu = useCallback(() => setContextMenu(undefined), []);
   const [project, setProject] = useState<Project>(() => {
     try {
       const saved = localStorage.getItem('freecut-autosave');
       if (saved && !window.freecut) return validateProject(JSON.parse(saved));
     } catch {}
-    return createProject();
+    return createLocalizedProject();
   });
   const [selected, setSelected] = useState<string>(),
     [time, setTime] = useState(0),
@@ -231,7 +272,7 @@ export default function App() {
   const clip = project.clips.find((c) => c.id === selected),
     duration = durationOf(project);
   const notify = useCallback((message: string) => {
-    setToast(message);
+    setToast(t(message));
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(''), 4200);
   }, []);
@@ -239,6 +280,11 @@ export default function App() {
     savedRef.current = JSON.stringify(snapshot);
     setSavedFingerprint(savedRef.current);
   }, []);
+  useEffect(() => {
+    void window.freecut?.setLanguage?.(language).catch(() => {
+      notify(t('无法同步系统对话框语言，请重新打开软件。'));
+    });
+  }, [language, notify]);
   const refreshProjects = useCallback(async () => {
     if (!window.freecut) return;
     try {
@@ -275,7 +321,7 @@ export default function App() {
       finishPreviewGesture(true);
       if (fileOperation.current) {
         await api.cancelClose(requestId);
-        notify('正在处理工程文件，请完成后再退出。');
+        notify(t('正在处理工程文件，请完成后再退出。'));
         return;
       }
       closingRef.current = true;
@@ -294,9 +340,9 @@ export default function App() {
           const unchanged = JSON.stringify(projectRef.current) === atRequest;
           const closed = await api.confirmClose({ requestId, unchanged });
           if (closed) return;
-          if (!unchanged) notify('等待退出时工程又有更新，已保留窗口。请检查后重新保存。');
+          if (!unchanged) notify(t('等待退出时工程又有更新，已保留窗口。请检查后重新保存。'));
         } else if (result.status === 'failed')
-          notify(result.error ?? '保存失败，工程仍保留在编辑器中。');
+          notify(result.error ?? t('保存失败，工程仍保留在编辑器中。'));
       } catch (e) {
         await api.cancelClose(requestId).catch(() => {});
         notify((e as Error).message);
@@ -439,7 +485,7 @@ export default function App() {
   const changeClip = (update: (c: Clip) => Clip) => {
     if (!clip) return;
     if (project.tracks.find((t) => t.id === clip.trackId)?.locked) {
-      notify('轨道已锁定，请先解锁。');
+      notify(t('轨道已锁定，请先解锁。'));
       return;
     }
     commit((p) => ({ ...p, clips: p.clips.map((c) => (c.id === selected ? update(c) : c)) }));
@@ -451,51 +497,185 @@ export default function App() {
     setPlaying(false);
     setTime(timeRef.current);
   }, []);
-  const remove = useCallback(() => {
+  const removeClipById = useCallback(
+    (id?: string) => {
+      const p = projectRef.current,
+        c = p.clips.find((c) => c.id === id);
+      if (!c || p.tracks.find((t) => t.id === c.trackId)?.locked) return;
+      commit((p) => ({ ...p, clips: p.clips.filter((c) => c.id !== id) }));
+      setSelected((current) => (current === id ? undefined : current));
+    },
+    [commit],
+  );
+  const remove = useCallback(() => removeClipById(selected), [removeClipById, selected]);
+  const splitClipById = useCallback(
+    (id?: string) => {
+      const p = projectRef.current,
+        c = p.clips.find((c) => c.id === id);
+      if (!c) {
+        notify(t('先选择要分割的片段。'));
+        return;
+      }
+      if (p.tracks.find((t) => t.id === c.trackId)?.locked) return;
+      let result: ReturnType<typeof splitClip>;
+      try {
+        result = splitClip(c, timeRef.current);
+      } catch (error) {
+        notify(error instanceof Error ? error.message : t('片段分割失败，请检查关键帧。'));
+        return;
+      }
+      if (!result) {
+        notify(t('将播放头移到片段内部再分割。'));
+        return;
+      }
+      commit((p) => ({ ...p, clips: p.clips.flatMap((c) => (c.id === id ? result : [c])) }));
+      setSelected(result[1].id);
+      notify(t('片段已分割，关键帧已保留。'));
+    },
+    [commit, notify],
+  );
+  const split = useCallback(() => splitClipById(selected), [selected, splitClipById]);
+  const duplicateClipById = (id?: string) => {
     const p = projectRef.current,
-      c = p.clips.find((c) => c.id === selected);
-    if (!c || p.tracks.find((t) => t.id === c.trackId)?.locked) return;
-    commit((p) => ({ ...p, clips: p.clips.filter((c) => c.id !== selected) }));
-    setSelected(undefined);
-  }, [selected, commit]);
-  const split = useCallback(() => {
-    const p = projectRef.current,
-      c = p.clips.find((c) => c.id === selected);
-    if (!c) {
-      notify('先选择要分割的片段。');
+      source = p.clips.find((item) => item.id === id);
+    if (source && p.tracks.find((track) => track.id === source.trackId)?.locked) {
+      notify(t('轨道已锁定，请先解锁。'));
       return;
     }
-    if (p.tracks.find((t) => t.id === c.trackId)?.locked) return;
-    let result: ReturnType<typeof splitClip>;
-    try {
-      result = splitClip(c, timeRef.current);
-    } catch (error) {
-      notify(error instanceof Error ? error.message : '片段分割失败，请检查关键帧。');
-      return;
-    }
-    if (!result) {
-      notify('将播放头移到片段内部再分割。');
-      return;
-    }
-    commit((p) => ({ ...p, clips: p.clips.flatMap((c) => (c.id === selected ? result : [c])) }));
-    setSelected(result[1].id);
-    notify('片段已分割，关键帧已保留。');
-  }, [selected, commit, notify]);
-  const duplicate = () => {
-    if (clip && project.tracks.find((t) => t.id === clip.trackId)?.locked) {
-      notify('轨道已锁定，请先解锁。');
-      return;
-    }
-    if (clip) {
-      const clone = structuredClone(clip);
-      clone.id = uid();
-      clone.start += clone.duration;
-      clone.name += ' 副本';
-      Object.values(clone.keyframes).forEach((frames) => frames?.forEach((k) => (k.id = uid())));
+    if (source) {
+      const clone = cloneClipForPlacement(source, source.trackId, source.start + source.duration);
+      clone.name += t(' 副本');
       commit((p) => ({ ...p, clips: [...p.clips, clone] }));
       setSelected(clone.id);
     }
   };
+  const duplicate = () => duplicateClipById(selected);
+  function copyClipById(id?: string, cut = false) {
+    const p = projectRef.current,
+      source = p.clips.find((item) => item.id === id);
+    if (!source || (cut && p.tracks.find((track) => track.id === source.trackId)?.locked)) return;
+    setClipboard(structuredClone(source));
+    if (cut) removeClipById(id);
+    notify(cut ? t('片段已剪切，可在时间线上粘贴。') : t('片段已复制，可在时间线上粘贴。'));
+  }
+  function pasteDestination(trackId?: string) {
+    const p = projectRef.current;
+    if (!clipboard || (clipboard.assetId && !p.assets.some((a) => a.id === clipboard.assetId)))
+      return;
+    const compatible = (track: Project['tracks'][number]) =>
+      !track.locked && (track.kind !== 'audio' || clipboard.kind === 'audio');
+    if (trackId) return p.tracks.find((track) => track.id === trackId && compatible(track));
+    const preferred = p.clips.find((item) => item.id === selected)?.trackId ?? clipboard.trackId;
+    return (
+      p.tracks.find((track) => track.id === preferred && compatible(track)) ??
+      p.tracks.find((track) => track.id === clipboard.trackId && compatible(track)) ??
+      p.tracks.find(
+        (track) =>
+          track.kind === (clipboard.kind === 'audio' ? 'audio' : 'video') && compatible(track),
+      ) ??
+      p.tracks.find(compatible)
+    );
+  }
+  function pasteClip(trackId?: string, at = timeRef.current) {
+    const target = pasteDestination(trackId);
+    if (!clipboard || !target) {
+      notify(t('请先复制片段，并选择未锁定的兼容轨道。'));
+      return;
+    }
+    const p = projectRef.current;
+    const start = Math.max(0, Math.round(at * p.fps) / p.fps);
+    const clone = cloneClipForPlacement(clipboard, target.id, start);
+    commit((p) => ({ ...p, clips: [...p.clips, clone] }));
+    setSelected(clone.id);
+    seek(start);
+    notify(t('片段已粘贴。'));
+  }
+  function editClipById(id: string, update: (item: Clip) => Clip) {
+    commit((p) => {
+      const target = p.clips.find((item) => item.id === id);
+      if (!target || p.tracks.find((track) => track.id === target.trackId)?.locked) return p;
+      return { ...p, clips: p.clips.map((item) => (item.id === id ? update(item) : item)) };
+    });
+  }
+  function toggleTrack(id: string, property: 'muted' | 'hidden' | 'locked') {
+    commit((p) => ({
+      ...p,
+      tracks: p.tracks.map((track) =>
+        track.id === id ? { ...track, [property]: !track[property] } : track,
+      ),
+    }));
+  }
+  function openContextMenu(event: React.MouseEvent, target: MenuTarget) {
+    if ((event.target as HTMLElement).closest('input, textarea, select, [contenteditable="true"]'))
+      return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (
+      home ||
+      busy ||
+      exportOpen ||
+      aiOpen ||
+      helpOpen ||
+      onboarding ||
+      closingRef.current ||
+      fileOperation.current ||
+      pendingNavigation
+    )
+      return;
+    finishPreviewGesture(true);
+    playingRef.current = false;
+    setPlaying(false);
+    if (target.kind === 'clip' || target.kind === 'preview') setSelected(target.id);
+    const origin = event.currentTarget as HTMLElement;
+    origin.focus({ preventScroll: true });
+    setContextMenu({
+      target,
+      x: event.clientX,
+      y: event.clientY,
+      returnFocus: origin,
+      session: projectSession.current,
+    });
+  }
+  function keyboardContextMenu(event: React.KeyboardEvent) {
+    if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.dispatchEvent(
+      new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        button: 2,
+        clientX: rect.left + Math.min(24, rect.width / 2),
+        clientY: rect.top + Math.min(24, rect.height / 2),
+      }),
+    );
+  }
+  useEffect(() => {
+    if (
+      home ||
+      busy ||
+      exportOpen ||
+      aiOpen ||
+      helpOpen ||
+      onboarding ||
+      closing ||
+      fileBusy ||
+      pendingNavigation
+    )
+      closeContextMenu();
+  }, [
+    home,
+    busy,
+    exportOpen,
+    aiOpen,
+    helpOpen,
+    onboarding,
+    closing,
+    fileBusy,
+    pendingNavigation,
+    closeContextMenu,
+  ]);
   useEffect(() => {
     const timer = setTimeout(() => {
       try {
@@ -574,7 +754,7 @@ export default function App() {
   function switchLayout() {
     const next = !mobile;
     chooseLayout(next);
-    notify(next ? '已切换手机风格 · 所有专业功能仍可使用' : '已切换专业布局');
+    notify(next ? t('已切换手机风格 · 所有专业功能仍可使用') : t('已切换专业布局'));
   }
   function setAnim(property: AnimProperty, value: number) {
     changeClip((c) => {
@@ -625,12 +805,12 @@ export default function App() {
     const target =
       trackId ?? p.tracks.find((t) => t.kind === (asset.kind === 'audio' ? 'audio' : 'video'))!.id;
     if (p.tracks.find((t) => t.id === target)?.locked) {
-      notify('目标轨道已锁定。');
+      notify(t('目标轨道已锁定。'));
       return;
     }
     const track = p.tracks.find((t) => t.id === target);
     if (track?.kind === 'audio' && asset.kind !== 'audio') {
-      notify('请将画面素材添加到视频或叠加轨道。');
+      notify(t('请将画面素材添加到视频或叠加轨道。'));
       return;
     }
     const position =
@@ -655,26 +835,26 @@ export default function App() {
       ...p,
       assets: [...new Map([...p.assets, ...assets].map((a) => [a.id, a])).values()],
     }));
-    notify(`已导入 ${assets.length} 个素材，双击或拖入时间线。`);
+    notify(t('已导入 {v0} 个素材，双击或拖入时间线。', { v0: assets.length }));
   }
-  async function relinkMissing() {
+  async function relinkMissing(assetId?: string) {
     const session = projectSession.current;
-    const target = projectRef.current.assets.find((a) => a.missing);
+    const target = projectRef.current.assets.find((a) => (assetId ? a.id === assetId : a.missing));
     if (!target) return;
     if (!window.freecut) {
-      notify('请在桌面版中重新链接本地素材。');
+      notify(t('请在桌面版中重新链接本地素材。'));
       return;
     }
     try {
-      notify('请选择缺失的素材：' + target.name);
+      notify(t('请选择缺失的素材：') + target.name);
       const files = await window.freecut.importMedia();
       if (session !== projectSession.current) {
-        notify('已切换项目，先前的素材重连结果未应用。');
+        notify(t('已切换项目，先前的素材重连结果未应用。'));
         return;
       }
       if (files[0]) {
         if (files[0].kind !== target.kind)
-          throw new Error('素材类型不一致，请选择相同类型的 ' + target.name);
+          throw new Error(t('素材类型不一致，请选择相同类型的 ') + target.name);
         const required = Math.max(
           0,
           ...projectRef.current.clips
@@ -682,7 +862,7 @@ export default function App() {
             .map((c) => c.inPoint + c.duration * c.speed),
         );
         if (target.kind !== 'image' && files[0].duration + 0.05 < required)
-          throw new Error('替换素材太短，需要至少 ' + required.toFixed(2) + ' 秒。');
+          throw new Error(t('替换素材太短，需要至少 ') + required.toFixed(2) + t(' 秒。'));
         commit((p) => ({
           ...p,
           assets: p.assets.map((a) =>
@@ -690,7 +870,7 @@ export default function App() {
           ),
         }));
         clearMediaCache();
-        notify('素材已重新链接。');
+        notify(t('素材已重新链接。'));
       }
     } catch (e) {
       notify((e as Error).message);
@@ -703,7 +883,7 @@ export default function App() {
         setBusy(true);
         const assets = await window.freecut.importMedia();
         if (session !== projectSession.current) {
-          notify('已切换项目，先前选择的素材未加入当前项目。需要时请重新导入。');
+          notify(t('已切换项目，先前选择的素材未加入当前项目。需要时请重新导入。'));
           return;
         }
         if (assets.length) addAssets(assets);
@@ -733,7 +913,10 @@ export default function App() {
                   kind === 'image'
                     ? new window.Image()
                     : document.createElement(kind === 'audio' ? 'audio' : 'video');
-              const timer = setTimeout(() => reject(new Error(`无法读取 ${file.name}`)), 15000);
+              const timer = setTimeout(
+                () => reject(new Error(t('无法读取 {v0}', { v0: file.name }))),
+                15000,
+              );
               const done = () => {
                 clearTimeout(timer);
                 resolve({
@@ -761,7 +944,7 @@ export default function App() {
               });
               media.onerror = () => {
                 clearTimeout(timer);
-                reject(new Error(`格式暂不支持：${file.name}`));
+                reject(new Error(t('格式暂不支持：{v0}', { v0: file.name })));
               };
               media.src = url;
             }),
@@ -769,7 +952,7 @@ export default function App() {
       );
       if (session !== projectSession.current) {
         assets.forEach((asset) => URL.revokeObjectURL(asset.url));
-        notify('已切换项目，先前选择的素材未加入当前项目。需要时请重新导入。');
+        notify(t('已切换项目，先前选择的素材未加入当前项目。需要时请重新导入。'));
         return;
       }
       addAssets(assets);
@@ -785,7 +968,7 @@ export default function App() {
     return (
       existing ?? {
         id: uid(),
-        name: kind === 'audio' ? '音频' : kind === 'video' ? '画面' : '叠加',
+        name: kind === 'audio' ? t('音频') : kind === 'video' ? t('画面') : t('叠加'),
         kind,
         locked: false,
         muted: false,
@@ -793,7 +976,7 @@ export default function App() {
       }
     );
   }
-  function addText(text = '在这里输入文字', style?: Partial<NonNullable<Clip['text']>>) {
+  function addText(text = t('在这里输入文字'), style?: Partial<NonNullable<Clip['text']>>) {
     const target = writableTrack('overlay');
     const c = createClip('text', target.id, {
       name: text.split('\n')[0].slice(0, 16),
@@ -840,12 +1023,19 @@ export default function App() {
     commit((p) => ({
       ...p,
       tracks: [
-        { id: trackId, name: '字幕', kind: 'overlay', muted: false, hidden: false, locked: false },
+        {
+          id: trackId,
+          name: t('字幕'),
+          kind: 'overlay',
+          muted: false,
+          hidden: false,
+          locked: false,
+        },
         ...p.tracks,
       ],
       clips: [...p.clips, ...clips],
     }));
-    notify(`已添加 ${clips.length} 条字幕，可逐条编辑。`);
+    notify(t('已添加 {v0} 条字幕，可逐条编辑。', { v0: clips.length }));
   }
   function addAIAudio(asset: MediaAsset) {
     const target = writableTrack('audio');
@@ -862,7 +1052,7 @@ export default function App() {
       clips: [...p.clips, c],
     }));
     setSelected(c.id);
-    notify('音频已添加到时间线。');
+    notify(t('音频已添加到时间线。'));
   }
   async function save() {
     finishPreviewGesture(true);
@@ -877,11 +1067,11 @@ export default function App() {
         if (!path) return false;
         if (projectSession.current === session) markSaved(snapshot);
         void refreshProjects();
-        notify('工程已保存。');
+        notify(t('工程已保存。'));
       } else {
         downloadFile(`${snapshot.name}.freecut`, JSON.stringify(snapshot, null, 2));
         if (projectSession.current === session) markSaved(snapshot);
-        notify('工程已下载；浏览器素材需要在重开后重新导入。');
+        notify(t('工程已下载；浏览器素材需要在重开后重新导入。'));
       }
       return true;
     } catch (e) {
@@ -895,6 +1085,8 @@ export default function App() {
   function replaceProject(p: Project, saved = true) {
     finishPreviewGesture(true);
     projectSession.current++;
+    closeContextMenu();
+    setClipboard(undefined);
     setPlaying(false);
     clearMediaCache();
     history.current = [];
@@ -932,7 +1124,7 @@ export default function App() {
       const data = await load();
       if (!data) return;
       if (projectSession.current !== session || JSON.stringify(projectRef.current) !== before) {
-        notify('打开文件期间当前工程有更新，已保留当前工程。请保存后重新打开。');
+        notify(t('打开文件期间当前工程有更新，已保留当前工程。请保存后重新打开。'));
         return;
       }
       replaceProject(validateProject(data));
@@ -958,7 +1150,7 @@ export default function App() {
       return;
     }
     if (JSON.stringify(projectRef.current) !== before) {
-      notify('工程有新的更新，已保留当前工程。请检查后再继续。');
+      notify(t('工程有新的更新，已保留当前工程。请检查后再继续。'));
       setNavigationBusy(false);
       return;
     }
@@ -976,7 +1168,7 @@ export default function App() {
     navigate(() => {
       if (JSON.stringify(projectRef.current) !== savedRef.current) {
         projectSession.current++;
-        const blank = createProject();
+        const blank = createLocalizedProject();
         projectRef.current = blank;
         setProject(blank);
         markSaved(blank);
@@ -994,7 +1186,7 @@ export default function App() {
   }
   function applyMotion(id: string) {
     if (!clip) {
-      notify('先选择时间线中的画面或文字。');
+      notify(t('先选择时间线中的画面或文字。'));
       return;
     }
     changeClip((c) => {
@@ -1050,7 +1242,7 @@ export default function App() {
       };
     });
     setInspectorTab('keyframes');
-    notify('动画已应用，可在关键帧中继续调整。');
+    notify(t('动画已应用，可在关键帧中继续调整。'));
   }
   async function doExport() {
     const api = window.freecut;
@@ -1059,7 +1251,7 @@ export default function App() {
     setPlaying(false);
     setProgress(0);
     setExportPath('');
-    setExportPhase('准备导出');
+    setExportPhase(t('准备导出'));
     cancelled.current = false;
     let unsub: undefined | (() => void);
     try {
@@ -1085,7 +1277,7 @@ export default function App() {
       job.current = out.jobId;
       unsub = api.onExportProgress((event) => {
         if (event.jobId === out.jobId && event.phase === 'encoding') {
-          setExportPhase('编码视频与混合音频');
+          setExportPhase(t('编码视频与混合音频'));
           setProgress(75 + event.progress * 25);
         }
       });
@@ -1093,11 +1285,11 @@ export default function App() {
         count = Math.ceil(dur * exportFps);
       for (let i = 0; i < count; i++) {
         if (cancelled.current) break;
-        setExportPhase(`渲染画面 ${i + 1} / ${count}`);
+        setExportPhase(t('渲染画面 {v0} / {v1}', { v0: i + 1, v1: count }));
         await renderProject(offscreen, p, i / exportFps, { width, height });
         const blob = await new Promise<Blob>((resolve, reject) =>
           offscreen.toBlob(
-            (b) => (b ? resolve(b) : reject(new Error('画面编码失败'))),
+            (b) => (b ? resolve(b) : reject(new Error(t('画面编码失败')))),
             'image/png',
           ),
         );
@@ -1111,18 +1303,18 @@ export default function App() {
       }
       if (cancelled.current) {
         await api.cancelExport(out.jobId);
-        notify('导出已取消。');
+        notify(t('导出已取消。'));
       } else {
-        setExportPhase('编码视频与混合音频');
+        setExportPhase(t('编码视频与混合音频'));
         const result = await api.finishExport(out.jobId);
         setProgress(100);
         setExportPath(result.path);
-        setExportPhase('导出完成');
-        notify('视频已导出，无水印。');
+        setExportPhase(t('导出完成'));
+        notify(t('视频已导出，无水印。'));
       }
     } catch (e) {
       if (!cancelled.current) {
-        setExportPhase('导出失败');
+        setExportPhase(t('导出失败'));
         notify((e as Error).message);
         setError((e as Error).message);
       }
@@ -1144,9 +1336,11 @@ export default function App() {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName) || element.isContentEditable)
         return;
       if (
+        contextMenu ||
         home ||
         exportOpen ||
         aiOpen ||
+        helpOpen ||
         onboarding ||
         closingRef.current ||
         fileOperation.current ||
@@ -1176,6 +1370,18 @@ export default function App() {
       } else if (mod && key === 'b') {
         event.preventDefault();
         split();
+      } else if (mod && key === 'c') {
+        event.preventDefault();
+        copyClipById(selected);
+      } else if (mod && key === 'x') {
+        event.preventDefault();
+        copyClipById(selected, true);
+      } else if (mod && key === 'v') {
+        event.preventDefault();
+        pasteClip();
+      } else if (mod && key === 'd') {
+        event.preventDefault();
+        duplicateClipById(selected);
       } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
         event.preventDefault();
         seek(timeRef.current + (event.key === 'ArrowLeft' ? -1 : 1) / projectRef.current.fps);
@@ -1188,9 +1394,13 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler);
   }, [
     selected,
+    clipboard,
+    contextMenu,
+    language,
     home,
     exportOpen,
     aiOpen,
+    helpOpen,
     onboarding,
     pendingNavigation,
     remove,
@@ -1206,8 +1416,8 @@ export default function App() {
   );
   const toolButtons = [
     {
-      label: '关键帧',
-      description: '为位置、缩放、声音添加动画',
+      label: t('关键帧'),
+      description: t('为位置、缩放、声音添加动画'),
       icon: Diamond,
       action: () => {
         setInspectorTab('keyframes');
@@ -1215,8 +1425,8 @@ export default function App() {
       },
     },
     {
-      label: '自动字幕',
-      description: '下载开源模型，识别中英文',
+      label: t('自动字幕'),
+      description: t('下载开源模型，识别中英文'),
       icon: Captions,
       action: () => {
         setAITab('asr');
@@ -1224,8 +1434,8 @@ export default function App() {
       },
     },
     {
-      label: '语音朗读',
-      description: '将文字变成时间线上的声音',
+      label: t('语音朗读'),
+      description: t('将文字变成时间线上的声音'),
       icon: Mic,
       action: () => {
         setAITab('tts');
@@ -1233,8 +1443,8 @@ export default function App() {
       },
     },
     {
-      label: '蒙版与抠像',
-      description: '圆形、矩形与绿幕蓝幕',
+      label: t('蒙版与抠像'),
+      description: t('圆形、矩形与绿幕蓝幕'),
       icon: Layers,
       action: () => {
         setInspectorTab('effects');
@@ -1242,14 +1452,14 @@ export default function App() {
       },
     },
     {
-      label: '导入 SRT 字幕',
-      description: '保留时间码，逐条编辑',
+      label: t('导入 SRT 字幕'),
+      description: t('保留时间码，逐条编辑'),
       icon: Upload,
       action: () => srtInput.current?.click(),
     },
     {
-      label: '导出 SRT 字幕',
-      description: '保存文字轨道为字幕文件',
+      label: t('导出 SRT 字幕'),
+      description: t('保存文字轨道为字幕文件'),
       icon: Download,
       action: () =>
         downloadFile(
@@ -1259,8 +1469,8 @@ export default function App() {
         ),
     },
     {
-      label: '添加叠加轨道',
-      description: '放置画中画、文字和图形',
+      label: t('添加叠加轨道'),
+      description: t('放置画中画、文字和图形'),
       icon: Plus,
       action: () =>
         commit((p) => ({
@@ -1268,7 +1478,7 @@ export default function App() {
           tracks: [
             {
               id: uid(),
-              name: `叠加 ${p.tracks.filter((t) => t.kind === 'overlay').length + 1}`,
+              name: t('叠加 {v0}', { v0: p.tracks.filter((t) => t.kind === 'overlay').length + 1 }),
               kind: 'overlay',
               hidden: false,
               muted: false,
@@ -1279,10 +1489,268 @@ export default function App() {
         })),
     },
   ];
+  function contextContent(): { label: string; items: ContextMenuItem[] } | undefined {
+    if (!contextMenu || contextMenu.session !== projectSession.current) return;
+    const target = contextMenu.target,
+      p = projectRef.current;
+    const mod = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl';
+    const pasting = (trackId?: string, at?: number): ContextMenuItem => ({
+      id: 'paste',
+      label: t('粘贴'),
+      shortcut: `${mod}+V`,
+      disabled: !pasteDestination(trackId),
+      onSelect: () => pasteClip(trackId, at),
+    });
+    const historyItems = (): ContextMenuItem[] => [
+      {
+        id: 'undo',
+        label: t('撤销'),
+        shortcut: `${mod}+Z`,
+        separatorBefore: true,
+        disabled: !history.current.length,
+        onSelect: undo,
+      },
+      {
+        id: 'redo',
+        label: t('重做'),
+        shortcut: `${mod}+Shift+Z`,
+        disabled: !future.current.length,
+        onSelect: redo,
+      },
+    ];
+    const trackItems = (id: string): ContextMenuItem[] => {
+      const track = p.tracks.find((item) => item.id === id);
+      if (!track) return [];
+      return [
+        {
+          id: 'track-mute',
+          label: track.muted ? t('取消静音') : t('轨道静音'),
+          checked: track.muted,
+          onSelect: () => toggleTrack(id, 'muted'),
+        },
+        {
+          id: 'track-hide',
+          label: track.hidden ? t('显示轨道') : t('隐藏轨道'),
+          checked: track.hidden,
+          onSelect: () => toggleTrack(id, 'hidden'),
+        },
+        {
+          id: 'track-lock',
+          label: track.locked ? t('解锁轨道') : t('锁定轨道'),
+          checked: track.locked,
+          onSelect: () => toggleTrack(id, 'locked'),
+        },
+      ];
+    };
+    if (target.kind === 'clip' || (target.kind === 'preview' && target.id)) {
+      const item = p.clips.find((item) => item.id === target.id);
+      if (!item) return;
+      const locked = !!p.tracks.find((track) => track.id === item.trackId)?.locked;
+      const visual = item.kind !== 'audio';
+      const items: ContextMenuItem[] = [
+        {
+          id: 'split',
+          label: t('在播放头处分割'),
+          shortcut: `${mod}+B`,
+          disabled:
+            locked || time <= item.start + 1e-8 || time >= item.start + item.duration - 1e-8,
+          onSelect: () => splitClipById(item.id),
+        },
+        {
+          id: 'copy',
+          label: t('复制'),
+          shortcut: `${mod}+C`,
+          separatorBefore: true,
+          onSelect: () => copyClipById(item.id),
+        },
+        {
+          id: 'cut',
+          label: t('剪切'),
+          shortcut: `${mod}+X`,
+          disabled: locked,
+          onSelect: () => copyClipById(item.id, true),
+        },
+        pasting(item.trackId),
+        {
+          id: 'duplicate',
+          label: t('复制到片段后'),
+          shortcut: `${mod}+D`,
+          disabled: locked,
+          onSelect: () => duplicateClipById(item.id),
+        },
+        {
+          id: 'delete',
+          label: t('删除片段'),
+          shortcut: 'Delete',
+          danger: true,
+          disabled: locked,
+          onSelect: () => removeClipById(item.id),
+        },
+        {
+          id: 'keyframes',
+          label: t('关键帧'),
+          shortcut: 'K',
+          separatorBefore: true,
+          onSelect: () => {
+            setSelected(item.id);
+            setInspectorTab('keyframes');
+            setInspectorOpen(true);
+          },
+        },
+      ];
+      if (visual)
+        items.push(
+          {
+            id: 'flip-x',
+            label: t('水平翻转'),
+            checked: item.effects.flipX,
+            disabled: locked,
+            onSelect: () =>
+              editClipById(item.id, (c) => ({
+                ...c,
+                effects: { ...c.effects, flipX: !c.effects.flipX },
+              })),
+          },
+          {
+            id: 'flip-y',
+            label: t('垂直翻转'),
+            checked: item.effects.flipY,
+            disabled: locked,
+            onSelect: () =>
+              editClipById(item.id, (c) => ({
+                ...c,
+                effects: { ...c.effects, flipY: !c.effects.flipY },
+              })),
+          },
+        );
+      const track = trackItems(item.trackId);
+      if (track[0]) track[0].separatorBefore = true;
+      items.push(...track);
+      return { label: target.kind === 'preview' ? t('预览菜单') : t('片段菜单'), items };
+    }
+    if (target.kind === 'track') {
+      if (!p.tracks.some((track) => track.id === target.id)) return;
+      const items: ContextMenuItem[] = [pasting(target.id, target.atTime)];
+      if (target.atTime !== undefined)
+        items.push({
+          id: 'seek',
+          label: t('移动播放头到此处'),
+          onSelect: () => seek(target.atTime!),
+        });
+      const tracks = trackItems(target.id);
+      if (tracks[0]) tracks[0].separatorBefore = true;
+      items.push(
+        ...tracks,
+        {
+          id: 'add-track',
+          label: t('添加叠加轨道'),
+          separatorBefore: true,
+          onSelect: toolButtons[6].action,
+        },
+        ...historyItems(),
+      );
+      return { label: t('轨道菜单'), items };
+    }
+    if (target.kind === 'asset') {
+      const asset = p.assets.find((a) => a.id === target.id);
+      if (!asset) return;
+      const track = p.tracks.find(
+        (track) => track.kind === (asset.kind === 'audio' ? 'audio' : 'video') && !track.locked,
+      );
+      const used = p.clips.some((clip) => clip.assetId === asset.id);
+      const items: ContextMenuItem[] = [
+        {
+          id: 'asset-at-playhead',
+          label: t('添加到播放头'),
+          disabled: !track || asset.missing,
+          onSelect: () => addAssetToTrack(asset.id, track?.id, timeRef.current),
+        },
+        {
+          id: 'asset-at-end',
+          label: t('添加到末尾'),
+          disabled: !track || asset.missing,
+          onSelect: () =>
+            addAssetToTrack(
+              asset.id,
+              track?.id,
+              Math.max(
+                0,
+                ...projectRef.current.clips
+                  .filter((c) => c.trackId === track?.id)
+                  .map((c) => c.start + c.duration),
+              ),
+            ),
+        },
+      ];
+      if (asset.missing)
+        items.push({
+          id: 'relink',
+          label: t('重新链接素材'),
+          onSelect: () => {
+            void relinkMissing(asset.id);
+          },
+        });
+      items.push({
+        id: 'remove-asset',
+        label: t('从素材库移除'),
+        shortcut: used ? t('正在使用') : undefined,
+        disabled: used,
+        danger: true,
+        separatorBefore: true,
+        onSelect: () => {
+          commit((p) =>
+            p.clips.some((c) => c.assetId === asset.id)
+              ? p
+              : { ...p, assets: p.assets.filter((a) => a.id !== asset.id) },
+          );
+          notify(t('已从素材库移除，原文件保留。'));
+        },
+      });
+      return { label: t('素材菜单'), items };
+    }
+    const items: ContextMenuItem[] = [];
+    if (target.kind !== 'library')
+      items.push(pasting(undefined, target.kind === 'timeline' ? target.atTime : undefined));
+    if (target.kind === 'timeline')
+      items.push({ id: 'seek', label: t('移动播放头到此处'), onSelect: () => seek(target.atTime) });
+    items.push(
+      {
+        id: 'import',
+        label: t('导入素材'),
+        separatorBefore: items.length > 0,
+        onSelect: () => {
+          void importMedia();
+        },
+      },
+      { id: 'add-text', label: t('添加文字'), onSelect: () => addText() },
+      { id: 'add-track', label: t('添加叠加轨道'), onSelect: toolButtons[6].action },
+      ...historyItems(),
+    );
+    return {
+      label:
+        target.kind === 'library'
+          ? t('素材库菜单')
+          : target.kind === 'preview'
+            ? t('预览菜单')
+            : t('时间线菜单'),
+      items,
+    };
+  }
+  const menuContent = contextContent();
   return (
     <div
       className={`app ${home ? 'home-view' : ''} ${mobile ? 'mobile-mode' : ''} ${mobileShelf ? 'shelf-open' : ''} ${!inspectorOpen ? 'inspector-collapsed' : ''}`}
     >
+      {contextMenu && menuContent && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          label={t(menuContent.label)}
+          items={menuContent.items.map((item) => ({ ...item, label: t(item.label) }))}
+          onClose={closeContextMenu}
+          returnFocus={contextMenu.returnFocus}
+        />
+      )}
       <UpdateNotice
         busy={
           closing ||
@@ -1300,7 +1768,7 @@ export default function App() {
           mode={keyframeMode}
           setMobile={chooseLayout}
           setMode={changeKeyframeMode}
-          create={() => navigate(() => replaceProject(createProject()))}
+          create={() => navigate(() => replaceProject(createLocalizedProject()))}
           open={() => void open()}
           demo={() => {
             replaceProject(demoProject(), false);
@@ -1320,61 +1788,73 @@ export default function App() {
       ) : (
         <>
           <header className="topbar">
-            <button className="icon-button" title="返回首页" onClick={goHome}>
+            <button className="icon-button" title={t('返回首页')} onClick={goHome}>
               <House size={18} />
             </button>
             <div className="brand">
               <span className="brand-symbol">
                 <BrandIcon size={36} />
               </span>
-              <strong>水管剪辑</strong>
-              <span className="brand-english">FreeCut</span>
+              <strong>{t('水管剪辑')}</strong>
+              {language === 'zh-CN' && <span className="brand-english">FreeCut</span>}
             </div>
             <button
               className={`layout-switch ${onboarding && tourStep === 1 ? 'tour-highlight' : ''}`}
-              title="切换专业布局 / 手机风格"
+              title={t('切换专业布局 / 手机风格')}
               onClick={switchLayout}
             >
               {mobile ? <Smartphone size={17} /> : <Monitor size={17} />}
-              <span>{mobile ? '手机风格' : '专业布局'}</span>
+              <span>{mobile ? t('手机风格') : t('专业布局')}</span>
             </button>
             <button
               className="mode-switch"
-              title="切换关键帧操作模式"
+              title={t('切换关键帧操作模式')}
               onClick={() => changeKeyframeMode(keyframeMode === 'easy' ? 'pro' : 'easy')}
             >
               <Diamond size={14} />
-              {keyframeMode === 'easy' ? '普通（易用）' : '专业模式'}
+              {keyframeMode === 'easy' ? t('普通（易用）') : t('专业模式')}
             </button>
             <div className="top-divider" />
             <input
               className="project-title"
-              aria-label="工程名称"
+              aria-label={t('工程名称')}
               value={project.name}
               onChange={(e) => commit((p) => ({ ...p, name: e.target.value.slice(0, 100) }))}
             />
             <span className={`local-badge ${dirty ? 'unsaved' : ''}`}>
-              {dirty ? '未保存' : '已保存'}
+              {dirty ? t('未保存') : t('已保存')}
             </span>
             <div className="top-actions">
+              <select
+                className="editor-language"
+                aria-label={t('界面语言 / Language')}
+                value={language}
+                onChange={(event) => {
+                  closeContextMenu();
+                  setLanguage(event.target.value as Language);
+                }}
+              >
+                <option value="zh-CN">{t('简体中文')}</option>
+                <option value="en">English</option>
+              </select>
               <button
-                title="新建工程"
-                onClick={() => navigate(() => replaceProject(createProject()))}
+                title={t('新建工程')}
+                onClick={() => navigate(() => replaceProject(createLocalizedProject()))}
               >
                 <Plus size={16} />
-                <span>新建</span>
+                <span>{t('新建')}</span>
               </button>
-              <button title="打开工程 Ctrl+O" onClick={() => void open()}>
+              <button title={t('打开工程 Ctrl+O')} onClick={() => void open()}>
                 <FolderOpen size={16} />
-                <span>打开</span>
+                <span>{t('打开')}</span>
               </button>
-              <button title="保存工程 Ctrl+S" onClick={() => void save()}>
+              <button title={t('保存工程 Ctrl+S')} onClick={() => void save()}>
                 <Save size={16} />
-                <span>保存</span>
+                <span>{t('保存')}</span>
               </button>
               <button
                 className="icon-button"
-                title="新手引导和快捷键"
+                title={t('新手引导和快捷键')}
                 onClick={() => setHelpOpen(true)}
               >
                 <HelpCircle size={17} />
@@ -1390,12 +1870,12 @@ export default function App() {
                 }}
               >
                 <Download size={16} />
-                导出
+                {t('导出')}
               </button>
             </div>
           </header>
           <div className="workspace">
-            <nav className="tool-nav" aria-label="创作工具">
+            <nav className="tool-nav" aria-label={t('创作工具')}>
               {nav.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
@@ -1407,7 +1887,7 @@ export default function App() {
                   }}
                 >
                   <Icon size={21} />
-                  <span>{label}</span>
+                  <span>{t(label)}</span>
                 </button>
               ))}
               <div className="nav-spacer" />
@@ -1419,31 +1899,39 @@ export default function App() {
                 }}
               >
                 <Captions size={21} />
-                <span>AI 语音</span>
+                <span>{t('AI 语音')}</span>
               </button>
             </nav>
             <aside className="library">
               <div className="panel-heading">
-                <span>{nav.find((n) => n.id === tab)?.label}工作区</span>
+                <span>
+                  {t('{name}工作区', { name: t(nav.find((n) => n.id === tab)?.label ?? '') })}
+                </span>
                 <span className="small muted">
-                  {tab === 'media' ? `${project.assets.length} 项` : ''}
+                  {tab === 'media' ? t('{v0} 项', { v0: project.assets.length }) : ''}
                 </span>
               </div>
               <div className="library-search">
                 <Search size={14} />
                 <input
-                  aria-label="搜索素材或工具"
-                  placeholder="搜索素材、效果或工具"
+                  aria-label={t('搜索素材或工具')}
+                  placeholder={t('搜索素材、效果或工具')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
                 {search && (
-                  <button title="清空搜索" onClick={() => setSearch('')}>
+                  <button title={t('清空搜索')} onClick={() => setSearch('')}>
                     <X size={12} />
                   </button>
                 )}
               </div>
-              <div className="library-body">
+              <div
+                className="library-body"
+                onContextMenu={(event) => {
+                  if (tab === 'media' || tab === 'audio')
+                    openContextMenu(event, { kind: 'library' });
+                }}
+              >
                 {(tab === 'media' || tab === 'audio') && (
                   <>
                     <button
@@ -1451,14 +1939,14 @@ export default function App() {
                       disabled={busy}
                       onClick={() => void importMedia()}
                     >
-                      {busy ? <Loader2 className="spin" size={17} /> : <Plus size={18} />}导入
-                      {tab === 'audio' ? '音频' : '素材'}
+                      {busy ? <Loader2 className="spin" size={17} /> : <Plus size={18} />}
+                      {tab === 'audio' ? t('导入音频') : t('导入素材')}
                     </button>
-                    <p className="library-caption">视频、图片、音频 · 保留原文件</p>
+                    <p className="library-caption">{t('视频、图片、音频 · 保留原文件')}</p>
                     {project.assets.some((a) => a.missing) && (
                       <button className="import-button" onClick={() => void relinkMissing()}>
                         <FolderOpen size={15} />
-                        重新链接素材
+                        {t('重新链接素材')}
                       </button>
                     )}
                     {assets.length ? (
@@ -1467,10 +1955,15 @@ export default function App() {
                           <button
                             key={asset.id}
                             className="asset-card"
+                            data-asset-id={asset.id}
                             draggable
+                            onContextMenu={(event) =>
+                              openContextMenu(event, { kind: 'asset', id: asset.id })
+                            }
+                            onKeyDown={keyboardContextMenu}
                             onDragStart={(e) => e.dataTransfer.setData('freecut/asset', asset.id)}
                             onDoubleClick={() => addAssetToTrack(asset.id)}
-                            title="双击添加，或拖入时间线"
+                            title={t('双击添加，拖入时间线，或右键查看更多操作')}
                           >
                             <div className={`asset-preview ${asset.kind}`}>
                               {asset.kind === 'image' ? (
@@ -1481,7 +1974,9 @@ export default function App() {
                                 <Film size={27} />
                               )}
                               <span>
-                                {asset.kind === 'image' ? '图片' : `${asset.duration.toFixed(1)}s`}
+                                {asset.kind === 'image'
+                                  ? t('图片')
+                                  : `${asset.duration.toFixed(1)}s`}
                               </span>
                               <span
                                 className="asset-add"
@@ -1500,9 +1995,11 @@ export default function App() {
                     ) : (
                       <div className="library-empty">
                         <FolderOpen size={32} />
-                        <h3>{search ? '没有匹配的素材' : '好作品，从素材开始'}</h3>
+                        <h3>{search ? t('没有匹配的素材') : t('好作品，从素材开始')}</h3>
                         <p>
-                          {search ? '换一个关键词试试。' : '点击导入，然后将素材拖入下方时间线。'}
+                          {search
+                            ? t('换一个关键词试试。')
+                            : t('点击导入，然后将素材拖入下方时间线。')}
                         </p>
                       </div>
                     )}
@@ -1519,8 +2016,8 @@ export default function App() {
                       >
                         <Mic size={20} />
                         <span>
-                          <strong>语音朗读</strong>
-                          <small>下载开源声音，将文字变成配音</small>
+                          <strong>{t('语音朗读')}</strong>
+                          <small>{t('下载开源声音，将文字变成配音')}</small>
                         </span>
                         <ArrowRight size={15} />
                       </button>
@@ -1531,22 +2028,27 @@ export default function App() {
                   <>
                     <button className="import-button" onClick={() => addText()}>
                       <Plus size={17} />
-                      添加文字
+                      {t('添加文字')}
                     </button>
                     <div className="text-presets">
                       {[
-                        { text: '你的故事\n值得被看见', label: '双行大标题', fontSize: 100 },
-                        { text: '记录生活的每一刻', label: '简洁字幕', fontSize: 52, stroke: true },
-                        { text: 'CHAPTER 01', label: '章节标题', fontSize: 70 },
+                        { text: t('你的故事\n值得被看见'), label: t('双行大标题'), fontSize: 100 },
                         {
-                          text: '自由表达，不设边界。',
-                          label: '文字底条',
+                          text: t('记录生活的每一刻'),
+                          label: t('简洁字幕'),
+                          fontSize: 52,
+                          stroke: true,
+                        },
+                        { text: 'CHAPTER 01', label: t('章节标题'), fontSize: 70 },
+                        {
+                          text: t('自由表达，不设边界。'),
+                          label: t('文字底条'),
                           fontSize: 52,
                           background: '#1a1e22',
                         },
                       ].map((item) => (
                         <button key={item.label} onClick={() => addText(item.text, item)}>
-                          <span style={{ fontSize: item.label === '双行大标题' ? 21 : 15 }}>
+                          <span style={{ fontSize: item.label === t('双行大标题') ? 21 : 15 }}>
                             {item.text}
                           </span>
                           <small>{item.label}</small>
@@ -1556,8 +2058,8 @@ export default function App() {
                     <button className="feature-row" onClick={() => srtInput.current?.click()}>
                       <Upload size={19} />
                       <span>
-                        <strong>导入 SRT 字幕</strong>
-                        <small>自动生成可编辑字幕片段</small>
+                        <strong>{t('导入 SRT 字幕')}</strong>
+                        <small>{t('自动生成可编辑字幕片段')}</small>
                       </span>
                     </button>
                     <button
@@ -1569,39 +2071,43 @@ export default function App() {
                     >
                       <Captions size={19} />
                       <span>
-                        <strong>自动识别字幕</strong>
-                        <small>首次下载后本地识别</small>
+                        <strong>{t('自动识别字幕')}</strong>
+                        <small>{t('首次下载后本地识别')}</small>
                       </span>
                     </button>
                   </>
                 )}
                 {tab === 'effects' && (
                   <>
-                    <p className="library-caption">选择片段后点击应用 · 原创参数预设</p>
+                    <p className="library-caption">{t('选择片段后点击应用 · 原创参数预设')}</p>
                     <div className="effect-grid">
                       {effectPresets
-                        .filter((e) => (e.name + e.category + e.description).includes(search))
+                        .filter((e) =>
+                          (t(e.name) + t(e.category) + t(e.description))
+                            .toLowerCase()
+                            .includes(search.toLowerCase()),
+                        )
                         .map((effect) => (
                           <button
                             key={effect.id}
                             onClick={() => {
                               if (!clip) {
-                                notify('先选择时间线里的片段。');
+                                notify(t('先选择时间线里的片段。'));
                                 return;
                               }
                               if (project.tracks.find((t) => t.id === clip.trackId)?.locked) {
-                                notify('请先解锁片段所在轨道。');
+                                notify(t('请先解锁片段所在轨道。'));
                                 return;
                               }
                               if (clip.kind === 'audio') {
-                                notify('画面特效需要选择视频、图片、文字或色卡。');
+                                notify(t('画面特效需要选择视频、图片、文字或色卡。'));
                                 return;
                               }
                               if (
                                 (effect.values.pixelate || effect.values.chroma) &&
                                 !['video', 'image'].includes(clip.kind)
                               ) {
-                                notify('像素化和色度抠像需要选择视频或图片片段。');
+                                notify(t('像素化和色度抠像需要选择视频或图片片段。'));
                                 return;
                               }
                               changeClip((c) => ({
@@ -1609,9 +2115,9 @@ export default function App() {
                                 effects: { ...defaultEffects(), ...effect.values },
                               }));
                               setInspectorTab('effects');
-                              notify(`已应用「${effect.name}」`);
+                              notify(t('已应用「{v0}」', { v0: t(effect.name) }));
                             }}
-                            title={effect.description}
+                            title={t(effect.description)}
                           >
                             <div className="effect-swatch" style={{ background: effect.swatch }}>
                               <span
@@ -1622,8 +2128,8 @@ export default function App() {
                                 Fc
                               </span>
                             </div>
-                            <strong>{effect.name}</strong>
-                            <small>{effect.category}</small>
+                            <strong>{t(effect.name)}</strong>
+                            <small>{t(effect.category)}</small>
                           </button>
                         ))}
                     </div>
@@ -1631,15 +2137,15 @@ export default function App() {
                 )}
                 {tab === 'motion' && (
                   <>
-                    <p className="library-caption">动画会生成可编辑的关键帧</p>
+                    <p className="library-caption">{t('动画会生成可编辑的关键帧')}</p>
                     <div className="motion-list">
                       {[
-                        { id: 'fade', label: '淡入淡出', sub: '画面与声音柔和进入、离开' },
-                        { id: 'zoom', label: '缓慢推近', sub: '让静态画面也有镜头感' },
-                        { id: 'slide', label: '左侧滑入', sub: '适合标题与画中画' },
-                        { id: 'rise', label: '向上浮现', sub: '位置与透明度联动' },
-                        { id: 'pop', label: '缩放出现', sub: '从小到大，自然定格' },
-                        { id: 'rotate', label: '旋转入场', sub: '轻微倾斜，渐显归位' },
+                        { id: 'fade', label: t('淡入淡出'), sub: t('画面与声音柔和进入、离开') },
+                        { id: 'zoom', label: t('缓慢推近'), sub: t('让静态画面也有镜头感') },
+                        { id: 'slide', label: t('左侧滑入'), sub: t('适合标题与画中画') },
+                        { id: 'rise', label: t('向上浮现'), sub: t('位置与透明度联动') },
+                        { id: 'pop', label: t('缩放出现'), sub: t('从小到大，自然定格') },
+                        { id: 'rotate', label: t('旋转入场'), sub: t('轻微倾斜，渐显归位') },
                       ].map((item) => (
                         <button key={item.id} onClick={() => applyMotion(item.id)}>
                           <Layers size={22} />
@@ -1651,7 +2157,9 @@ export default function App() {
                         </button>
                       ))}
                     </div>
-                    <p className="note">跨片段叠化：将上下轨片段重叠，再为上层设置淡入／淡出。</p>
+                    <p className="note">
+                      {t('跨片段叠化：将上下轨片段重叠，再为上层设置淡入／淡出。')}
+                    </p>
                   </>
                 )}
                 {tab === 'tools' && (
@@ -1673,7 +2181,7 @@ export default function App() {
                       onClick={() => {
                         const target = writableTrack('video');
                         const c = createClip('shape', target.id, {
-                          name: '纯色色卡',
+                          name: t('纯色色卡'),
                           start: time,
                           color: '#254c49',
                         });
@@ -1689,8 +2197,8 @@ export default function App() {
                     >
                       <Palette size={19} />
                       <span>
-                        <strong>添加色卡</strong>
-                        <small>纯色背景，可缩放与添加动画</small>
+                        <strong>{t('添加色卡')}</strong>
+                        <small>{t('纯色背景，可缩放与添加动画')}</small>
                       </span>
                     </button>
                   </>
@@ -1698,15 +2206,15 @@ export default function App() {
               </div>
               <div className="library-footer">
                 <span className="status-dot" />
-                离线创作 · 无水印
+                {t('离线创作 · 无水印')}
               </div>
             </aside>
             <main className="preview-panel">
               <div className="preview-header">
-                <span>播放器</span>
+                <span>{t('播放器')}</span>
                 <div>
                   <select
-                    aria-label="画布比例"
+                    aria-label={t('画布比例')}
                     value={`${project.width}:${project.height}`}
                     onChange={(e) => {
                       const [width, height] = e.target.value.split(':').map(Number);
@@ -1715,33 +2223,41 @@ export default function App() {
                   >
                     {!presets.some(
                       (p) => p.width === project.width && p.height === project.height,
-                    ) && <option value={`${project.width}:${project.height}`}>自定义</option>}
+                    ) && (
+                      <option value={`${project.width}:${project.height}`}>{t('自定义')}</option>
+                    )}
                     {presets.map((p) => (
                       <option key={p.label} value={`${p.width}:${p.height}`}>
-                        {p.label}
+                        {t(p.label)}
                       </option>
                     ))}
                   </select>
                   <button
                     className="icon-button"
-                    title="显示或隐藏属性检查器"
+                    title={t('显示或隐藏属性检查器')}
                     onClick={() => setInspectorOpen(!inspectorOpen)}
                   >
                     <PanelRightOpen size={16} />
                   </button>
                   <button
                     className="icon-button"
-                    title="全屏预览"
+                    title={t('全屏预览')}
                     onClick={() => canvas.current?.requestFullscreen()}
                   >
                     <Maximize2 size={15} />
                   </button>
                 </div>
               </div>
-              <div className="stage">
+              <div
+                className="stage"
+                tabIndex={0}
+                aria-label={t('预览画布区域')}
+                onContextMenu={(event) => openContextMenu(event, { kind: 'preview' })}
+                onKeyDown={keyboardContextMenu}
+              >
                 <canvas
                   ref={canvas}
-                  aria-label="视频预览"
+                  aria-label={t('视频预览')}
                   style={{ aspectRatio: `${project.width}/${project.height}` }}
                 />
                 <PreviewTransform
@@ -1766,17 +2282,18 @@ export default function App() {
                   onStart={startPreviewGesture}
                   onChange={changePreviewTransform}
                   onEnd={finishPreviewGesture}
+                  onContextMenu={(event, id) => openContextMenu(event, { kind: 'preview', id })}
                 />
                 {!project.clips.length && (
                   <div className="stage-empty">
                     <span className="empty-mark">
                       <BrandIcon size={60} />
                     </span>
-                    <h1>让灵感，从这一剪开始。</h1>
-                    <p>你的素材，你的节奏，你的作品。</p>
+                    <h1>{t('让灵感，从这一剪开始。')}</h1>
+                    <p>{t('你的素材，你的节奏，你的作品。')}</p>
                     <button className="primary" onClick={() => void importMedia()}>
                       <Plus size={16} />
-                      导入素材
+                      {t('导入素材')}
                     </button>
                     <button
                       className="text-button"
@@ -1785,16 +2302,17 @@ export default function App() {
                           replaceProject(demoProject(), false);
                           setTime(2);
                         });
-                        notify('已打开原创示例，选择标题查看关键帧。');
+                        notify(t('已打开原创示例，选择标题查看关键帧。'));
                       }}
                     >
-                      先试试示例工程 <ArrowRight size={13} />
+                      {t('先试试示例工程')}
+                      <ArrowRight size={13} />
                     </button>
                   </div>
                 )}
                 {error && (
                   <div className="preview-error">
-                    <strong>预览遇到问题</strong>
+                    <strong>{t('预览遇到问题')}</strong>
                     <span>{error}</span>
                     <button
                       onClick={() => {
@@ -1802,7 +2320,7 @@ export default function App() {
                         setTime(time + 0.001);
                       }}
                     >
-                      重试
+                      {t('重试')}
                     </button>
                   </div>
                 )}
@@ -1813,13 +2331,13 @@ export default function App() {
                   <span>/ {timecode(duration, project.fps)}</span>
                 </div>
                 <div className="transport">
-                  <button title="回到起点" onClick={() => seek(0)}>
+                  <button title={t('回到起点')} onClick={() => seek(0)}>
                     <SkipBack size={17} />
                   </button>
                   <button
                     className="play-button"
                     disabled={!duration || busy}
-                    title="播放 / 暂停 Space"
+                    title={t('播放 / 暂停 Space')}
                     onClick={() => {
                       if (time >= duration) setTime(0);
                       setPlaying(!playing);
@@ -1831,12 +2349,13 @@ export default function App() {
                       <Play size={21} fill="currentColor" />
                     )}
                   </button>
-                  <button title="跳到结尾" onClick={() => seek(duration)}>
+                  <button title={t('跳到结尾')} onClick={() => seek(duration)}>
                     <SkipForward size={17} />
                   </button>
                 </div>
                 <span className="preview-quality">
-                  预览适配 <span>·</span> {project.fps} fps
+                  {t('预览适配')}
+                  <span>·</span> {project.fps} fps
                 </span>
               </div>
               <div className="quick-tools">
@@ -1847,7 +2366,7 @@ export default function App() {
                   }}
                 >
                   <Diamond size={14} />
-                  关键帧
+                  {t('关键帧')}
                 </button>
                 <button
                   onClick={() => {
@@ -1856,7 +2375,7 @@ export default function App() {
                   }}
                 >
                   <Captions size={15} />
-                  自动字幕
+                  {t('自动字幕')}
                 </button>
                 <button
                   onClick={() => {
@@ -1865,7 +2384,7 @@ export default function App() {
                   }}
                 >
                   <Mic size={15} />
-                  语音朗读
+                  {t('语音朗读')}
                 </button>
                 <button
                   onClick={() => {
@@ -1874,7 +2393,7 @@ export default function App() {
                   }}
                 >
                   <SlidersHorizontal size={14} />
-                  画面调整
+                  {t('画面调整')}
                 </button>
               </div>
             </main>
@@ -1894,12 +2413,12 @@ export default function App() {
               seek={seek}
             />
           </div>
-          <section className="timeline-panel" aria-label="多轨时间线">
+          <section className="timeline-panel" aria-label={t('多轨时间线')}>
             <div className="timeline-toolbar">
               <div className="edit-actions">
                 <button
                   className="icon-button"
-                  title="撤销 Ctrl+Z"
+                  title={t('撤销 Ctrl+Z')}
                   disabled={!history.current.length}
                   onClick={undo}
                 >
@@ -1907,20 +2426,20 @@ export default function App() {
                 </button>
                 <button
                   className="icon-button"
-                  title="重做 Ctrl+Shift+Z"
+                  title={t('重做 Ctrl+Shift+Z')}
                   disabled={!future.current.length}
                   onClick={redo}
                 >
                   <Redo2 size={17} />
                 </button>
                 <i />
-                <button title="分割 Ctrl+B" disabled={!clip} onClick={split}>
+                <button title={t('分割 Ctrl+B')} disabled={!clip} onClick={split}>
                   <Scissors size={16} />
-                  <span>分割</span>
+                  <span>{t('分割')}</span>
                 </button>
                 <button
                   className="icon-button"
-                  title="复制片段"
+                  title={t('复制片段')}
                   disabled={!clip}
                   onClick={duplicate}
                 >
@@ -1928,7 +2447,7 @@ export default function App() {
                 </button>
                 <button
                   className="icon-button"
-                  title="删除 Delete"
+                  title={t('删除 Delete')}
                   disabled={!clip}
                   onClick={remove}
                 >
@@ -1937,30 +2456,37 @@ export default function App() {
                 <i />
                 <button
                   className={snap ? 'active' : ''}
-                  title="磁吸对齐"
+                  title={t('磁吸对齐')}
                   onClick={() => setSnap(!snap)}
                 >
                   <Magnet size={16} />
-                  <span>吸附</span>
+                  <span>{t('吸附')}</span>
                 </button>
               </div>
               <div className="timeline-info">
-                {project.clips.length} 个片段<span>·</span>
-                {duration.toFixed(1)} 秒
+                {t('{count}个片段', { count: project.clips.length })}
+                <span>·</span>
+                {t('{seconds}秒', { seconds: duration.toFixed(1) })}
               </div>
               <div className="timeline-zoom">
-                <button title="缩小时间线" onClick={() => setZoom((v) => Math.max(12, v - 15))}>
+                <button
+                  title={t('缩小时间线')}
+                  onClick={() => setZoom((v) => Math.max(12, v - 15))}
+                >
                   <Minus size={14} />
                 </button>
                 <input
-                  aria-label="时间线缩放"
+                  aria-label={t('时间线缩放')}
                   type="range"
                   min={12}
                   max={180}
                   value={zoom}
                   onChange={(e) => setZoom(+e.target.value)}
                 />
-                <button title="放大时间线" onClick={() => setZoom((v) => Math.min(180, v + 15))}>
+                <button
+                  title={t('放大时间线')}
+                  onClick={() => setZoom((v) => Math.min(180, v + 15))}
+                >
                   <Plus size={14} />
                 </button>
               </div>
@@ -1981,20 +2507,30 @@ export default function App() {
               record={record}
               addAsset={addAssetToTrack}
               addTrack={() => toolButtons[6].action()}
+              onClipContextMenu={(event, id) => openContextMenu(event, { kind: 'clip', id })}
+              onTrackContextMenu={(event, id, atTime) =>
+                openContextMenu(event, { kind: 'track', id, atTime })
+              }
+              onTimelineContextMenu={(event, atTime) =>
+                openContextMenu(event, { kind: 'timeline', atTime })
+              }
             />
           </section>
           <footer className="statusbar">
             <span>
               <span className="status-dot" />
-              {window.freecut ? '桌面版' : '浏览器预览'} <span className="muted">0.3.0</span>
+              {window.freecut ? t('桌面版') : t('浏览器预览')}{' '}
+              <span className="muted">{appVersion}</span>
             </span>
             <span>
-              {clip ? `已选择 ${clip.name}` : '双击素材添加到时间线'}
-              <span className="status-shortcuts">Space 播放 · Ctrl+B 分割 · K 关键帧</span>
+              {clip ? t('已选择 {v0}', { v0: clip.name }) : t('双击素材添加到时间线')}
+              <span className="status-shortcuts">
+                {t('右键查看更多 · Space 播放 · Ctrl+B 分割')}
+              </span>
             </span>
             <button onClick={() => setHelpOpen(true)}>
               <Keyboard size={12} />
-              快捷键
+              {t('快捷键')}
             </button>
           </footer>
         </>
@@ -2035,10 +2571,10 @@ export default function App() {
             if (file) {
               const items = parseSrt(await file.text());
               if (session !== projectSession.current) {
-                notify('已切换项目，字幕未加入当前项目。');
+                notify(t('已切换项目，字幕未加入当前项目。'));
                 return;
               }
-              if (!items.length) throw new Error('没有读取到有效字幕，请检查 SRT 格式。');
+              if (!items.length) throw new Error(t('没有读取到有效字幕，请检查 SRT 格式。'));
               addSubtitles(items);
             }
           } catch (err) {
@@ -2051,7 +2587,7 @@ export default function App() {
         <div role="status" className="toast">
           <Check size={16} />
           {toast}
-          <button title="关闭提示" onClick={() => setToast('')}>
+          <button title={t('关闭提示')} onClick={() => setToast('')}>
             <X size={13} />
           </button>
         </div>
@@ -2077,23 +2613,24 @@ export default function App() {
             aria-labelledby="export-title"
           >
             <div className="dialog-heading">
-              <h2 id="export-title">导出你的作品</h2>
+              <h2 id="export-title">{t('导出你的作品')}</h2>
               <button
                 className="icon-button"
-                title="关闭"
+                title={t('关闭')}
                 disabled={busy}
                 onClick={() => setExportOpen(false)}
               >
                 <X size={20} />
               </button>
             </div>
-            <p className="dialog-subtitle">本地渲染，保留关键帧、特效和声音。无水印。</p>
+            <p className="dialog-subtitle">{t('本地渲染，保留关键帧、特效和声音。无水印。')}</p>
             {!window.freecut ? (
               <div className="notice">
                 <Monitor size={22} />
                 <p>
-                  视频导出需要打开 FreeCut 桌面版。浏览器用于界面预览与编辑，桌面版内置 FFmpeg
-                  导出引擎。
+                  {t(
+                    '视频导出需要打开 FreeCut 桌面版。浏览器用于界面预览与编辑，桌面版内置 FFmpeg 导出引擎。',
+                  )}
                 </p>
               </div>
             ) : (
@@ -2103,12 +2640,15 @@ export default function App() {
                   <span>
                     <strong>{project.name}</strong>
                     <small>
-                      {duration.toFixed(1)} 秒 · {project.clips.length} 个片段
+                      {t('{seconds}秒 · {count}个片段', {
+                        seconds: duration.toFixed(1),
+                        count: project.clips.length,
+                      })}
                     </small>
                   </span>
                 </div>
                 <label className="inline-field">
-                  分辨率
+                  {t('分辨率')}
                   <select
                     disabled={busy}
                     value={exportSize}
@@ -2120,7 +2660,7 @@ export default function App() {
                   </select>
                 </label>
                 <label className="inline-field">
-                  帧率
+                  {t('帧率')}
                   <select
                     disabled={busy}
                     value={exportFps}
@@ -2134,18 +2674,19 @@ export default function App() {
                   </select>
                 </label>
                 <label className="inline-field">
-                  编码质量
+                  {t('编码质量')}
                   <select
                     disabled={busy}
                     value={quality}
                     onChange={(e) => setQuality(e.target.value as 'high')}
                   >
-                    <option value="high">高质量 · 较大文件</option>
-                    <option value="medium">标准 · 较小文件</option>
+                    <option value="high">{t('高质量 · 较大文件')}</option>
+                    <option value="medium">{t('标准 · 较小文件')}</option>
                   </select>
                 </label>
                 <label className="inline-field">
-                  格式<span>MP4 · H.264 + AAC</span>
+                  {t('格式')}
+                  <span>MP4 · H.264 + AAC</span>
                 </label>
                 {(busy || progress > 0) && (
                   <div className="export-progress">
@@ -2159,9 +2700,9 @@ export default function App() {
                 {exportPath ? (
                   <div className="export-success">
                     <Check size={20} />
-                    <span>视频已保存</span>
+                    <span>{t('视频已保存')}</span>
                     <button onClick={() => void window.freecut?.showItem(exportPath)}>
-                      打开所在文件夹
+                      {t('打开所在文件夹')}
                     </button>
                   </div>
                 ) : (
@@ -2173,12 +2714,12 @@ export default function App() {
                           if (job.current) void window.freecut?.cancelExport(job.current);
                         }}
                       >
-                        取消导出
+                        {t('取消导出')}
                       </button>
                     ) : (
                       <button className="primary" onClick={() => void doExport()}>
                         <Download size={16} />
-                        选择保存位置并导出
+                        {t('选择保存位置并导出')}
                       </button>
                     )}
                   </div>
@@ -2201,18 +2742,18 @@ export default function App() {
                 <>
                   <span className="onboard-screen">
                     <Monitor size={58} />
-                    <b>专业布局</b>
+                    <b>{t('专业布局')}</b>
                   </span>
                   <ArrowRight size={25} />
                   <span className="onboard-phone">
                     <Smartphone size={52} />
-                    <b>手机风格</b>
+                    <b>{t('手机风格')}</b>
                   </span>
                 </>
               ) : tourStep === 1 ? (
                 <div className="switch-demo">
                   <Monitor size={25} />
-                  <span>左上角，一键切换</span>
+                  <span>{t('左上角，一键切换')}</span>
                   <Smartphone size={25} />
                 </div>
               ) : (
@@ -2226,14 +2767,22 @@ export default function App() {
               )}
             </div>
             <h2 id="onboard-title">
-              {['欢迎来到水管剪辑', '熟悉的布局，由你来选', '准备好，开始第一剪'][tourStep]}
+              {
+                [t('欢迎来到水管剪辑'), t('熟悉的布局，由你来选'), t('准备好，开始第一剪')][
+                  tourStep
+                ]
+              }
             </h2>
             <p>
               {
                 [
-                  '从素材到成片，离线创作、自由表达。这里有两种工作台，功能都在。',
-                  '左上角的电脑 / 手机图标可随时切换布局。手机风格拥有底部工具栏，同时保留多轨、关键帧、调色等专业能力。',
-                  '导入素材，拖到时间线，在普通模式点击「记录当前画面」即可添加关键帧。顶部可切换专业模式。自动字幕和语音朗读可按需下载模型。',
+                  t('从素材到成片，离线创作、自由表达。这里有两种工作台，功能都在。'),
+                  t(
+                    '左上角的电脑 / 手机图标可随时切换布局。手机风格拥有底部工具栏，同时保留多轨、关键帧、调色等专业能力。',
+                  ),
+                  t(
+                    '导入素材，拖到时间线，在普通模式点击「记录当前画面」即可添加关键帧。顶部可切换专业模式。自动字幕和语音朗读可按需下载模型。',
+                  ),
                 ][tourStep]
               }
             </p>
@@ -2249,10 +2798,12 @@ export default function App() {
                   setOnboarding(false);
                 }}
               >
-                跳过引导
+                {t('跳过引导')}
               </button>
               {tourStep === 1 && (
-                <button onClick={switchLayout}>{mobile ? '切回专业布局' : '试试手机风格'}</button>
+                <button onClick={switchLayout}>
+                  {mobile ? t('切回专业布局') : t('试试手机风格')}
+                </button>
               )}
               <button
                 className="primary"
@@ -2261,11 +2812,11 @@ export default function App() {
                   else {
                     localStorage.setItem('freecut-onboarded', '1');
                     setOnboarding(false);
-                    notify('左上角可随时切换专业布局 / 手机风格。');
+                    notify(t('左上角可随时切换专业布局 / 手机风格。'));
                   }
                 }}
               >
-                {tourStep === 2 ? '开始创作' : '下一步'}
+                {tourStep === 2 ? t('开始创作') : t('下一步')}
                 <ArrowRight size={15} />
               </button>
             </div>
@@ -2274,24 +2825,27 @@ export default function App() {
       )}
       {helpOpen && (
         <div className="modal-backdrop">
-          <div className="dialog" role="dialog" aria-modal="true" aria-label="使用帮助">
+          <div className="dialog" role="dialog" aria-modal="true" aria-label={t('使用帮助')}>
             <div className="dialog-heading">
-              <h2>上手水管剪辑</h2>
-              <button className="icon-button" title="关闭" onClick={() => setHelpOpen(false)}>
+              <h2>{t('上手水管剪辑')}</h2>
+              <button className="icon-button" title={t('关闭')} onClick={() => setHelpOpen(false)}>
                 <X size={19} />
               </button>
             </div>
-            <p>左上角的布局图标可在专业布局与手机风格之间切换，工程和功能保持一致。</p>
+            <p>{t('左上角的布局图标可在专业布局与手机风格之间切换，工程和功能保持一致。')}</p>
             <div className="shortcut-list">
               {[
-                ['播放 / 暂停', 'Space'],
-                ['分割选中片段', 'Ctrl / ⌘ + B'],
-                ['保存工程', 'Ctrl / ⌘ + S'],
-                ['打开工程', 'Ctrl / ⌘ + O'],
-                ['撤销 / 重做', 'Ctrl / ⌘ + Z / Shift + Z'],
-                ['前进 / 后退一帧', '← / →'],
-                ['关键帧面板', 'K'],
-                ['删除片段', 'Delete'],
+                [t('播放 / 暂停'), 'Space'],
+                [t('分割选中片段'), 'Ctrl / ⌘ + B'],
+                [t('复制 / 剪切 / 粘贴片段'), 'Ctrl / ⌘ + C / X / V'],
+                [t('复制到片段后'), 'Ctrl / ⌘ + D'],
+                [t('打开右键菜单'), 'Shift + F10'],
+                [t('保存工程'), 'Ctrl / ⌘ + S'],
+                [t('打开工程'), 'Ctrl / ⌘ + O'],
+                [t('撤销 / 重做'), 'Ctrl / ⌘ + Z / Shift + Z'],
+                [t('前进 / 后退一帧'), '← / →'],
+                [t('关键帧面板'), 'K'],
+                [t('删除片段'), 'Delete'],
               ].map(([name, key]) => (
                 <div key={name}>
                   <span>{name}</span>
@@ -2309,7 +2863,7 @@ export default function App() {
                   });
                 }}
               >
-                打开示例工程
+                {t('打开示例工程')}
               </button>
               <button
                 className="primary"
@@ -2319,7 +2873,7 @@ export default function App() {
                   setOnboarding(true);
                 }}
               >
-                重新查看引导
+                {t('重新查看引导')}
               </button>
             </div>
           </div>
@@ -2327,22 +2881,30 @@ export default function App() {
       )}
       {pendingNavigation && (
         <div className="modal-backdrop">
-          <div className="dialog" role="dialog" aria-modal="true" aria-label="保存未完成的修改">
-            <h2>要保存当前项目吗？</h2>
-            <p>「{project.name}」还有未保存的修改。保存后再继续，可以下次接着编辑。</p>
+          <div
+            className="dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('保存未完成的修改')}
+          >
+            <h2>{t('要保存当前项目吗？')}</h2>
+            <p>
+              「{project.name}
+              {t('」还有未保存的修改。保存后再继续，可以下次接着编辑。')}
+            </p>
             <div className="dialog-actions">
               <button disabled={navigationBusy} onClick={() => setPendingNavigation(undefined)}>
-                取消
+                {t('取消')}
               </button>
               <button disabled={navigationBusy} onClick={() => void finishNavigation(false)}>
-                不保存并继续
+                {t('不保存并继续')}
               </button>
               <button
                 disabled={navigationBusy}
                 className="primary"
                 onClick={() => void finishNavigation(true)}
               >
-                {navigationBusy ? '正在保存…' : '保存并继续'}
+                {navigationBusy ? t('正在保存…') : t('保存并继续')}
               </button>
             </div>
           </div>
@@ -2352,7 +2914,7 @@ export default function App() {
         <div className="modal-backdrop close-backdrop" role="status">
           <div className="dialog">
             <Loader2 size={22} />
-            <p>正在处理退出，请在系统对话框中选择是否保存。</p>
+            <p>{t('正在处理退出，请在系统对话框中选择是否保存。')}</p>
           </div>
         </div>
       )}
@@ -2360,7 +2922,7 @@ export default function App() {
         <div className="modal-backdrop close-backdrop" role="status">
           <div className="dialog">
             <Loader2 size={22} />
-            <p>正在处理工程文件…</p>
+            <p>{t('正在处理工程文件…')}</p>
           </div>
         </div>
       )}

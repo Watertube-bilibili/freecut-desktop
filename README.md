@@ -1,18 +1,28 @@
-# 水管剪辑 · FreeCut
+<p align="center">
+  <img src="resources/icon.png" width="128" height="128" alt="水管剪辑 FreeCut 原创图标">
+</p>
 
-**中文名：水管剪辑。英文名：FreeCut。**
+<h1 align="center">水管剪辑 · FreeCut</h1>
+
+<p align="center">开源桌面视频剪辑，让创作自由一点。</p>
+
+<p align="center"><strong>简体中文</strong> | <a href="README.en.md">English</a></p>
+
+**中文名：水管剪辑。英文名：FreeCut。界面默认简体中文，也可在设置中切换为 English。**
 
 我叫水管同学出品。由初中生自主使用 GPT-6 与 Codex 制作的中文开源桌面视频编辑器。支持 Windows 和 macOS，面向日常剪辑、电脑端关键帧和容易找到的字幕 / 语音工具。
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-当前是 0.3.0 开发预览版，并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
+当前源码正在准备 0.3.1 开发预览版，**尚未发布**，并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
 
 新版采用原创 3D 图标，以“水管剪辑”为中文主名称。FreeCut 保留为英文名，仓库名、安装文件名和 `.freecut` 工程格式继续兼容。品牌来源与发布前排查见 [品牌说明](docs/BRAND.md) 和 [来源及许可核查](docs/RELEASE-REVIEW-030.md)。
 
 操作步骤见 [中文使用说明](docs/QUICKSTART.md)，实际测试范围见 [验证记录](docs/VERIFICATION.md)。
 
 让 AI 使用本软件剪片：安装免费的 [shuiguan-cut Skill](docs/AI-EDITING.md)，从本地素材生成可继续编辑的工程，并通过真实应用导出 MP4。
+
+英文宣传片正在制作：计划通过真实 FreeCut 导出到 `renders/freecut-launch-en-1080p.mp4`，并提供 [Release 视频附件](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4)。**最终导出与验证尚未完成，附件尚未发布。** [英文视觉源及复现步骤](videos/freecut-launch-en)已单独保留。
 
 ![水管剪辑桌面工作台](docs/screenshots/editor-030.png)
 
@@ -21,6 +31,7 @@
 ## 可以做什么
 
 - 导入本地视频、图片、音频；多轨编排、叠加画中画、吸附、修剪、分割、复制、撤销 / 重做。
+- 时间线片段、轨道、空白区域和预览画面支持右键菜单，按当前位置提供剪辑操作。
 - 为位置 X/Y、缩放、旋转、不透明度、音量添加关键帧，支持线性、缓入、缓出、缓入缓出、保持。分割保留动画变化。
 - 在预览中直接点选、拖动、用角点缩放和旋转；一次拖动对应一次撤销。普通模式一键记录画面，专业模式可继续精确编辑。
 - 添加文字和字幕，编辑字体大小、颜色、底色、描边；导入 / 导出 SRT。
@@ -39,16 +50,16 @@
 
 ## 下载和运行
 
-**[下载 0.3.0 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.0-preview.1)**：Release 提供 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中文教程和 SHA-256 清单。
+**0.3.1 尚未发布。** [计划中的 0.3.1 预览版页面](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.1-preview.1)将在完成验证并发布后提供 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中文教程和 SHA-256 清单。下表列出计划文件名；已发布版本请查看 [Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases)。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 
 | 你的电脑 / 用途 | 推荐下载 | 说明 |
 | --- | --- | --- |
-| Windows 10/11 x64，日常使用 | `FreeCut-0.3.0-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘。 |
-| Windows 10/11 x64，免安装 | `FreeCut-0.3.0-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表与模型，移动时一起保留。 |
-| Mac M 系列芯片 | `FreeCut-0.3.0-mac-arm64.dmg` | 打开后拖入 Applications。 |
-| Mac Intel 处理器 | `FreeCut-0.3.0-mac-x64.dmg` | 安装方法同上。 |
+| Windows 10/11 x64，日常使用 | `FreeCut-0.3.1-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘。 |
+| Windows 10/11 x64，免安装 | `FreeCut-0.3.1-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表与模型，移动时一起保留。 |
+| Mac M 系列芯片 | `FreeCut-0.3.1-mac-arm64.dmg` | 打开后拖入 Applications。 |
+| Mac Intel 处理器 | `FreeCut-0.3.1-mac-x64.dmg` | 安装方法同上。 |
 | Mac 需要 ZIP | 对应芯片的 `mac-arm64.zip` / `mac-x64.zip` | 解压得到同一应用；DMG、ZIP 任选一种。 |
 
 普通使用只需一份应用包，无需下载 `source` 源码包。Mac 可在「 → 关于本机」查看芯片。Windows 未签名；Mac 使用临时签名，尚未配置正式 Developer ID 和 Apple 公证。
@@ -90,6 +101,8 @@ node installer/smoke.cjs
 `smoke-desktop.cjs` 在真实 Electron 窗口中生成本地测试素材，验证布局切换、导入、关键帧、字幕、工程保存 / 重开与实际 MP4 导出，结果保存在不提交的 `artifacts/smoke/`。它会用自己的文件路径替代测试进程中的文件对话框，不修改用户素材。
 
 桌面回归覆盖保存退出、真实视频定位、普通关键帧、预览拖拽、蒙版像素、短窗口滚动、立体声预览与导出，以及更新时的保存/取消/失败路径。脚本使用独立临时用户目录；更新回归仅替换网络响应和最后的安装启动器，不改用户安装。`npm run test:desktop` 完成构建和桌面回归。真实语音测试脚本默认禁止下载；命令与模型验收结果见模型文档。
+
+上述内容说明测试脚本的覆盖范围，不代表当前 0.3.1 提交已完成三平台验收；具体通过记录以验证文档和对应 CI 运行结果为准。
 
 仅看浏览器界面：`npm run dev`。浏览器模式支持编辑预览；本地模型、完整工程媒体重开和 FFmpeg 视频导出需要桌面版。
 

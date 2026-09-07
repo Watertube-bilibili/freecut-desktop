@@ -19,3 +19,4 @@ videos/**/.hyperframes/
 videos/**/.media/
 videos/**/node_modules/
 /renders/
+videos/**/snapshots/

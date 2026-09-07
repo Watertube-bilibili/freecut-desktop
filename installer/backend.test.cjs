@@ -48,6 +48,234 @@ async function noStagingDirectories(directory) {
   );
 }
 
+async function legacyFixture(directory, name = 'freecut-desktop') {
+  const target = path.join(directory, 'legacy-install'),
+    source = path.join(directory, 'old-app-source');
+  for (const folder of ['electron', 'dist'])
+    await fs.mkdir(path.join(source, folder), { recursive: true });
+  await fs.writeFile(
+    path.join(source, 'package.json'),
+    JSON.stringify({ name, version: '0.2.0', main: 'electron/main.cjs' }),
+  );
+  await fs.writeFile(
+    path.join(source, 'electron/main.cjs'),
+    'throw Error("OLD CODE MUST NEVER EXECUTE");',
+  );
+  await fs.writeFile(path.join(source, 'electron/preload.cjs'), '/* old preload fixture */');
+  await fs.writeFile(path.join(source, 'dist/index.html'), '<title>FreeCut fixture</title>');
+  await fs.mkdir(path.join(target, 'resources'), { recursive: true });
+  await require('@electron/asar').createPackage(source, path.join(target, 'resources/app.asar'));
+  const pe = Buffer.alloc(512);
+  pe.write('MZ');
+  pe.writeUInt32LE(64, 60);
+  pe.writeUInt32LE(0x4550, 64);
+  pe.writeUInt16LE(0x8664, 68);
+  pe.writeUInt16LE(1, 70);
+  pe.writeUInt16LE(240, 84);
+  pe.writeUInt16LE(2, 86);
+  pe.writeUInt16LE(0x20b, 88);
+  await fs.writeFile(path.join(target, 'FreeCut.exe'), pe);
+  return target;
+}
+
+test('recognized old Electron installation migrates only incoming payload paths and preserves mixed user files', async (t) => {
+  const directory = await workspace(t),
+    target = await legacyFixture(directory);
+  const userFiles = {
+    'my-project.freecut': 'MY EDIT',
+    'Uninstall FreeCut.exe': 'OLD UNINSTALLER',
+    'unins000.dat': 'OLD INNO DATA',
+    'resources/my-font.ttf': 'USER FONT',
+    'models/model.bin': 'USER MODEL',
+    'FreeCutData/preferences.json': 'USER SETTINGS',
+  };
+  for (const [file, contents] of Object.entries(userFiles)) {
+    await fs.mkdir(path.dirname(path.join(target, file)), { recursive: true });
+    await fs.writeFile(path.join(target, file), contents);
+  }
+  const source = await payload(
+    directory,
+    'new-payload',
+    {
+      'FreeCut.exe': 'new-runtime',
+      'resources/app.asar': 'new-archive',
+      'resources/new.dat': 'new-component',
+    },
+    '0.3.1',
+  );
+  const result = await backend.install({ payloadRoot: source.root, target, update: true });
+  assert.equal(result.manifest.migratedFrom, '0.2.0');
+  assert.equal(result.manifest.files.length, 3);
+  assert.equal(await fs.readFile(path.join(target, 'FreeCut.exe'), 'utf8'), 'new-runtime');
+  for (const [file, contents] of Object.entries(userFiles))
+    assert.equal(await fs.readFile(path.join(target, file), 'utf8'), contents);
+  assert.equal((await backend.inspectTarget(target, { update: true })).installed.version, '0.3.1');
+  await backend.uninstall({ target });
+  for (const [file, contents] of Object.entries(userFiles))
+    assert.equal(await fs.readFile(path.join(target, file), 'utf8'), contents);
+  await noStagingDirectories(directory);
+});
+
+test('legacy upgrade cancellation and racing changes preserve the old application with no marker', async (t) => {
+  const directory = await workspace(t),
+    target = await legacyFixture(directory);
+  const oldExe = await fs.readFile(path.join(target, 'FreeCut.exe')),
+    oldArchive = await fs.readFile(path.join(target, 'resources/app.asar'));
+  const source = await payload(directory, 'new-payload', {
+    'FreeCut.exe': 'new',
+    'resources/app.asar': 'new app',
+  });
+  const controller = new AbortController();
+  await assert.rejects(
+    backend.install({
+      payloadRoot: source.root,
+      target,
+      signal: controller.signal,
+      beforeCommit: () => controller.abort(),
+    }),
+    { name: 'AbortError' },
+  );
+  assert.deepEqual(await fs.readFile(path.join(target, 'FreeCut.exe')), oldExe);
+  assert.deepEqual(await fs.readFile(path.join(target, 'resources/app.asar')), oldArchive);
+  await assert.rejects(fs.stat(path.join(target, backend.OWNERSHIP)), { code: 'ENOENT' });
+  await assert.rejects(
+    backend.install({
+      payloadRoot: source.root,
+      target,
+      beforeCommit: () =>
+        fs.appendFile(path.join(target, 'resources/app.asar'), 'USER RACING EDIT'),
+    }),
+    /安装期间发生变化/,
+  );
+  assert.deepEqual(await fs.readFile(path.join(target, 'FreeCut.exe')), oldExe);
+  assert.deepEqual(
+    await fs.readFile(path.join(target, 'resources/app.asar')),
+    Buffer.concat([oldArchive, Buffer.from('USER RACING EDIT')]),
+  );
+  await assert.rejects(fs.stat(path.join(target, backend.OWNERSHIP)), { code: 'ENOENT' });
+  await noStagingDirectories(directory);
+});
+
+test('legacy upgrade rolls back replaced files when a new destination appears during staging', async (t) => {
+  const directory = await workspace(t),
+    target = await legacyFixture(directory);
+  const oldExe = await fs.readFile(path.join(target, 'FreeCut.exe')),
+    oldArchive = await fs.readFile(path.join(target, 'resources/app.asar'));
+  const source = await payload(directory, 'new-payload', {
+    'FreeCut.exe': 'new',
+    'resources/app.asar': 'new app',
+    'new-component.dat': 'payload',
+  });
+  await assert.rejects(
+    backend.install({
+      payloadRoot: source.root,
+      target,
+      beforeCommit: () => fs.writeFile(path.join(target, 'new-component.dat'), 'USER FILE'),
+    }),
+    /被其他程序创建/,
+  );
+  assert.deepEqual(await fs.readFile(path.join(target, 'FreeCut.exe')), oldExe);
+  assert.deepEqual(await fs.readFile(path.join(target, 'resources/app.asar')), oldArchive);
+  assert.equal(await fs.readFile(path.join(target, 'new-component.dat'), 'utf8'), 'USER FILE');
+  await assert.rejects(fs.stat(path.join(target, backend.OWNERSHIP)), { code: 'ENOENT' });
+  await noStagingDirectories(directory);
+});
+
+test('an unrelated Electron package or malformed ASAR cannot authorize overwriting FreeCut.exe', async (t) => {
+  const directory = await workspace(t),
+    target = await legacyFixture(directory, 'another-editor');
+  const source = await payload(directory, 'new-payload', { 'FreeCut.exe': 'new' });
+  const before = await backend.sha256(path.join(target, 'FreeCut.exe'));
+  await assert.rejects(backend.install({ payloadRoot: source.root, target }), /没有新版安装清单/);
+  const malformed = Buffer.alloc(16);
+  malformed.writeUInt32LE(4, 0);
+  malformed.writeUInt32LE(0xffffffff, 4);
+  await fs.writeFile(path.join(target, 'resources/app.asar'), malformed);
+  await assert.rejects(backend.install({ payloadRoot: source.root, target }), /没有新版安装清单/);
+  assert.equal(await backend.sha256(path.join(target, 'FreeCut.exe')), before);
+  await assert.rejects(fs.stat(path.join(target, backend.OWNERSHIP)), { code: 'ENOENT' });
+});
+
+test('first installation creates all missing parent and child directories on an existing volume', async (t) => {
+  const directory = await workspace(t),
+    target = path.join(directory, 'new parent', '中文 子目录', 'FreeCut');
+  const source = await payload(directory, 'payload', {
+    'FreeCut.exe': 'new',
+    'resources/nested/component.bin': 'data',
+  });
+  await backend.install({ payloadRoot: source.root, target });
+  assert.equal(
+    await fs.readFile(path.join(target, 'resources/nested/component.bin'), 'utf8'),
+    'data',
+  );
+  await noStagingDirectories(path.dirname(target));
+});
+
+test('missing payload files are reported as an incomplete installer, not as a target-drive failure', async (t) => {
+  const directory = await workspace(t),
+    target = path.join(directory, 'new', 'FreeCut');
+  const source = await payload(directory, 'payload', {
+    'FreeCut.exe': 'new',
+    'resources/app.asar': 'app',
+  });
+  await fs.unlink(path.join(source.root, 'application/resources/app.asar'));
+  await assert.rejects(
+    backend.install({ payloadRoot: source.root, target }),
+    /安装包缺少程序文件：resources\/app.asar/,
+  );
+  await assert.rejects(fs.stat(target), { code: 'ENOENT' });
+  await noStagingDirectories(path.dirname(target));
+});
+
+test('installer English covers drive, directory creation, legacy migration and incomplete payload messages', () => {
+  const { translate } = require('./i18n.js');
+  assert.match(
+    translate('D 盘不存在或未连接，请选择这台电脑上可用的磁盘。', 'en'),
+    /Drive D does not exist/,
+  );
+  assert.match(
+    translate('无法创建安装目录 D:\\Apps。请确认有写入权限，或选择其他目录。\nEACCES', 'en'),
+    /Cannot create.*write permissions/s,
+  );
+  assert.match(
+    translate('正在升级 FreeCut 0.2.0，个人工程和模型会保留。', 'en'),
+    /Upgrading FreeCut 0.2.0.*kept/,
+  );
+  assert.match(
+    translate('安装包缺少程序文件：resources/app.asar。请重新下载安装器。', 'en'),
+    /installer is missing.*app.asar/,
+  );
+  assert.equal(translate('安装目录无效。', 'zh-CN'), '安装目录无效。');
+});
+
+test(
+  'a genuinely absent Windows drive reports the drive explicitly without attempting root installation',
+  { skip: process.platform !== 'win32' },
+  async (t) => {
+    const directory = await workspace(t),
+      source = await payload(directory, 'payload', { 'FreeCut.exe': 'new' });
+    let absent;
+    for (const letter of 'ZYXWVUTSRQPONMLKJIHGFED') {
+      if (
+        await fs.stat(`${letter}:\\`).then(
+          () => false,
+          (error) => error.code === 'ENOENT',
+        )
+      ) {
+        absent = letter;
+        break;
+      }
+    }
+    assert(absent, 'Need an actually absent drive for this Windows regression');
+    await assert.rejects(
+      backend.install({ payloadRoot: source.root, target: `${absent}:\\FreeCut` }),
+      (error) =>
+        error.code === 'FREECUT_DRIVE_MISSING' && error.message.startsWith(`${absent} 盘不存在`),
+    );
+    assert.throws(() => backend.validateTarget(`${absent}:\\`), /磁盘根目录/);
+  },
+);
+
 test('C/D and arbitrary drive roots normalize to FreeCut but direct backend roots are forbidden', () => {
   assert.equal(backend.normalizeSelection('C:\\', 'win32'), 'C:\\FreeCut');
   assert.equal(backend.normalizeSelection('D:/', 'win32'), 'D:\\FreeCut');

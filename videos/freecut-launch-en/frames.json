@@ -1,0 +1,51 @@
+[
+  {
+    "id": "01-freedom",
+    "title": "Make it yours",
+    "start": 0,
+    "duration": 7,
+    "type": "typography"
+  },
+  {
+    "id": "02-maker",
+    "title": "A middle-school student built FreeCut",
+    "start": 7,
+    "duration": 7,
+    "type": "brand"
+  },
+  {
+    "id": "03-control",
+    "title": "Keyframes, one easy click",
+    "start": 14,
+    "duration": 8,
+    "type": "product-demo"
+  },
+  {
+    "id": "04-layout",
+    "title": "Two layouts, one creative space",
+    "start": 22,
+    "duration": 8,
+    "type": "product-demo"
+  },
+  {
+    "id": "05-tools",
+    "title": "More tools for everyday creativity",
+    "start": 30,
+    "duration": 10,
+    "type": "features"
+  },
+  {
+    "id": "06-open",
+    "title": "Open source, built together",
+    "start": 40,
+    "duration": 7,
+    "type": "community"
+  },
+  {
+    "id": "07-download",
+    "title": "Download and star FreeCut",
+    "start": 47,
+    "duration": 8,
+    "type": "cta"
+  }
+]

@@ -121,6 +121,7 @@ export interface ExportProgress {
   progress: number;
 }
 export interface DesktopAPI {
+  setLanguage: (language: 'zh-CN' | 'en') => Promise<'zh-CN' | 'en'>;
   listSounds: () => Promise<{ id: string; name: string; category: string; duration: number; license: string }[]>;
   createSound: (id: string) => Promise<MediaAsset>;
   updateState: () => Promise<UpdateState>;

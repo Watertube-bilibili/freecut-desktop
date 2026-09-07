@@ -31,6 +31,7 @@ function subscribe(channel, callback) {
 contextBridge.exposeInMainWorld(
   'freecut',
   Object.freeze({
+    setLanguage: (language) => ipcRenderer.invoke('freecut:set-language', language),
     importMedia: () => ipcRenderer.invoke('freecut:import-media'),
     saveProject: (project) => ipcRenderer.invoke('freecut:save-project', project),
     openProject: () => ipcRenderer.invoke('freecut:open-project'),
