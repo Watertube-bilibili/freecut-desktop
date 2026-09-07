@@ -4,7 +4,7 @@
 
 我叫水管同学出品。由初中生自主使用 GPT-6 与 Codex 制作的中文开源桌面视频编辑器。支持 Windows 和 macOS，面向日常剪辑、电脑端关键帧和容易找到的字幕 / 语音工具。
 
-**全部功能永久免费，不设会员，不设付费解锁，无水印导出。** 爱发电只是自愿赞助，是否赞助都能使用全部功能。
+**全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
 当前是 0.3.0 开发预览版，并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
 
@@ -118,4 +118,4 @@ React + TypeScript + Electron。预览和视频帧导出共用 Canvas 合成器�
 
 本项目代码 GPL-3.0-or-later，见 [LICENSE](LICENSE)。每个第三方库、视频引擎、模型都有独立授权，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
-欢迎下载体验、提交问题和参与开源。作者：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。最新的 [55 秒无声宣传片与剪辑工程](videos/shuiguan-launch-silent-edit) 已通过水管剪辑实际导入、分成七段、保存工程并导出，方便自行配乐；画面动画来自重新渲染的 [HyperFrames 视觉源](videos/shuiguan-launch-instrumental)。首版工程仍保留在 [videos/shuiguan-launch](videos/shuiguan-launch)。爱发电支持入口以作者本人发布的真实链接为准。
+欢迎下载体验、提交问题和参与开源。作者：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。最新的 [55 秒无声宣传片与剪辑工程](videos/shuiguan-launch-silent-edit) 已通过水管剪辑实际导入、分成七段、保存工程并导出，方便自行配乐；画面动画来自重新渲染的 [HyperFrames 视觉源](videos/shuiguan-launch-instrumental)。首版工程仍保留在 [videos/shuiguan-launch](videos/shuiguan-launch)。愿意支持后续开发，可以通过作者提供的[爱发电主页](https://afdian.com/a/watertube)自愿赞助。

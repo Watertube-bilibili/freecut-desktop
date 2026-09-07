@@ -22,6 +22,8 @@ node skills/shuiguan-cut/scripts/shuiguan-cut.cjs edit-render --repo . --recipe 
 
 工程引用外部素材，不会把视频嵌入 `.freecut`。换电脑或移动文件后，如果显示素材缺失，点击 **重新链接素材**，选择编辑包中的 `media/visual-source.mp4`，然后保存工程。
 
-软件全部功能永久免费，不设会员、不设付费解锁。爱发电为自愿赞助，不影响任何功能。本项目没有编造赞助链接或收款二维码；B站主页为 https://space.bilibili.com/390310418 。该宣传片的作者署名按作者要求保留，软件不会向用户导出的视频强加水印。
+软件全部功能永久免费，不设会员、不设付费解锁。[爱发电支持作者](https://afdian.com/a/watertube)为自愿赞助，不影响任何功能；[B站主页为 @我叫水管同学](https://space.bilibili.com/390310418)。该宣传片的作者署名按作者要求保留，软件不会向用户导出的视频强加水印。
+
+发布视频时可使用 [发布简介](PUBLISH-DESCRIPTION.md)，其中包含真实下载、B站和作者提供的爱发电地址，对应片尾“下载地址见简介”与自愿支持说明。
 
 许可来源见视觉源工程的 `SOURCES.md` 及其字体、GSAP 许可。此版本没有使用语音、音乐或音效资产。
