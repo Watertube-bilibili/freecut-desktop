@@ -42,7 +42,7 @@ const decoded = run('ffmpeg', [
 fs.writeFileSync(path.join(output, 'decode-check.log'), decoded.stderr);
 assert(!/black_start:/.test(decoded.stderr), 'No full black frame may occur');
 
-const samples = [3.5, 10.5, 18, 26, 35, 43.5, 51, 54.96];
+const samples = [6.5, 13.5, 21.5, 29.5, 39.5, 46.5, 51, 54.96];
 for (const [index, time] of samples.entries()) {
   run('ffmpeg', [
     '-y', '-hide_banner', '-loglevel', 'error', '-ss', String(time), '-i', file,
@@ -51,7 +51,7 @@ for (const [index, time] of samples.entries()) {
 }
 run('ffmpeg', [
   '-y', '-hide_banner', '-loglevel', 'error', '-i', file, '-vf',
-  "select='eq(n,105)+eq(n,315)+eq(n,540)+eq(n,780)+eq(n,1050)+eq(n,1305)+eq(n,1530)+eq(n,1649)',scale=480:270,tile=4x2",
+  "select='eq(n,195)+eq(n,405)+eq(n,645)+eq(n,885)+eq(n,1185)+eq(n,1395)+eq(n,1530)+eq(n,1649)',scale=480:270,tile=4x2",
   '-frames:v', '1', path.join(output, 'decoded-contact-sheet.png'),
 ]);
 

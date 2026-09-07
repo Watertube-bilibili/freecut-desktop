@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "role": "silent visual input for a subsequent real FreeCut export",
+  "file": "renders/freecut-launch-en-visual-1080p.mp4",
+  "duration": 55,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "frames": 1650,
+  "audioStreams": 0,
+  "subtitleStreams": 0,
+  "sourceAudioMounts": 0,
+  "sourceCaptionMounts": 0,
+  "bytes": 5383042,
+  "sha256": "a326b613fc456858907f7baaf9d13c8193d31f5c620bdf532cc57b53fe0a590b",
+  "fullDecode": "pass",
+  "blackSegments": 0,
+  "samples": [
+    6.5,
+    13.5,
+    21.5,
+    29.5,
+    39.5,
+    46.5,
+    51,
+    54.96
+  ]
+}

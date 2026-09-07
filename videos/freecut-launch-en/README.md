@@ -4,6 +4,8 @@ Seven scenes, 55 seconds, 1920×1080, 30 fps. This independent derivative preser
 
 No audio, narration, music, sound effects, or line-by-line subtitles are included. Designed headlines and feature descriptions are part of the picture. The software's mobile-style layout is explicitly shown as part of a desktop application, not an Android or iOS release.
 
+The English visual input has been rendered and verified: 55 seconds, 1,650 frames, no audio or subtitle stream, a strict full decode, and a visual review of all scenes. See [QA.md](QA.md). This is the visual-input result; the subsequent real FreeCut product export is tracked separately.
+
 ## Screenshot requirement
 
 `SCREENSHOTS-PENDING.json` records whether all four actual English-interface captures have arrived. `assets/manifest.json` records the approved files and SHA-256 values. The render and full-check commands run `scripts/verify-source.cjs` first and refuse to continue without genuine approved screenshots at these paths:

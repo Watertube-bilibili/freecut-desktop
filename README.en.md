@@ -14,6 +14,8 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 The source is being prepared for the **0.3.1 development preview, which has not been released yet**. It does not yet cover every feature of Jianying or CapCut. The project aims to make everyday editing, desktop keyframes, captions, and local voice tools easier to reach. See the [feature matrix](docs/FEATURE-MATRIX.md) and [verification record](docs/VERIFICATION.md) for the implemented scope and actual tests; these documents are currently in Chinese.
 
+Local checks have passed for both interface languages, context-menu editing, save/quit protection and legacy installation upgrades. The three-platform release build is being verified.
+
 ## Preview
 
 ![FreeCut with the English desktop interface](videos/freecut-launch-en/assets/editor-en.png)

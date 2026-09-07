@@ -593,7 +593,9 @@ async function main() {
           globalThis.__languageDialogs.response = 1;
         });
         const exited = app.waitForEvent('close');
-        await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].close());
+        // Closing the last window keeps a normal macOS app alive. Exercise the
+        // real quit path and the same save guard on every desktop platform.
+        await app.evaluate(({ app }) => app.quit());
         await exited;
         app = undefined;
       },

@@ -89,5 +89,7 @@
       "sourceSha256": "9f4ca9d607a009fdad5e4223838daa63295df55c3891f81ee7755e70a4028b84",
       "englishSha256": "ddd1e6d96c83104472916ab3d9f25d48af1da2b72bf54c526f96c816198cb82e"
     }
-  ]
+  ],
+  "englishScreenshots": "assets/capture-provenance.json",
+  "visualVerification": "qa/visual-verification.json"
 }
