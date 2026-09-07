@@ -131,6 +131,19 @@ jobs:
         if: runner.os == 'Windows'
         timeout-minutes: 10
         run: node installer/smoke-setup.cjs
+      - name: Preserve failed Windows package diagnostics
+        if: failure() && runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostics-win-x64
+          path: |
+            .cache/setup-runtime-test-*/setup-report.json
+            .cache/setup-runtime-test-*/failure.png
+            release/builder-debug.yml
+            release/*-Setup.exe
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 3
       - uses: actions/upload-artifact@v4
         with:
           name: FreeCut-${{ matrix.platform }}-${{ matrix.arch }}-unsigned

@@ -2,6 +2,7 @@
 
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const fs = require('node:fs/promises');
+const { realpathSync } = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { pathToFileURL } = require('node:url');
@@ -32,7 +33,9 @@ const payloadRoot = embeddedInstall
   : !app.isPackaged && process.env.FREECUT_INSTALLER_PAYLOAD_DIR
     ? path.resolve(process.env.FREECUT_INSTALLER_PAYLOAD_DIR)
     : path.join(process.resourcesPath, 'freecut-payload');
-const pageURL = pathToFileURL(path.join(__dirname, 'index.html')).href;
+// NSIS can extract beneath an 8.3 TEMP alias. Node resolves module paths while
+// Chromium can retain the alias; load and authenticate the same canonical URL.
+const pageURL = pathToFileURL(realpathSync(path.join(__dirname, 'index.html'))).href;
 let window,
   controller,
   installedResult,
@@ -551,7 +554,7 @@ else {
         validateSender(event);
         window.close();
       });
-      await window.loadFile(path.join(__dirname, 'index.html'));
+      await window.loadURL(pageURL);
       if (!silent) window.show();
       if (state.ready && (updateMode || silent)) {
         if (uninstallMode) await beginUninstall();

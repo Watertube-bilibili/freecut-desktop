@@ -6,7 +6,9 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const net = require('node:net');
 const os = require('node:os');
-const { spawn } = require('node:child_process');
+const { fileURLToPath } = require('node:url');
+const { spawn, execFile } = require('node:child_process');
+const { promisify } = require('node:util');
 const assert = require('node:assert/strict');
 const { chromium, _electron, expect } = require('@playwright/test');
 const backend = require('./backend.cjs');
@@ -20,6 +22,49 @@ async function freePort() {
   const port = server.address().port;
   await new Promise((resolve) => server.close(resolve));
   return port;
+}
+async function shortTemporaryPath(value, fixtureDirectory) {
+  const script = path.join(fixtureDirectory, 'temporary-alias.ps1');
+  await fs.writeFile(
+    script,
+    '\uFEFF' +
+      `param([string]$InputPath)
+$ErrorActionPreference = 'Stop'
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+Add-Type -TypeDefinition @'
+using System;
+using System.Text;
+using System.Runtime.InteropServices;
+public static class FreeCutSetupTempAlias {
+  [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+  public static extern uint GetShortPathName(string path, StringBuilder buffer, uint size);
+}
+'@
+$buffer = [Text.StringBuilder]::new(32768)
+$length = [FreeCutSetupTempAlias]::GetShortPathName($InputPath, $buffer, 32768)
+if ($length -eq 0 -or $length -ge 32768) { throw 'Cannot resolve the temporary directory alias.' }
+[Console]::Write($buffer.ToString())
+`,
+  );
+  const powershell = path.join(
+    process.env.SystemRoot ?? 'C:\\Windows',
+    'System32',
+    'WindowsPowerShell',
+    'v1.0',
+    'powershell.exe',
+  );
+  const { stdout } = await promisify(execFile)(
+    powershell,
+    ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', script, value],
+    { windowsHide: true, shell: false, encoding: 'utf8', timeout: 30000 },
+  );
+  const alias = stdout.trim();
+  assert.equal(
+    await fs.realpath(alias),
+    await fs.realpath(value),
+    'TEMP alias must identify the fixture directory',
+  );
+  return alias;
 }
 async function main() {
   if (process.platform !== 'win32') throw Error('Actual Setup regression requires Windows');
@@ -38,11 +83,117 @@ async function main() {
   await fs.writeFile(path.join(target, '个人工程.freecut'), 'KEEP ORIGINAL PROJECT');
   const report = { directory, setup, checks: [], passed: false },
     env = { ...process.env };
+  // Actual NSIS extraction must exercise the same 8.3 TEMP spelling that hosted
+  // Windows runners use. Keep all environment changes within child processes.
+  const extractionTemporaryRoot = await fs.mkdtemp(
+    path.join(temporaryRoot, 'freecut-setup-extraction-'),
+  );
+  const temporaryAlias = await shortTemporaryPath(extractionTemporaryRoot, directory);
+  env.TEMP = temporaryAlias;
+  env.TMP = temporaryAlias;
+  report.temporaryDirectory = {
+    canonical: extractionTemporaryRoot,
+    alias: temporaryAlias,
+    shortAliasAvailable: temporaryAlias.toLowerCase() !== extractionTemporaryRoot.toLowerCase(),
+  };
+  if (!report.temporaryDirectory.shortAliasAvailable)
+    console.log(
+      'NOTE: This volume does not provide an 8.3 alias; the actual Setup flow still runs in an isolated TEMP.',
+    );
   delete env.ELECTRON_RUN_AS_NODE;
   delete env.PORTABLE_EXECUTABLE_DIR;
   delete env.PORTABLE_EXECUTABLE_FILE;
   delete env.PORTABLE_EXECUTABLE_APP_FILENAME;
   let child, browser, application, page;
+  const rendererEvents = [];
+  const watchPage = (currentPage) => {
+    const record = (event) => {
+      rendererEvents.push(event);
+      if (rendererEvents.length > 80) rendererEvents.shift();
+    };
+    currentPage.on('pageerror', (error) => record({ type: 'pageerror', message: error.message }));
+    currentPage.on('console', (message) => {
+      if (message.type() === 'error' || message.type() === 'warning')
+        record({ type: message.type(), message: message.text().slice(0, 4000) });
+    });
+    currentPage.on('requestfailed', (request) =>
+      record({ type: 'requestfailed', url: request.url(), error: request.failure()?.errorText }),
+    );
+  };
+  const captureInstaller = async (label) => {
+    const diagnostics = { label, rendererEvents: [...rendererEvents] };
+    if (browser) {
+      diagnostics.pages = browser
+        .contexts()
+        .flatMap((context) =>
+          context
+            .pages()
+            .map((currentPage) => ({ url: currentPage.url(), closed: currentPage.isClosed() })),
+        );
+      const session = await browser.newBrowserCDPSession().catch(() => null);
+      if (session) {
+        diagnostics.commandLine = await session
+          .send('Browser.getBrowserCommandLine')
+          .catch((error) => ({ unavailable: error.message }));
+        await session.detach().catch(() => {});
+      }
+    }
+    if (page && !page.isClosed()) {
+      diagnostics.ui = await page
+        .evaluate(async () => {
+          const info = {
+            url: location.href,
+            readyState: document.readyState,
+            body: document.body?.innerText,
+          };
+          info.elements = Object.fromEntries(
+            ['heading', 'target', 'error', 'primary', 'edition'].map((id) => {
+              const element = document.getElementById(id);
+              return [
+                id,
+                element
+                  ? {
+                      text: element.textContent,
+                      hidden: element.hidden,
+                      disabled: element.disabled,
+                    }
+                  : null,
+              ];
+            }),
+          );
+          info.apiPresent = !!window.freecutInstaller;
+          info.state = window.freecutInstaller
+            ? await Promise.race([
+                window.freecutInstaller.state().catch((error) => ({ error: error.message })),
+                new Promise((resolve) =>
+                  setTimeout(() => resolve({ error: 'state IPC timed out after 5 seconds' }), 5000),
+                ),
+              ])
+            : null;
+          return info;
+        })
+        .catch((error) => ({ error: error.message }));
+      const pageURL = page.url();
+      if (
+        pageURL.startsWith('file:') &&
+        pageURL.endsWith('/resources/freecut-installer/index.html')
+      ) {
+        const extracted = path.dirname(fileURLToPath(pageURL));
+        diagnostics.resources = await Promise.all(
+          ['main.cjs', 'renderer.js', 'preload.cjs', 'index.html'].map(async (name) => {
+            const extractedHash = await backend
+              .sha256(path.join(extracted, name))
+              .catch((error) => ({ error: error.message }));
+            const sourceHash = await backend.sha256(path.join(__dirname, name));
+            return { name, extractedHash, sourceHash, matches: extractedHash === sourceHash };
+          }),
+        );
+      }
+    }
+    report.diagnostics ??= [];
+    report.diagnostics.push(diagnostics);
+    return diagnostics;
+  };
   const check = async (name, action) => {
     console.log(`RUN: ${name}`);
     await action();
@@ -67,11 +218,21 @@ async function main() {
   };
   try {
     const port = await freePort();
-    child = spawn(
-      setup,
-      [`--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--install-dir', target],
-      { cwd: directory, env, windowsHide: true, stdio: 'ignore', shell: false },
-    );
+    const setupArguments = [
+      `--remote-debugging-port=${port}`,
+      '--enable-automation',
+      `--user-data-dir=${profile}`,
+      '--install-dir',
+      target,
+    ];
+    report.launch = { executable: setup, args: setupArguments, cwd: directory, target, profile };
+    child = spawn(setup, setupArguments, {
+      cwd: directory,
+      env,
+      windowsHide: true,
+      stdio: 'ignore',
+      shell: false,
+    });
     const exit = new Promise((resolve, reject) => {
       child.once('error', reject);
       child.once('exit', (code, signal) => resolve({ code, signal }));
@@ -94,8 +255,10 @@ async function main() {
           .toBe(true);
         browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
         page = browser.contexts()[0].pages()[0];
+        watchPage(page);
         page.setDefaultTimeout(120000);
         await expect(page.locator('#heading')).toBeVisible();
+        await captureInstaller('before-target-assertion');
         await expect(page.locator('#target')).toHaveText(target);
         const state = await page.evaluate(() => window.freecutInstaller.state());
         assert.equal(state.version, version);
@@ -245,9 +408,9 @@ async function main() {
         report.remaining = await fs.readdir(target);
         assert.deepEqual(report.remaining, ['个人工程.freecut']);
         const canonicalTarget = await fs.realpath(target);
-        for (const entry of await fs.readdir(temporaryRoot, { withFileTypes: true })) {
+        for (const entry of await fs.readdir(extractionTemporaryRoot, { withFileTypes: true })) {
           if (!entry.isDirectory() || !entry.name.startsWith('freecut-uninstall-')) continue;
-          const helperDirectory = path.join(temporaryRoot, entry.name);
+          const helperDirectory = path.join(extractionTemporaryRoot, entry.name);
           const plan = await fs
             .readFile(path.join(helperDirectory, 'plan.json'), 'utf8')
             .then(JSON.parse, () => null);
@@ -282,6 +445,21 @@ async function main() {
     report.passed = true;
   } catch (error) {
     report.error = error.stack;
+    await captureInstaller('failure').catch((diagnosticError) => {
+      report.diagnosticError = diagnosticError.message;
+    });
+    console.error(
+      'ACTUAL_SETUP_DIAGNOSTICS ' +
+        JSON.stringify(
+          {
+            launch: report.launch,
+            diagnostics: report.diagnostics,
+            diagnosticError: report.diagnosticError,
+          },
+          null,
+          2,
+        ),
+    );
     if (page) await page.screenshot({ path: path.join(directory, 'failure.png') }).catch(() => {});
     throw error;
   } finally {
