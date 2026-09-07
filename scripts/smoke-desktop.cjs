@@ -43,11 +43,12 @@ async function run() {
     ],
     { windowsHide: true, stdio: 'ignore' },
   );
-  const env = { ...process.env };
+  const env = { ...process.env, FREECUT_DISABLE_UPDATES: '1' };
   delete env.ELECTRON_RUN_AS_NODE;
   const executablePath = process.env.FREECUT_TEST_EXE;
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'freecut-desktop-smoke-'));
   delete env.PORTABLE_EXECUTABLE_DIR;
+  delete env.PORTABLE_EXECUTABLE_FILE;
   const args = [...(executablePath ? [] : [root]), `--user-data-dir=${profile}`];
   const app = await electron.launch({ executablePath, args, env });
   try {

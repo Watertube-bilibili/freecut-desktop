@@ -97,6 +97,8 @@ jobs:
         run: node scripts/regression-keyframes.cjs
       - name: Verify direct preview manipulation and one-gesture undo
         run: node scripts/regression-transform.cjs
+      - name: Verify application URL identity in special-character directories
+        run: node scripts/regression-entry-url.cjs
       - name: Verify real stereo preview and exported channels
         run: node scripts/regression-audio.cjs
       - name: Verify sound library playback and repeated insertion
@@ -118,6 +120,9 @@ jobs:
       - name: Verify packaged desktop with real media
         timeout-minutes: 10
         run: node -e "process.env.FREECUT_TEST_EXE=require('path').resolve('${{ matrix.application }}');require('./scripts/smoke-desktop.cjs');"
+      - name: Verify packaged Windows application URL identity
+        if: runner.os == 'Windows'
+        run: node scripts/regression-entry-url.cjs --exe "${{ matrix.application }}"
       - name: Verify actual macOS update ZIP
         if: runner.os == 'macOS'
         run: node scripts/verify-mac-update.cjs --arch ${{ matrix.arch }}

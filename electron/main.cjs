@@ -44,6 +44,9 @@ protocol.registerSchemesAsPrivileged([
 
 const dev = !app.isPackaged && process.argv.includes('--dev');
 const entry = path.join(__dirname, '..', 'dist', 'index.html');
+// loadFile and pathToFileURL encode characters such as ~ differently. Use one
+// URL for loading, navigation and sender authentication, including 8.3 paths.
+const entryURL = dev ? 'http://127.0.0.1:5173/' : pathToFileURL(entry).href;
 const ffmpegPath = path.join(
   app.isPackaged ? process.resourcesPath : path.join(__dirname, '..', 'resources'),
   'ffmpeg',
@@ -94,7 +97,7 @@ function validateSender(event) {
   return assertTrustedSender(
     event,
     window?.webContents,
-    dev ? 'http://127.0.0.1:5173/' : pathToFileURL(entry).href,
+    entryURL,
   );
 }
 function handle(channel, callback) {
@@ -414,8 +417,7 @@ function createWindow() {
   });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', (event, url) => {
-    if (url !== (dev ? 'http://127.0.0.1:5173/' : pathToFileURL(entry).href))
-      event.preventDefault();
+    if (url !== entryURL) event.preventDefault();
   });
   window.webContents.on('will-attach-webview', (event) => event.preventDefault());
   window.once('ready-to-show', () => window.show());
@@ -461,8 +463,7 @@ function createWindow() {
     }
     if (!shutdown) void disposeResources();
   });
-  if (dev) void window.loadURL('http://127.0.0.1:5173/');
-  else void window.loadFile(entry);
+  void window.loadURL(entryURL);
 }
 
 app.whenReady().then(() => {
