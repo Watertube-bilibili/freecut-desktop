@@ -14,7 +14,7 @@
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-当前开发版本为 **0.4.1 预览版**，新增异地邀请码协作，并修复播放和拖动时间线时预览长时间不刷新。安装包正在验证；可用状态以 [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.1-preview.1) 为准。软件并未完整覆盖剪映。无账户要求；单人媒体处理在本地，开启协作后工程和素材会传给房间成员。
+当前已发布 **0.4.1 预览版**，新增异地邀请码协作，并修复播放和拖动时间线时预览长时间不刷新。Windows 安装版 / 便携版、Mac Apple Silicon / Intel 的 DMG / ZIP 均已通过构建及打包验证，可从 [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.1-preview.1) 下载。软件并未完整覆盖剪映。无账户要求；单人媒体处理在本地，开启协作后工程和素材会传给房间成员。
 
 0.4.1 已通过本机双桌面应用协作、Windows 与异地 Linux 机器之间的真实加密工程/素材传输，以及 Windows 打包程序中的原生传输检查；窄窗口工具栏自动收紧文字。具体样本、时间、最终发行状态和适用范围见 [0.4.1 验证记录](docs/VERIFICATION-041.md)及[跨网测试摘要](docs/verification/041-internet.json)。旧版安装图标与导出改造记录保留在 [0.3.2 验证记录](docs/VERIFICATION-032.md)。
 
@@ -67,7 +67,7 @@
 
 ## 下载和运行
 
-[查看 0.4.1 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.1-preview.1)：下表为本次版本的安装包名称，以 Release 附件可用状态为准。提供 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
+[下载 0.4.1 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.1-preview.1)：下表中的安装包均已发布，另附匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 

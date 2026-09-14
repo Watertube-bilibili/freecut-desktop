@@ -1,6 +1,6 @@
 # 0.4.1 验证记录
 
-日期：2026-09-14。状态：Windows 本地打包和真实公网协作已验证，最终三平台发行检查进行中。本文仅记录本次实际执行，不把 0.3.x / 0.4.0 的旧包验收等同于新包验收。
+日期：2026-09-14。状态：**0.4.1 三平台构建与打包验证通过，15 个 Release 附件已公开发布**。本文仅记录本次实际执行，不把 0.3.x / 0.4.0 的旧包验收等同于新包验收。
 
 ## 已完成
 
@@ -13,10 +13,18 @@
 - 连续预览：针对 Intel CI 冷启动解码导致反复 seek 的情况增加有界追帧与恢复期；500 ms 延迟样本恢复后只 seek 一次，113 个变化帧，位置误差 70 ms。旧实现同样样本出现 5 次 seek 并未通过；逐帧导出路径独立。报告 `freecut-playback-regression-KtpIdb/playback-report.json`。
 - 依赖：固定 HyperDHT 6.34.0，生产依赖 `npm audit --omit=dev` 为 0 已知漏洞（检查时结果，不等于不存在漏洞）。依赖及原生子库的来源、完整声明和未解项记录于 `third-party/p2p/`。
 
-## 待完成
+## 三平台发行
 
-- 最终版本全套回归、Windows / Mac Intel / Mac Apple Silicon 打包后的原生传输模块和编辑导出验收。
-- 最终 Release 资产与对应源码的散列校验。
+[构建 34858347226](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34858347226) 的 Windows x64、Mac Intel 和 Apple Silicon 均通过核心/宿主测试、实际桌面回归、打包后的媒体导入/工程保存重开/MP4 导出与原生加密传输检查。Windows 实际 Setup 与卸载、Mac 实际更新 ZIP 验证均通过。Apple Silicon 首次下载 Electron 遇 HTTP 504，单独重试后通过，没有跳过失败检查。
+
+发行程序源码为 `5fb53aebf7983593973b1c34ab052e3cff2bcf63`。后续说明更新独立于不可变构建源码。[发布任务 34860043799](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34860043799) 核对了三平台源码一致、FFmpeg 源码及来源清单、所有附件字节数与 SHA-256，成功发布 [v0.4.1-preview.1](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.1-preview.1)。共 15 个附件，包括 6 个应用包、3 个 FFmpeg 源码包、应用源码、两份教程、许可、第三方声明和校验清单。
+
+发布后另从公开地址下载了 Windows Setup、Portable、中英文教程和 SHA256SUMS，逐一核对 GitHub 资产散列与清单；便携包也成功解出真实程序。校验清单的首次下载遇缓存 HTTP 504，换用同一官方附件的下载查询参数后取得，仍执行完整散列检查。
+
+| 最终公开文件 | 字节 | SHA-256 |
+| --- | ---: | --- |
+| FreeCut-0.4.1-win-x64-Setup.exe | 126728868 | `0d830ded09e0fce1d884f9124a25da97add8ae3dd896ffe20f0098939d4b705f` |
+| FreeCut-0.4.1-win-x64-Portable.exe | 109799390 | `9e1ef95dad0847e188cab8f79afed28b95cbced66c347472496863cacd9daae5` |
 
 ## 范围
 
