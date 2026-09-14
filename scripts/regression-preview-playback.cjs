@@ -136,9 +136,23 @@ async function main() {
       const api = window.PreviewTest;
       const createElement = document.createElement.bind(document);
       const videoElements = [];
+      let readinessDelay = 0;
       document.createElement = function (tag, options) {
         const element = createElement(tag, options);
-        if (tag === 'video') videoElements.push(element);
+        if (tag === 'video') {
+          videoElements.push(element);
+          // Deterministically exercise a slow decoder-ready notification as well as
+          // the unmodified real-media measurements below. Pixel decoding stays real.
+          element.addEventListener(
+            'seeked',
+            (event) => {
+              if (!readinessDelay || !event.isTrusted) return;
+              event.stopImmediatePropagation();
+              setTimeout(() => element.dispatchEvent(new Event('seeked')), readinessDelay);
+            },
+            true,
+          );
+        }
         return element;
       };
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -250,10 +264,23 @@ async function main() {
       await wait(160);
       check(readFrame() === pausedFrame, 'Paused preview changed by itself');
 
-      const jump = await play(8, 0.8);
+      // A cold long-GOP seek is allowed to decode first; the following playback must
+      // recover to the timeline without repeatedly restarting that expensive seek.
+      const jump = await play(8, 1.8);
       check(
-        jump.uniqueFrames >= 10 && Math.abs(jump.last.actual - (8 + jump.last.elapsed)) < 0.3,
+        jump.uniqueFrames >= 20 &&
+          jump.seeks <= 2 &&
+          Math.abs(jump.last.actual - (8 + jump.last.elapsed)) < 0.25,
         `Playback jump failed: ${JSON.stringify(jump)}`,
+      );
+      readinessDelay = 500;
+      const delayedReadiness = await play(4, 3.8);
+      readinessDelay = 0;
+      check(
+        delayedReadiness.uniqueFrames >= 35 &&
+          delayedReadiness.seeks <= 2 &&
+          Math.abs(delayedReadiness.last.actual - (4 + delayedReadiness.last.elapsed)) < 0.25,
+        `Slow decoder readiness caused repeated seeks: ${JSON.stringify(delayedReadiness)}`,
       );
 
       const scrubStart = performance.now(),
@@ -335,6 +362,7 @@ async function main() {
         fixture: project,
         playback,
         jump,
+        delayedReadiness,
         doubleSpeed,
         scrubCommitted: scrubFrames.length,
         scrubDistinctFrames: new Set(scrubFrames).size,

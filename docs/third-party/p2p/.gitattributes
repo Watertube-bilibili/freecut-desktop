@@ -1,0 +1,4 @@
+# These are verbatim third-party documents, not FreeCut-formatted source files.
+# Preserve original bytes so the recorded notice hashes also match after checkout.
+npm/** -text -whitespace
+upstream/** -text -whitespace

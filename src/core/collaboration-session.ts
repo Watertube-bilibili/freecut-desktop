@@ -53,13 +53,13 @@ export class CollaborationSession {
     clearTimeout(this.timer);
     this.stops.splice(0).forEach(stop => stop());
   }
-  async host(port: number, name: string) {
+  async host(port: number, name: string, transport: 'remote' | 'lan' = 'lan') {
     const generation = ++this.generation;
     const snapshot = structuredClone(this.callbacks.read());
     this.connecting = true;
     this.callbacks.error('');
     try {
-      const state = await this.api.host({ project: snapshot, port, name });
+      const state = await this.api.host({ project: snapshot, port, name, transport });
       if (generation !== this.generation) return;
       this.state = state;
       this.base = { project: snapshot, revision: state.revision, originId: state.peerId };

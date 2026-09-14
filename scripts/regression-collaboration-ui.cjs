@@ -146,9 +146,19 @@ async function main() {
       await importImage(host, green);
       await expect.poll(async () => (await previewPixel(host))[1]).toBeGreaterThan(150);
       await host.page.getByTitle('远程协作', { exact: true }).click();
+      await expect(
+        host.page.getByRole('radio', { name: '异地协作（邀请码）', exact: true }),
+      ).toBeChecked();
+      await expect(host.page.getByLabel('端口', { exact: true })).toHaveCount(0);
+      await expect(
+        host.page.getByRole('button', { name: '创建房间并生成邀请码', exact: true }),
+      ).toBeVisible();
+      await screenshot(host.page, 'remote-create-default');
       await host.page.getByLabel('你的昵称').fill('Host editor');
+      await host.page.locator('.collab-advanced summary').click();
+      await host.page.getByRole('checkbox', { name: '使用局域网 / IP 直连', exact: true }).check();
       await host.page.getByLabel('端口', { exact: true }).fill(String(port));
-      await host.page.getByRole('button', { name: '开启房间并共享工程', exact: true }).click();
+      await host.page.getByRole('button', { name: '开启局域网房间', exact: true }).click();
       await expect(host.page.getByText('房间已开启', { exact: true })).toBeVisible();
       roomKey = await host.page.getByLabel('房间密钥', { exact: true }).inputValue();
       assert.ok(roomKey.length >= 16);
@@ -156,13 +166,63 @@ async function main() {
       assert.equal((await state(host)).port, port);
       await screenshot(host.page, 'host-room-chinese');
     });
+    await check('Cancelling a pending connection preserves the saved local draft', async () => {
+      const sockets = new Set();
+      const stalled = net.createServer((socket) => {
+        sockets.add(socket);
+        socket.on('close', () => sockets.delete(socket));
+      });
+      await new Promise((resolve, reject) =>
+        stalled.listen(0, '127.0.0.1', resolve).once('error', reject),
+      );
+      try {
+        await client.page
+          .getByLabel('工程名称', { exact: true })
+          .fill('Draft kept after cancellation');
+        const draft = path.join(directory, 'client-before-cancel.freecut');
+        await client.app.evaluate((_, file) => globalThis.__collabDialogs.save.push(file), draft);
+        await client.page.getByTitle('远程协作', { exact: true }).click();
+        await client.page.getByRole('tab', { name: '加入房间', exact: true }).click();
+        await client.page.locator('.collab-advanced summary').click();
+        await client.page
+          .getByRole('checkbox', { name: '使用局域网 / IP 直连', exact: true })
+          .check();
+        await client.page.getByLabel('主机 IP 地址', { exact: true }).fill('127.0.0.1');
+        await client.page.getByLabel('端口', { exact: true }).fill(String(stalled.address().port));
+        await client.page.getByLabel('房间密钥', { exact: true }).fill('a'.repeat(48));
+        await client.page.getByRole('button', { name: '连接并加入房间', exact: true }).click();
+        await expect.poll(async () => (await state(client)).mode).toBe('connecting');
+        await expect(client.page.getByText('已加入协作', { exact: true })).toHaveCount(0);
+        await client.page.getByRole('button', { name: '取消连接', exact: true }).click();
+        await expect.poll(async () => (await state(client)).mode).toBe('disconnected');
+        await expect(client.page.locator('.collab-error')).toHaveCount(0);
+        await client.page.keyboard.press('Escape');
+        await expect(client.page.getByLabel('工程名称', { exact: true })).toHaveValue(
+          'Draft kept after cancellation',
+        );
+        assert.equal(
+          JSON.parse(await fs.readFile(draft, 'utf8')).name,
+          'Draft kept after cancellation',
+        );
+      } finally {
+        for (const socket of sockets) socket.destroy();
+        await new Promise((resolve) => stalled.close(resolve));
+      }
+    });
     await check('IP/port/key join saves the local draft and downloads actual media', async () => {
       await client.page.getByLabel('工程名称', { exact: true }).fill('Unsaved local draft');
       const draft = path.join(directory, 'client-before-join.freecut');
       await client.app.evaluate((_, file) => globalThis.__collabDialogs.save.push(file), draft);
       await client.page.getByTitle('远程协作', { exact: true }).click();
       await client.page.getByRole('tab', { name: '加入房间', exact: true }).click();
+      await expect(client.page.getByLabel('粘贴邀请码', { exact: true })).toBeVisible();
+      await expect(client.page.getByLabel('主机 IP 地址', { exact: true })).toHaveCount(0);
+      await screenshot(client.page, 'invite-join-default');
       await client.page.getByLabel('你的昵称').fill('Guest editor');
+      await client.page.locator('.collab-advanced summary').click();
+      await client.page
+        .getByRole('checkbox', { name: '使用局域网 / IP 直连', exact: true })
+        .check();
       await client.page.getByLabel('主机 IP 地址', { exact: true }).fill('127.0.0.1');
       await client.page.getByLabel('端口', { exact: true }).fill(String(port));
       await client.page.getByLabel('房间密钥', { exact: true }).fill(roomKey);
@@ -176,7 +236,10 @@ async function main() {
       const project = await save(client, 'client-joined.freecut');
       assert.equal(project.assets.length, 1);
       assert.notEqual(project.assets[0].path, green);
-      assert.equal(path.dirname(project.assets[0].path), await fs.realpath(path.join(client.profile, 'collaboration')));
+      assert.equal(
+        path.dirname(project.assets[0].path),
+        await fs.realpath(path.join(client.profile, 'collaboration')),
+      );
       assert.deepEqual(await fs.readFile(project.assets[0].path), await fs.readFile(green));
       await expect.poll(async () => (await previewPixel(client))[1]).toBeGreaterThan(150);
     });
@@ -207,7 +270,10 @@ async function main() {
       const asset = project.assets.find((asset) => asset.name === 'shared-blue.png');
       assert.ok(asset);
       assert.notEqual(asset.path, blue);
-      assert.equal(path.dirname(asset.path), await fs.realpath(path.join(host.profile, 'collaboration')));
+      assert.equal(
+        path.dirname(asset.path),
+        await fs.realpath(path.join(host.profile, 'collaboration')),
+      );
       assert.deepEqual(await fs.readFile(asset.path), await fs.readFile(blue));
       const clientProject = await save(client, 'client-with-guest-media.freecut');
       assert.equal(clientProject.clips.length, project.clips.length);
@@ -308,7 +374,6 @@ async function main() {
         assert.match(invite, /^freecut1:/);
         await client.page.getByTitle('远程协作', { exact: true }).click();
         await client.page.getByRole('tab', { name: '加入房间', exact: true }).click();
-        await client.page.getByRole('radio', { name: '邀请码', exact: true }).check();
         await client.page.getByLabel('粘贴邀请码', { exact: true }).fill(invite);
         await client.page.getByRole('button', { name: '连接并加入房间', exact: true }).click();
         await expect(client.page.getByText('已加入协作', { exact: true })).toBeVisible();

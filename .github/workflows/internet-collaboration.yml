@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       peer:
-        description: Temporary synthetic-test host public key
+        description: Temporary synthetic-test public key or room invitation
         required: true
         type: string
       challenge:
@@ -26,11 +26,17 @@ jobs:
         env:
           FREECUT_NETWORK_QA_PEER: ${{ inputs.peer }}
           FREECUT_NETWORK_QA_CHALLENGE: ${{ inputs.challenge }}
-        run: node scripts/verify-internet-link.cjs join
+        shell: bash
+        run: |
+          if [[ "$FREECUT_NETWORK_QA_PEER" == freecut2:* ]]; then
+            node scripts/verify-internet-collaboration.cjs join
+          else
+            node scripts/verify-internet-link.cjs join
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: internet-link-report
-          path: .cache/internet-link/join-report.json
+          path: .cache/internet-link/join*report.json
           include-hidden-files: true
           retention-days: 3

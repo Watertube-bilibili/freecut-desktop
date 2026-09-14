@@ -52,9 +52,9 @@ if(mode==='verify'){
 ## 本次更新
 
 - 修复视频播放和拖动时间线时预览长时间停在旧画面：播放使用连续解码，拖动合并待处理请求，完成当前画面后优先显示最新位置。专业布局和手机布局采用同一修复，暂停定位仍精确。
-- 新增本机主持的远程协作：首页或编辑器进入“远程协作”，一台电脑创建房间，其他电脑用 IPv4＋端口＋密钥或邀请码加入，无需公共服务器。
+- 新增异地邀请码协作：首页或编辑器进入“远程协作”，保持默认异地方式创建房间，对方粘贴邀请码即可尝试连接，无需另装 VPN、注册账户或自建服务器。高级选项保留 IP＋端口局域网连接。
 - 工程和素材双向同步，不同位置的编辑自动合并；同参数冲突保留本地草稿并提供选择。拖动中收到远端修改会延后处理，防止覆盖未完成的操作；播放位置与选中对象各自独立。
-- 适用于已互通的可信局域网或加密 VPN。房间使用 HTTP，未提供传输加密、公共中继或 NAT 穿透；邀请码只封装连接参数。容量上限与缓存说明见 docs/COLLABORATION.md。
+- 异地方式通过公开发现节点和 NAT 穿透建立 Noise 加密点对点连接，房主需保持在线。部分受限网络无法直连，当前没有媒体流量中继。旧 LAN 模式的 HTTP 未额外加密。连接期间可取消；隐私、容量与缓存说明见 docs/COLLABORATION.md。
 - 保留自动 FFmpeg 原生导出和复杂画面的 RGBA 管道；本次预览修复不改变导出的精确逐帧路径，也不承诺所有机器和工程固定帧率。
 - 保留带封面 FLAC 的音频识别和旧版快捷方式图标修复。需要更新已安装桌面入口时，请下载 Setup 覆盖安装；便携版不会改写快捷方式。
 - 同步中英文 README、协作说明、安装包选择和实际验证记录。
@@ -67,9 +67,9 @@ FreeCut is a free, open-source desktop video editor created by a junior high sch
 
 This release fixes stalled preview playback and scrubbing in both layouts. Playback decodes continuously, while scrubbing coalesces pending work instead of repeatedly cancelling unfinished frames. Paused positioning remains precise, and the frame-exact export path stays separate. Frame rates still depend on the project and hardware.
 
-Remote collaboration is hosted on your own computer. Open Remote collaboration from Home or the editor, create a room, and let others join with IPv4, port and key, or an invitation code. Projects and media synchronize in both directions. Disjoint edits merge automatically; conflicts preserve your local draft. Remote changes wait until an active drag finishes, and each editor keeps an independent playhead and selection.
+Remote collaboration is hosted on your own computer. Create the default Internet room and share its invitation; the other participant pastes it to connect without an account, self-deployed server or separate VPN. Projects and media synchronize in both directions. Disjoint edits merge automatically; conflicts preserve your local draft. Remote changes wait until an active drag finishes, and each editor keeps an independent playhead and selection.
 
-Use a reachable trusted LAN or encrypted VPN. Rooms use HTTP without built-in transport encryption; there is no public relay or NAT traversal. Invitations contain connection parameters only. Limits, retained media caches and conflict handling are documented in docs/COLLABORATION.md. The existing automatic native export path, RGBA export pipe, audio artwork classification and Windows shortcut repair remain available. Use Setup to update an installed desktop shortcut; Portable does not change shortcuts.
+Public discovery nodes and NAT traversal attempt a Noise-encrypted peer-to-peer connection. Keep the host online. Some restrictive networks prevent direct connections; no bulk media relay is included and universal connectivity is not promised. Advanced LAN mode retains unencrypted authenticated HTTP for trusted networks. Connections can be cancelled. Privacy, limits, caches and conflicts are documented in docs/COLLABORATION.md. Native export, the RGBA pipe, audio artwork classification and shortcut repair remain available. Use Setup to update an installed desktop shortcut; Portable does not change shortcuts.
 
 The first launch still defaults to Simplified Chinese: choose English in Home → Settings → Language, or the editor's language selector. The choice persists, and your project text is never translated automatically. Context menus, dual layouts, Easy keyframes, preview transforms, masks, color presets, sound effects, stereo routing, captions and local voice tools remain available.
 
@@ -95,7 +95,7 @@ FreeCut-project-source-*.tar.gz 是本次应用源码，FreeCut-ffmpeg-source-*.
 
 ## 发布验证与说明
 
-Windows x64、Mac arm64、Mac x64 的构建均通过核心/宿主测试、实际桌面回归及打包应用的导入、保存重开和 MP4 导出。详见[本次构建记录](https://github.com/${repo}/actions/runs/${runId})与随附源码的 docs/VERIFICATION-040.md。协作使用同一台设备上的两个独立应用进程和真实 HTTP 验证，尚不代表两台物理电脑、所有路由器和大型素材库均已验收。预览移动画面的测量仅适用于测试样本，不作为通用固定帧率承诺。源码提交：${build.head_sha}。
+Windows x64、Mac arm64、Mac x64 的构建均通过核心/宿主测试、实际桌面回归及打包应用的导入、保存重开和 MP4 导出。详见[本次构建记录](https://github.com/${repo}/actions/runs/${runId})与随附源码的 docs/VERIFICATION-041.md；记录区分本机双应用、隔离 DHT 和真实公网测试，不将单个网络结果扩大到所有路由器或大型素材库。预览测量仅适用于测试样本，不作为固定帧率承诺。源码提交：${build.head_sha}。
 
 Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按各自许可另行下载，ChatTTS 官方模型为 CC BY-NC 4.0，仅限非商业用途；Mac 的可选模型推理仍需设备验收。本项目为持续开发的预览版，功能范围与尚未完成能力见 docs/FEATURE-MATRIX.md。
 

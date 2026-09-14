@@ -26,6 +26,12 @@ Electron is MIT licensed and incorporates Chromium, Node.js and other third-part
 
 React, React DOM and scheduler are MIT licensed. Lucide React uses ISC and includes portions of Feather under MIT. The application embeds their notices below. `tar`, `unbzip2-stream` and their runtime dependencies retain their original license files in the packaged application dependencies; their installed-version notices are also collected below. Build-only development tools are recorded by the lockfile and are not separately represented as application features.
 
+## Peer-to-peer collaboration dependencies
+
+The collaboration transport adds **hyperdht 6.34.0** and its installed production dependency closure. The exact **56-package inventory**, original license/NOTICE texts, official repository references, native sublibrary notices and SHA-256 records are bundled in [`docs/third-party/p2p/`](docs/third-party/p2p/README.md). Preserve that entire directory with this document when distributing the app. It includes libudx/libuv, libsodium, libjstl, Bare URL sublibraries, simdutf source attributions, Unicode data terms and the original BSD/ISC/CC0 notices embedded in native sources.
+
+The package-level declarations are MIT, Apache-2.0 and ISC; those license families support GPLv3 combinations when their conditions are met. However, **noise-curve-ed 2.1.0 supplies only an ISC declaration and no complete license/copyright notice in its npm package or official release tag**. Its metadata is preserved as evidence, not presented as a substitute original license. This attribution/grant gap remains unresolved and must not be described as fully cleared. The P2P review documents the supplier-native-prebuild provenance limits separately; source inspection does not establish a reproducible binary build or eliminate patent risk. Third-party notices remain independent of FreeCut's promise that all application features are permanently free.
+
 ## Optional speech components
 
 The base application package contains neither speech model weights nor the optional speech runtime. Downloads occur only when requested in the application. Source, checksums, installed-file manifests and known license boundaries are documented in `docs/AI-MODELS.md` and `docs/CHAT-TTS.md`.

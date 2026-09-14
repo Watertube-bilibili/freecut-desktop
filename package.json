@@ -1,6 +1,6 @@
 {
   "name": "freecut-desktop",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "description": "水管剪辑 — 我叫水管同学出品的开源桌面视频编辑器（FreeCut）",
   "license": "GPL-3.0-or-later",
@@ -43,5 +43,5 @@
     "vitest": "^3.2.4",
     "wait-on": "^8.0.4"
   },
-  "freecutReleaseTag": "v0.4.0-preview.1"
+  "freecutReleaseTag": "v0.4.1-preview.1"
 }

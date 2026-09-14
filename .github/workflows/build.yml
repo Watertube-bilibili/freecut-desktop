@@ -84,6 +84,8 @@ jobs:
       - run: npm ci
       - run: node scripts/prepare-ffmpeg.mjs
       - run: npm test
+      - name: Verify bundled P2P notices
+        run: node docs/third-party/p2p/generate-notices.cjs --check
       - run: npm run build
       - name: Verify album artwork stays audio in import and old projects
         run: node scripts/regression-media-kind.cjs
@@ -132,6 +134,9 @@ jobs:
       - name: Verify packaged desktop with real media
         timeout-minutes: 10
         run: node -e "process.env.FREECUT_TEST_EXE=require('path').resolve('${{ matrix.application }}');require('./scripts/smoke-desktop.cjs');"
+      - name: Verify packaged native encrypted collaboration
+        timeout-minutes: 3
+        run: node -e "process.env.FREECUT_EXECUTABLE=require('path').resolve('${{ matrix.application }}');require('./scripts/smoke-p2p-native.cjs');"
       - name: Verify packaged Windows application URL identity
         if: runner.os == 'Windows'
         run: node scripts/regression-entry-url.cjs --exe "${{ matrix.application }}"

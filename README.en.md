@@ -12,13 +12,11 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
-The current development version is the **0.4.0 preview**, fixing stalled playback and timeline scrubbing and adding collaboration hosted on your own computer via IP and port. Packages are undergoing verification; check the [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.0-preview.1) for availability. It does not cover every Jianying or CapCut feature. No account is required. Solo media processing is local; starting collaboration shares the project and its media with room members.
+The current development version is the **0.4.1 preview**, adding Internet invite-code collaboration and fixing stalled playback and timeline scrubbing. Packages are undergoing verification; check the [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.1-preview.1) for availability. It does not cover every Jianying or CapCut feature. No account is required. Solo media processing is local; starting collaboration shares the project and its media with room members.
 
-Version 0.4.1 is in development: invite codes will discover remote members and establish encrypted peer-to-peer connections through HyperDHT, without a separate VPN. Internet validation transfers synthetic test data between two machines before packages are released. Some restrictive NAT configurations can prevent a direct connection; universal connectivity is not promised.
+The 0.4.1 checks cover moving-video playback, both editor layouts, and direct collaboration between two desktop instances. Narrow windows use compact toolbar buttons so the collaboration entry does not push controls outside the screen. See the [0.4.1 verification record](docs/VERIFICATION-041.md) for results and scope. Earlier installer and export work remains documented in the [0.3.2 verification record](docs/VERIFICATION-032.md).
 
-The 0.4.0 checks cover moving-video playback, both editor layouts, and direct collaboration between two desktop instances. Narrow windows use compact toolbar buttons so the collaboration entry does not push controls outside the screen. See the [0.4.0 verification record](docs/VERIFICATION-040.md) for results and scope. Earlier installer and export work remains documented in the [0.3.2 verification record](docs/VERIFICATION-032.md).
-
-Preview playback now decodes continuously; scrubbing coalesces queued work without repeatedly aborting unfinished frames. Paused seeks remain precise and export keeps its separate frame-exact rendering. **Remote collaboration** lets one computer host while others join with IPv4, port and key, or an invite code. Media and disjoint edits synchronize automatically; same-field conflicts preserve your local draft. Storage supports system app-data path aliases while rejecting a symlink redirect of the collaboration cache itself. No public server is needed. Use a reachable trusted LAN or VPN; invitations do not provide relaying or NAT traversal. See [collaboration instructions, HTTP transport boundaries and limits](docs/COLLABORATION.md#english).
+Preview playback now decodes continuously; scrubbing coalesces queued work without repeatedly aborting unfinished frames. Paused seeks remain precise and export keeps its separate frame-exact rendering. **Remote collaboration** defaults to Internet invitations: one computer hosts, another pastes the code, and FreeCut uses public discovery nodes and attempts NAT traversal to establish an encrypted peer-to-peer connection. Media and disjoint edits synchronize automatically; same-field conflicts preserve your local draft. No account, self-deployed server, or separate VPN is required. The host must stay online. Some restrictive networks prevent direct connections; bulk media relaying is not provided and connectivity is not guaranteed on every network. Advanced options retain IP-and-port LAN collaboration. See [instructions, privacy and limits](docs/COLLABORATION.md#english).
 
 The 0.3.2 installer updates verified old FreeCut desktop and Start menu shortcuts, including when the install location changes. A separate icon file and Windows refresh notification address stale icons after upgrades. Fresh installations use the same new icon. User-customized shortcuts are preserved.
 
@@ -55,21 +53,21 @@ The second layout runs in the same desktop application. It is not an Android or 
 - Find recent projects on the home screen, with search and sorting. Settings and recent-project records persist across launches.
 - Keep unsaved work protected when closing, going home, or opening another project. Cancelling a save or encountering a save error leaves the current project open.
 - Play video with continuous decoding; scrubbing coalesces pending requests and prioritizes the latest frame. Switching layouts preserves the currently displayed image while the next frame is prepared.
-- Host direct collaboration with IP and port. Projects and media synchronize; disjoint edits merge and conflicts preserve local drafts. Use a trusted LAN or encrypted VPN.
+- Host Internet collaboration and share an invite code. Automatic discovery and NAT traversal attempt an encrypted connection without a separate VPN. Projects and media synchronize; disjoint edits merge and conflicts preserve local drafts. IP-and-port LAN collaboration remains in Advanced options.
 - Download optional open-source environments and models for automatic captions, Chinese text-to-speech, and ChatTTS. After installation, inference runs locally without uploading your media.
 - Install through an original Windows setup interface, with C:, D:, or a custom location. The app can check this repository's Releases, verify downloads, and prepare updates while protecting unsaved work.
 
 ## Download and install
 
-[Check the 0.4.0 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.0-preview.1). The table lists this version’s package names; availability depends on the Release attachments. Packages include Windows setup/portable, macOS Intel/Apple Silicon DMG/ZIP, matching source, both guides, and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
+[Check the 0.4.1 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.1-preview.1). The table lists this version’s package names; availability depends on the Release attachments. Packages include Windows setup/portable, macOS Intel/Apple Silicon DMG/ZIP, matching source, both guides, and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
 
 | Computer or use | Download | How to use it |
 | --- | --- | --- |
-| Windows 10/11 x64, regular installation | `FreeCut-0.4.0-win-x64-Setup.exe` | Choose your drive or folder; C: is not preselected. Upgrades repair eligible old shortcuts and their icons. |
-| Windows 10/11 x64, no installation | `FreeCut-0.4.0-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder when moving the app; it stores settings, recent projects, and models. |
-| Mac with Apple Silicon | `FreeCut-0.4.0-mac-arm64.dmg` | Open the DMG and drag FreeCut into Applications. |
-| Mac with an Intel processor | `FreeCut-0.4.0-mac-x64.dmg` | Install the same way. |
-| Mac, ZIP format preferred | `FreeCut-0.4.0-mac-arm64.zip` or `FreeCut-0.4.0-mac-x64.zip` | Extract the app for your processor. DMG and ZIP contain the same application; choose one. |
+| Windows 10/11 x64, regular installation | `FreeCut-0.4.1-win-x64-Setup.exe` | Choose your drive or folder; C: is not preselected. Upgrades repair eligible old shortcuts and their icons. |
+| Windows 10/11 x64, no installation | `FreeCut-0.4.1-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder when moving the app; it stores settings, recent projects, and models. |
+| Mac with Apple Silicon | `FreeCut-0.4.1-mac-arm64.dmg` | Open the DMG and drag FreeCut into Applications. |
+| Mac with an Intel processor | `FreeCut-0.4.1-mac-x64.dmg` | Install the same way. |
+| Mac, ZIP format preferred | `FreeCut-0.4.1-mac-arm64.zip` or `FreeCut-0.4.1-mac-x64.zip` | Extract the app for your processor. DMG and ZIP contain the same application; choose one. |
 
 You need only one application download for normal use; the source archives are for developers and license compliance. On macOS, **Apple menu → About This Mac** identifies your processor.
 

@@ -1,0 +1,4 @@
+===== lib/nat.js:36 =====
+    // TODO: it would be best to pick the nodes to help us based on latency to us
+    // That should reduce connect latency in general. We should investigate tracking that later on.
+

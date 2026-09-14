@@ -1,0 +1,3041 @@
+{
+  "schemaVersion": 1,
+  "reviewDate": "2026-09-14",
+  "packages": [
+    "@hyperswarm/secret-stream@6.9.2",
+    "adaptive-timeout@1.0.1",
+    "b4a@1.9.0",
+    "bare-addon-resolve@1.10.1",
+    "bare-ansi-escapes@2.2.3",
+    "bare-assert@1.2.0",
+    "bare-events@2.9.2",
+    "bare-fs@4.8.1",
+    "bare-inspect@3.1.10",
+    "bare-module-resolve@1.12.5",
+    "bare-path@3.1.2",
+    "bare-semver@1.1.0",
+    "bare-stream@2.13.4",
+    "bare-type@1.1.1",
+    "bare-url@2.5.4",
+    "bits-to-bytes@1.3.0",
+    "blind-relay@1.6.1",
+    "bogon@1.3.0",
+    "compact-encoding@3.5.0",
+    "compact-encoding-bitfield@1.1.0",
+    "compact-encoding-net@1.3.0",
+    "dht-rpc@6.27.0",
+    "events-universal@1.0.1",
+    "fast-fifo@1.3.2",
+    "generate-object-property@2.0.0",
+    "generate-string@1.0.1",
+    "hypercore-crypto@3.7.0",
+    "hypercore-id-encoding@1.3.0",
+    "hyperdht@6.34.0",
+    "hyperdht-address@1.1.1",
+    "hyperschema@1.26.1",
+    "is-property@1.0.2",
+    "kademlia-routing-table@1.0.6",
+    "nanoassert@2.0.0",
+    "nat-sampler@1.0.1",
+    "noise-curve-ed@2.1.0",
+    "noise-handshake@4.2.0",
+    "protomux@3.12.0",
+    "queue-tick@1.0.1",
+    "record-cache@1.2.0",
+    "require-addon@1.3.0",
+    "safety-catch@1.0.3",
+    "signal-promise@1.0.3",
+    "sodium-native@5.1.0",
+    "sodium-secretstream@1.2.0",
+    "sodium-universal@5.0.1",
+    "streamx@2.28.1",
+    "teex@1.0.1",
+    "text-decoder@1.2.7",
+    "time-ordered-set@2.0.1",
+    "timeout-refresh@2.0.1",
+    "udx-native@1.21.1",
+    "unslab@1.3.0",
+    "which-runtime@1.4.0",
+    "xache@1.3.0",
+    "z32@1.1.0"
+  ],
+  "packageSources": [
+    {
+      "package": "@hyperswarm/secret-stream@6.9.2",
+      "registryUrl": "https://registry.npmjs.org/%40hyperswarm%2Fsecret-stream/6.9.2",
+      "gitHead": "553bd082904aaeb68b0a63b8a8b2c482db4d36e7",
+      "repository": "https://github.com/holepunchto/hyperswarm-secret-stream",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperswarm-secret-stream/553bd082904aaeb68b0a63b8a8b2c482db4d36e7/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperswarm-secret-stream/553bd082904aaeb68b0a63b8a8b2c482db4d36e7/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperswarm-secret-stream/v6.9.2/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperswarm-secret-stream/553bd082904aaeb68b0a63b8a8b2c482db4d36e7/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperswarm-secret-stream/v6.9.2/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "adaptive-timeout@1.0.1",
+      "registryUrl": "https://registry.npmjs.org/adaptive-timeout/1.0.1",
+      "gitHead": "8457541bb0f70adb31b46847a901ae2af78e7a18",
+      "repository": "https://github.com/holepunchto/adaptive-timeout",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/adaptive-timeout/8457541bb0f70adb31b46847a901ae2af78e7a18/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/adaptive-timeout/8457541bb0f70adb31b46847a901ae2af78e7a18/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/adaptive-timeout/v1.0.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/adaptive-timeout/8457541bb0f70adb31b46847a901ae2af78e7a18/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/adaptive-timeout/v1.0.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "b4a@1.9.0",
+      "registryUrl": "https://registry.npmjs.org/b4a/1.9.0",
+      "gitHead": "ff7aea3d28f2be699fc079a9a00841e83eeaabf8",
+      "repository": "https://github.com/holepunchto/b4a",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/b4a/ff7aea3d28f2be699fc079a9a00841e83eeaabf8/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/b4a/ff7aea3d28f2be699fc079a9a00841e83eeaabf8/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/b4a/v1.9.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/b4a/ff7aea3d28f2be699fc079a9a00841e83eeaabf8/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/b4a/v1.9.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-addon-resolve@1.10.1",
+      "registryUrl": "https://registry.npmjs.org/bare-addon-resolve/1.10.1",
+      "gitHead": "ed517fb0d5a09621828ff1d929934f6b55144550",
+      "repository": "https://github.com/holepunchto/bare-addon-resolve",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-addon-resolve/ed517fb0d5a09621828ff1d929934f6b55144550/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-addon-resolve/ed517fb0d5a09621828ff1d929934f6b55144550/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-addon-resolve/v1.10.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-addon-resolve/ed517fb0d5a09621828ff1d929934f6b55144550/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-addon-resolve/v1.10.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-ansi-escapes@2.2.3",
+      "registryUrl": "https://registry.npmjs.org/bare-ansi-escapes/2.2.3",
+      "gitHead": "3987fbc28036b39f5bebe464d99159dbffa6cfca",
+      "repository": "https://github.com/holepunchto/bare-ansi-escapes",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-ansi-escapes/3987fbc28036b39f5bebe464d99159dbffa6cfca/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-ansi-escapes/3987fbc28036b39f5bebe464d99159dbffa6cfca/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-ansi-escapes/v2.2.3/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-ansi-escapes/3987fbc28036b39f5bebe464d99159dbffa6cfca/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-ansi-escapes/v2.2.3/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-assert@1.2.0",
+      "registryUrl": "https://registry.npmjs.org/bare-assert/1.2.0",
+      "gitHead": "252af12dddc9b2daaeff6c1196c288dc1cf3ab5c",
+      "repository": "https://github.com/holepunchto/bare-assert",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-assert/252af12dddc9b2daaeff6c1196c288dc1cf3ab5c/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-assert/252af12dddc9b2daaeff6c1196c288dc1cf3ab5c/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-assert/v1.2.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-assert/252af12dddc9b2daaeff6c1196c288dc1cf3ab5c/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-assert/v1.2.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-events@2.9.2",
+      "registryUrl": "https://registry.npmjs.org/bare-events/2.9.2",
+      "gitHead": "d3bb6aba4fc1e0e1a395832a2967a11540d18efd",
+      "repository": "https://github.com/holepunchto/bare-events",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-events/d3bb6aba4fc1e0e1a395832a2967a11540d18efd/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-events/d3bb6aba4fc1e0e1a395832a2967a11540d18efd/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-events/v2.9.2/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-events/d3bb6aba4fc1e0e1a395832a2967a11540d18efd/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-events/v2.9.2/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-fs@4.8.1",
+      "registryUrl": "https://registry.npmjs.org/bare-fs/4.8.1",
+      "gitHead": "dec17980f2347c600c15ab15d4fb6ebe16193a36",
+      "repository": "https://github.com/holepunchto/bare-fs",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-fs/dec17980f2347c600c15ab15d4fb6ebe16193a36/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-fs/dec17980f2347c600c15ab15d4fb6ebe16193a36/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-fs/v4.8.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-fs/dec17980f2347c600c15ab15d4fb6ebe16193a36/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-fs/v4.8.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-inspect@3.1.10",
+      "registryUrl": "https://registry.npmjs.org/bare-inspect/3.1.10",
+      "gitHead": "36c73abc8f385b54e661d193a503d99225997e51",
+      "repository": "https://github.com/holepunchto/bare-inspect",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-inspect/36c73abc8f385b54e661d193a503d99225997e51/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-inspect/36c73abc8f385b54e661d193a503d99225997e51/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-inspect/v3.1.10/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-inspect/36c73abc8f385b54e661d193a503d99225997e51/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-inspect/v3.1.10/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-module-resolve@1.12.5",
+      "registryUrl": "https://registry.npmjs.org/bare-module-resolve/1.12.5",
+      "gitHead": "7eb9db6c56af688e15c790cff460eb59794aa9ad",
+      "repository": "https://github.com/holepunchto/bare-module-resolve",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-module-resolve/7eb9db6c56af688e15c790cff460eb59794aa9ad/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-module-resolve/7eb9db6c56af688e15c790cff460eb59794aa9ad/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-module-resolve/v1.12.5/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-module-resolve/7eb9db6c56af688e15c790cff460eb59794aa9ad/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-module-resolve/v1.12.5/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-path@3.1.2",
+      "registryUrl": "https://registry.npmjs.org/bare-path/3.1.2",
+      "gitHead": "d7496b17df97c2f7b0562abf2b63cf31b984ea00",
+      "repository": "https://github.com/holepunchto/bare-path",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-path/d7496b17df97c2f7b0562abf2b63cf31b984ea00/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-path/v3.1.2/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-path/d7496b17df97c2f7b0562abf2b63cf31b984ea00/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-path/v3.1.2/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-semver@1.1.0",
+      "registryUrl": "https://registry.npmjs.org/bare-semver/1.1.0",
+      "gitHead": "25db5754521e65ccf1a32eff55a4e53f663744a9",
+      "repository": "https://github.com/holepunchto/bare-semver",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-semver/25db5754521e65ccf1a32eff55a4e53f663744a9/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-semver/25db5754521e65ccf1a32eff55a4e53f663744a9/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-semver/v1.1.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-semver/25db5754521e65ccf1a32eff55a4e53f663744a9/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-semver/v1.1.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-stream@2.13.4",
+      "registryUrl": "https://registry.npmjs.org/bare-stream/2.13.4",
+      "gitHead": "e00cde60234e0b28599a5eeedfe0401ebf237ded",
+      "repository": "https://github.com/holepunchto/bare-stream",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-stream/e00cde60234e0b28599a5eeedfe0401ebf237ded/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-stream/e00cde60234e0b28599a5eeedfe0401ebf237ded/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-stream/v2.13.4/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-stream/e00cde60234e0b28599a5eeedfe0401ebf237ded/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-stream/v2.13.4/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-type@1.1.1",
+      "registryUrl": "https://registry.npmjs.org/bare-type/1.1.1",
+      "gitHead": "33a5acd4dd335653f44c63f5c3117e973a290a6b",
+      "repository": "https://github.com/holepunchto/bare-type",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-type/33a5acd4dd335653f44c63f5c3117e973a290a6b/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-type/33a5acd4dd335653f44c63f5c3117e973a290a6b/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-type/v1.1.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-type/33a5acd4dd335653f44c63f5c3117e973a290a6b/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-type/v1.1.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bare-url@2.5.4",
+      "registryUrl": "https://registry.npmjs.org/bare-url/2.5.4",
+      "gitHead": "0dea075ef1d4f2016342fbb27ee88030b4e023ef",
+      "repository": "https://github.com/holepunchto/bare-url",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-url/0dea075ef1d4f2016342fbb27ee88030b4e023ef/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-url/0dea075ef1d4f2016342fbb27ee88030b4e023ef/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-url/v2.5.4/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-url/0dea075ef1d4f2016342fbb27ee88030b4e023ef/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bare-url/v2.5.4/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bits-to-bytes@1.3.0",
+      "registryUrl": "https://registry.npmjs.org/bits-to-bytes/1.3.0",
+      "gitHead": "be16066c605a370ce4fe3be5ee0d6c97260aa885",
+      "repository": "https://github.com/holepunchto/bits-to-bytes",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bits-to-bytes/be16066c605a370ce4fe3be5ee0d6c97260aa885/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bits-to-bytes/v1.3.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bits-to-bytes/be16066c605a370ce4fe3be5ee0d6c97260aa885/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bits-to-bytes/v1.3.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bits-to-bytes/be16066c605a370ce4fe3be5ee0d6c97260aa885/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/bits-to-bytes/v1.3.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "blind-relay@1.6.1",
+      "registryUrl": "https://registry.npmjs.org/blind-relay/1.6.1",
+      "gitHead": "296032773e6c253a688dec9dd1d31674fdef2f3d",
+      "repository": "https://github.com/holepunchto/blind-relay",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/blind-relay/296032773e6c253a688dec9dd1d31674fdef2f3d/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/blind-relay/296032773e6c253a688dec9dd1d31674fdef2f3d/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/blind-relay/v1.6.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/blind-relay/296032773e6c253a688dec9dd1d31674fdef2f3d/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/blind-relay/v1.6.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "bogon@1.3.0",
+      "registryUrl": "https://registry.npmjs.org/bogon/1.3.0",
+      "gitHead": "be27f88102917aa85accc42b906b4059f09c72d4",
+      "repository": "https://github.com/mafintosh/bogon",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/bogon/be27f88102917aa85accc42b906b4059f09c72d4/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/bogon/v1.3.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/bogon/be27f88102917aa85accc42b906b4059f09c72d4/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/bogon/v1.3.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/bogon/be27f88102917aa85accc42b906b4059f09c72d4/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/bogon/v1.3.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "compact-encoding-bitfield@1.1.0",
+      "registryUrl": "https://registry.npmjs.org/compact-encoding-bitfield/1.1.0",
+      "gitHead": "1a2a7101dbf735070d66103d350e3db82d8bb9aa",
+      "repository": "https://github.com/compact-encoding/compact-encoding-bitfield",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-bitfield/1a2a7101dbf735070d66103d350e3db82d8bb9aa/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-bitfield/v1.1.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-bitfield/1a2a7101dbf735070d66103d350e3db82d8bb9aa/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-bitfield/v1.1.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-bitfield/1a2a7101dbf735070d66103d350e3db82d8bb9aa/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-bitfield/v1.1.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "compact-encoding-net@1.3.0",
+      "registryUrl": "https://registry.npmjs.org/compact-encoding-net/1.3.0",
+      "gitHead": "7660ad8b7be9c8d7f1ad1a33fe442ab6c229f27c",
+      "repository": "https://github.com/compact-encoding/compact-encoding-net",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-net/7660ad8b7be9c8d7f1ad1a33fe442ab6c229f27c/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-net/v1.3.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-net/7660ad8b7be9c8d7f1ad1a33fe442ab6c229f27c/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/compact-encoding/compact-encoding-net/v1.3.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "compact-encoding@3.5.0",
+      "registryUrl": "https://registry.npmjs.org/compact-encoding/3.5.0",
+      "gitHead": "e9d5ef9345e8ac8afbdda7e2010fadf2f060a636",
+      "repository": "https://github.com/holepunchto/compact-encoding",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/compact-encoding/e9d5ef9345e8ac8afbdda7e2010fadf2f060a636/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/compact-encoding/e9d5ef9345e8ac8afbdda7e2010fadf2f060a636/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/compact-encoding/v3.5.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/compact-encoding/e9d5ef9345e8ac8afbdda7e2010fadf2f060a636/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/compact-encoding/v3.5.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "dht-rpc@6.27.0",
+      "registryUrl": "https://registry.npmjs.org/dht-rpc/6.27.0",
+      "gitHead": "a079674d7185ece6fe310974ef8cabc5bc59d4e2",
+      "repository": "https://github.com/holepunchto/dht-rpc",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/dht-rpc/a079674d7185ece6fe310974ef8cabc5bc59d4e2/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/dht-rpc/v6.27.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/dht-rpc/a079674d7185ece6fe310974ef8cabc5bc59d4e2/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/dht-rpc/v6.27.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/dht-rpc/a079674d7185ece6fe310974ef8cabc5bc59d4e2/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/dht-rpc/v6.27.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "events-universal@1.0.1",
+      "registryUrl": "https://registry.npmjs.org/events-universal/1.0.1",
+      "gitHead": "a1ce7fedaa117d7a91934ce06ecc0e83f0a9fd3b",
+      "repository": "https://github.com/holepunchto/events-universal",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/events-universal/a1ce7fedaa117d7a91934ce06ecc0e83f0a9fd3b/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/events-universal/a1ce7fedaa117d7a91934ce06ecc0e83f0a9fd3b/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/events-universal/v1.0.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/events-universal/a1ce7fedaa117d7a91934ce06ecc0e83f0a9fd3b/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/events-universal/v1.0.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "fast-fifo@1.3.2",
+      "registryUrl": "https://registry.npmjs.org/fast-fifo/1.3.2",
+      "gitHead": "16f48e2a25e74d95d50c0922a16922c9016e8a02",
+      "repository": "https://github.com/mafintosh/fast-fifo",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/fast-fifo/16f48e2a25e74d95d50c0922a16922c9016e8a02/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/fast-fifo/v1.3.2/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/fast-fifo/16f48e2a25e74d95d50c0922a16922c9016e8a02/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/fast-fifo/v1.3.2/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/fast-fifo/16f48e2a25e74d95d50c0922a16922c9016e8a02/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/fast-fifo/v1.3.2/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "generate-object-property@2.0.0",
+      "registryUrl": "https://registry.npmjs.org/generate-object-property/2.0.0",
+      "gitHead": "2a24b6baec56fd4f00f12ad123d549beda64e8a0",
+      "repository": "https://github.com/mafintosh/generate-object-property",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-object-property/2a24b6baec56fd4f00f12ad123d549beda64e8a0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-object-property/v2.0.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-object-property/2a24b6baec56fd4f00f12ad123d549beda64e8a0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-object-property/v2.0.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-object-property/2a24b6baec56fd4f00f12ad123d549beda64e8a0/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-object-property/v2.0.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "generate-string@1.0.1",
+      "registryUrl": "https://registry.npmjs.org/generate-string/1.0.1",
+      "gitHead": "2c4df1c0875702cbbac27421dfcbb3c5ab60712c",
+      "repository": "https://github.com/mafintosh/generate-string",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-string/2c4df1c0875702cbbac27421dfcbb3c5ab60712c/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-string/v1.0.1/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-string/2c4df1c0875702cbbac27421dfcbb3c5ab60712c/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-string/v1.0.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-string/2c4df1c0875702cbbac27421dfcbb3c5ab60712c/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/generate-string/v1.0.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "hypercore-crypto@3.7.0",
+      "registryUrl": "https://registry.npmjs.org/hypercore-crypto/3.7.0",
+      "gitHead": "e2e0fdcc2521027ee49c58d50d60c42edb9466a0",
+      "repository": "https://github.com/mafintosh/hypercore-crypto",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/hypercore-crypto/e2e0fdcc2521027ee49c58d50d60c42edb9466a0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/hypercore-crypto/v3.7.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/hypercore-crypto/e2e0fdcc2521027ee49c58d50d60c42edb9466a0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/hypercore-crypto/v3.7.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/hypercore-crypto/e2e0fdcc2521027ee49c58d50d60c42edb9466a0/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/hypercore-crypto/v3.7.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "hypercore-id-encoding@1.3.0",
+      "registryUrl": "https://registry.npmjs.org/hypercore-id-encoding/1.3.0",
+      "gitHead": "5607a0e308d0badebf25f32e94d3615a4c9f22ed",
+      "repository": "https://github.com/holepunchto/hypercore-id-encoding",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hypercore-id-encoding/5607a0e308d0badebf25f32e94d3615a4c9f22ed/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hypercore-id-encoding/5607a0e308d0badebf25f32e94d3615a4c9f22ed/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hypercore-id-encoding/v1.3.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hypercore-id-encoding/5607a0e308d0badebf25f32e94d3615a4c9f22ed/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hypercore-id-encoding/v1.3.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "hyperdht-address@1.1.1",
+      "registryUrl": "https://registry.npmjs.org/hyperdht-address/1.1.1",
+      "gitHead": "383543e9c03a6050bf9c647a9b547d5c5d3ec3fa",
+      "repository": "https://github.com/holepunchto/hyperdht-address",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht-address/383543e9c03a6050bf9c647a9b547d5c5d3ec3fa/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht-address/383543e9c03a6050bf9c647a9b547d5c5d3ec3fa/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht-address/v1.1.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht-address/383543e9c03a6050bf9c647a9b547d5c5d3ec3fa/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht-address/v1.1.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "hyperdht@6.34.0",
+      "registryUrl": "https://registry.npmjs.org/hyperdht/6.34.0",
+      "gitHead": "2174285adda232004224eb47a4c6b2528692fe68",
+      "repository": "https://github.com/holepunchto/hyperdht",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht/2174285adda232004224eb47a4c6b2528692fe68/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht/v6.34.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht/2174285adda232004224eb47a4c6b2528692fe68/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht/v6.34.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht/2174285adda232004224eb47a4c6b2528692fe68/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperdht/v6.34.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "hyperschema@1.26.1",
+      "registryUrl": "https://registry.npmjs.org/hyperschema/1.26.1",
+      "gitHead": "1b2a961d142646911aa039b1cce993effaceafee",
+      "repository": "https://github.com/holepunchto/hyperschema",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperschema/1b2a961d142646911aa039b1cce993effaceafee/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperschema/1b2a961d142646911aa039b1cce993effaceafee/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperschema/v1.26.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperschema/1b2a961d142646911aa039b1cce993effaceafee/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/hyperschema/v1.26.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "is-property@1.0.2",
+      "registryUrl": "https://registry.npmjs.org/is-property/1.0.2",
+      "gitHead": "0a85ea5b6b1264ea1cdecc6e5cf186adbb3ffc50",
+      "repository": "git://github.com/mikolalysenko/is-property",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mikolalysenko/is-property/0a85ea5b6b1264ea1cdecc6e5cf186adbb3ffc50/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mikolalysenko/is-property/v1.0.2/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mikolalysenko/is-property/0a85ea5b6b1264ea1cdecc6e5cf186adbb3ffc50/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mikolalysenko/is-property/v1.0.2/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mikolalysenko/is-property/0a85ea5b6b1264ea1cdecc6e5cf186adbb3ffc50/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mikolalysenko/is-property/v1.0.2/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "kademlia-routing-table@1.0.6",
+      "registryUrl": "https://registry.npmjs.org/kademlia-routing-table/1.0.6",
+      "gitHead": "dedc0ee4e0d3cf54e1aabaffae17a8501848811f",
+      "repository": "https://github.com/mafintosh/kademlia-routing-table",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/kademlia-routing-table/dedc0ee4e0d3cf54e1aabaffae17a8501848811f/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/kademlia-routing-table/v1.0.6/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/kademlia-routing-table/dedc0ee4e0d3cf54e1aabaffae17a8501848811f/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/kademlia-routing-table/v1.0.6/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/kademlia-routing-table/dedc0ee4e0d3cf54e1aabaffae17a8501848811f/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/kademlia-routing-table/v1.0.6/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "nanoassert@2.0.0",
+      "registryUrl": "https://registry.npmjs.org/nanoassert/2.0.0",
+      "gitHead": "237fd5f382f077f0be45954741a935f2c6070660",
+      "repository": "https://github.com/emilbayes/nanoassert",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/emilbayes/nanoassert/237fd5f382f077f0be45954741a935f2c6070660/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/emilbayes/nanoassert/v2.0.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/emilbayes/nanoassert/237fd5f382f077f0be45954741a935f2c6070660/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/emilbayes/nanoassert/v2.0.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/emilbayes/nanoassert/237fd5f382f077f0be45954741a935f2c6070660/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/emilbayes/nanoassert/v2.0.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "nat-sampler@1.0.1",
+      "registryUrl": "https://registry.npmjs.org/nat-sampler/1.0.1",
+      "gitHead": "6ad6c9abdc07a8cb5dfde581df126f869e470560",
+      "repository": "https://github.com/mafintosh/nat-sampler",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/nat-sampler/6ad6c9abdc07a8cb5dfde581df126f869e470560/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/nat-sampler/v1.0.1/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/nat-sampler/6ad6c9abdc07a8cb5dfde581df126f869e470560/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/nat-sampler/v1.0.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/nat-sampler/6ad6c9abdc07a8cb5dfde581df126f869e470560/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/nat-sampler/v1.0.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "noise-curve-ed@2.1.0",
+      "registryUrl": "https://registry.npmjs.org/noise-curve-ed/2.1.0",
+      "gitHead": "759e631531bb64e32428b5684fc615758ae806f5",
+      "repository": "https://github.com/holepunchto/noise-curve-ed",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-curve-ed/759e631531bb64e32428b5684fc615758ae806f5/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-curve-ed/v2.1.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-curve-ed/759e631531bb64e32428b5684fc615758ae806f5/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-curve-ed/v2.1.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-curve-ed/759e631531bb64e32428b5684fc615758ae806f5/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-curve-ed/v2.1.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "noise-handshake@4.2.0",
+      "registryUrl": "https://registry.npmjs.org/noise-handshake/4.2.0",
+      "gitHead": "dc1f9c4398fa4335bbfdca5c4af25fdfdba86057",
+      "repository": "https://github.com/holepunchto/noise-handshake",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-handshake/dc1f9c4398fa4335bbfdca5c4af25fdfdba86057/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-handshake/dc1f9c4398fa4335bbfdca5c4af25fdfdba86057/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-handshake/v4.2.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-handshake/dc1f9c4398fa4335bbfdca5c4af25fdfdba86057/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/noise-handshake/v4.2.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "protomux@3.12.0",
+      "registryUrl": "https://registry.npmjs.org/protomux/3.12.0",
+      "gitHead": "0ff042f999ff3e596053e1792f9335355af17bf6",
+      "repository": "https://github.com/holepunchto/protomux",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/protomux/0ff042f999ff3e596053e1792f9335355af17bf6/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/protomux/v3.12.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/protomux/0ff042f999ff3e596053e1792f9335355af17bf6/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/protomux/v3.12.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/protomux/0ff042f999ff3e596053e1792f9335355af17bf6/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/protomux/v3.12.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "queue-tick@1.0.1",
+      "registryUrl": "https://registry.npmjs.org/queue-tick/1.0.1",
+      "gitHead": "059097e0f011cef814c9da331adb382906dd0cde",
+      "repository": "https://github.com/mafintosh/queue-tick",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/queue-tick/059097e0f011cef814c9da331adb382906dd0cde/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/queue-tick/v1.0.1/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/queue-tick/059097e0f011cef814c9da331adb382906dd0cde/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/queue-tick/v1.0.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/queue-tick/059097e0f011cef814c9da331adb382906dd0cde/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/queue-tick/v1.0.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "record-cache@1.2.0",
+      "registryUrl": "https://registry.npmjs.org/record-cache/1.2.0",
+      "gitHead": "cbe0e52665b5286c6c37f1eb5c597cf7539cde45",
+      "repository": "https://github.com/mafintosh/record-cache",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/record-cache/cbe0e52665b5286c6c37f1eb5c597cf7539cde45/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/record-cache/v1.2.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/record-cache/cbe0e52665b5286c6c37f1eb5c597cf7539cde45/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/record-cache/v1.2.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/record-cache/cbe0e52665b5286c6c37f1eb5c597cf7539cde45/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/record-cache/v1.2.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "require-addon@1.3.0",
+      "registryUrl": "https://registry.npmjs.org/require-addon/1.3.0",
+      "gitHead": "b4e29ff008cf5c90d810a7fd7ff23fb4acb4e492",
+      "repository": "https://github.com/holepunchto/require-addon",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/require-addon/b4e29ff008cf5c90d810a7fd7ff23fb4acb4e492/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/require-addon/b4e29ff008cf5c90d810a7fd7ff23fb4acb4e492/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/require-addon/v1.3.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/require-addon/b4e29ff008cf5c90d810a7fd7ff23fb4acb4e492/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/require-addon/v1.3.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "safety-catch@1.0.3",
+      "registryUrl": "https://registry.npmjs.org/safety-catch/1.0.3",
+      "gitHead": "f19ae2c2f7b0a7669ecc1347a2b9a270cb50ba41",
+      "repository": "https://github.com/mafintosh/safety-catch",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/safety-catch/f19ae2c2f7b0a7669ecc1347a2b9a270cb50ba41/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/safety-catch/v1.0.3/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/safety-catch/f19ae2c2f7b0a7669ecc1347a2b9a270cb50ba41/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/safety-catch/v1.0.3/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/safety-catch/f19ae2c2f7b0a7669ecc1347a2b9a270cb50ba41/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/safety-catch/v1.0.3/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "signal-promise@1.0.3",
+      "registryUrl": "https://registry.npmjs.org/signal-promise/1.0.3",
+      "gitHead": "ad79374ce962fa0ec23f53c9d6df7372babefaef",
+      "repository": "https://github.com/mafintosh/signal-promise",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/signal-promise/ad79374ce962fa0ec23f53c9d6df7372babefaef/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/signal-promise/v1.0.3/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/signal-promise/ad79374ce962fa0ec23f53c9d6df7372babefaef/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/signal-promise/v1.0.3/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/signal-promise/ad79374ce962fa0ec23f53c9d6df7372babefaef/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/signal-promise/v1.0.3/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "sodium-native@5.1.0",
+      "registryUrl": "https://registry.npmjs.org/sodium-native/5.1.0",
+      "gitHead": "f566427e31344db077007f1ebf188ee743b46d57",
+      "repository": "https://github.com/holepunchto/sodium-native",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-native/f566427e31344db077007f1ebf188ee743b46d57/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-native/v5.1.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-native/f566427e31344db077007f1ebf188ee743b46d57/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-native/v5.1.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-native/f566427e31344db077007f1ebf188ee743b46d57/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-native/v5.1.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "sodium-secretstream@1.2.0",
+      "registryUrl": "https://registry.npmjs.org/sodium-secretstream/1.2.0",
+      "gitHead": "ca011b60dc77188c8003dd06900d763e8682c876",
+      "repository": "https://github.com/mafintosh/sodium-secretstream",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/sodium-secretstream/ca011b60dc77188c8003dd06900d763e8682c876/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/sodium-secretstream/v1.2.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/sodium-secretstream/ca011b60dc77188c8003dd06900d763e8682c876/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/sodium-secretstream/v1.2.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/sodium-secretstream/ca011b60dc77188c8003dd06900d763e8682c876/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/sodium-secretstream/v1.2.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "sodium-universal@5.0.1",
+      "registryUrl": "https://registry.npmjs.org/sodium-universal/5.0.1",
+      "gitHead": "a8aa011f2de3555f46af26253ecff3fe3f9513bc",
+      "repository": "https://github.com/holepunchto/sodium-universal",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-universal/a8aa011f2de3555f46af26253ecff3fe3f9513bc/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-universal/v5.0.1/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-universal/a8aa011f2de3555f46af26253ecff3fe3f9513bc/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-universal/v5.0.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-universal/a8aa011f2de3555f46af26253ecff3fe3f9513bc/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/sodium-universal/v5.0.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "streamx@2.28.1",
+      "registryUrl": "https://registry.npmjs.org/streamx/2.28.1",
+      "gitHead": "767c8140a532e10d530750bb4d0b200903e24b71",
+      "repository": "https://github.com/mafintosh/streamx",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/streamx/767c8140a532e10d530750bb4d0b200903e24b71/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/streamx/v2.28.1/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/streamx/767c8140a532e10d530750bb4d0b200903e24b71/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/streamx/v2.28.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/streamx/767c8140a532e10d530750bb4d0b200903e24b71/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/streamx/v2.28.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "teex@1.0.1",
+      "registryUrl": "https://registry.npmjs.org/teex/1.0.1",
+      "gitHead": "6fd5bfc74d259e9974db6b811f7fb7e5218be293",
+      "repository": "https://github.com/mafintosh/teex",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/teex/6fd5bfc74d259e9974db6b811f7fb7e5218be293/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/teex/v1.0.1/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/teex/6fd5bfc74d259e9974db6b811f7fb7e5218be293/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/teex/v1.0.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/teex/6fd5bfc74d259e9974db6b811f7fb7e5218be293/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/teex/v1.0.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "text-decoder@1.2.7",
+      "registryUrl": "https://registry.npmjs.org/text-decoder/1.2.7",
+      "gitHead": "7d61ece8d9f89788b7a209125ada4b0209038a9f",
+      "repository": "https://github.com/holepunchto/text-decoder",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/text-decoder/7d61ece8d9f89788b7a209125ada4b0209038a9f/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/text-decoder/7d61ece8d9f89788b7a209125ada4b0209038a9f/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/text-decoder/v1.2.7/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/text-decoder/7d61ece8d9f89788b7a209125ada4b0209038a9f/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/text-decoder/v1.2.7/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "time-ordered-set@2.0.1",
+      "registryUrl": "https://registry.npmjs.org/time-ordered-set/2.0.1",
+      "gitHead": "b518c52066b1a7b8ba5ddf1711f90fd1c87a823e",
+      "repository": "https://github.com/mafintosh/time-ordered-set",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/time-ordered-set/b518c52066b1a7b8ba5ddf1711f90fd1c87a823e/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/time-ordered-set/v2.0.1/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/time-ordered-set/b518c52066b1a7b8ba5ddf1711f90fd1c87a823e/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/time-ordered-set/v2.0.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/time-ordered-set/b518c52066b1a7b8ba5ddf1711f90fd1c87a823e/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/time-ordered-set/v2.0.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "timeout-refresh@2.0.1",
+      "registryUrl": "https://registry.npmjs.org/timeout-refresh/2.0.1",
+      "gitHead": "4db2530d8d80f094df20dc7fc4ff3ec7ddb6a8f1",
+      "repository": "https://github.com/mafintosh/timeout-refresh",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/timeout-refresh/4db2530d8d80f094df20dc7fc4ff3ec7ddb6a8f1/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/timeout-refresh/v2.0.1/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/timeout-refresh/4db2530d8d80f094df20dc7fc4ff3ec7ddb6a8f1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/timeout-refresh/v2.0.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/timeout-refresh/4db2530d8d80f094df20dc7fc4ff3ec7ddb6a8f1/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/timeout-refresh/v2.0.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "udx-native@1.21.1",
+      "registryUrl": "https://registry.npmjs.org/udx-native/1.21.1",
+      "gitHead": "a94258e6911c2a1028a8d4c4e79aab487d5295a7",
+      "repository": "https://github.com/holepunchto/udx-native",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/udx-native/a94258e6911c2a1028a8d4c4e79aab487d5295a7/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/udx-native/a94258e6911c2a1028a8d4c4e79aab487d5295a7/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/udx-native/v1.21.1/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/udx-native/a94258e6911c2a1028a8d4c4e79aab487d5295a7/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/udx-native/v1.21.1/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "unslab@1.3.0",
+      "registryUrl": "https://registry.npmjs.org/unslab/1.3.0",
+      "gitHead": "56642ff4ae5ab6949d1b52f3986cd594d96def9b",
+      "repository": "https://github.com/holepunchto/unslab",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/unslab/56642ff4ae5ab6949d1b52f3986cd594d96def9b/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/unslab/56642ff4ae5ab6949d1b52f3986cd594d96def9b/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/unslab/v1.3.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/unslab/56642ff4ae5ab6949d1b52f3986cd594d96def9b/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/unslab/v1.3.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "which-runtime@1.4.0",
+      "registryUrl": "https://registry.npmjs.org/which-runtime/1.4.0",
+      "gitHead": "d4732d849da866990f532de53d7d0a02847ea374",
+      "repository": "https://github.com/holepunchto/which-runtime",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/which-runtime/d4732d849da866990f532de53d7d0a02847ea374/NOTICE",
+          "found": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/which-runtime/d4732d849da866990f532de53d7d0a02847ea374/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/which-runtime/v1.4.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/which-runtime/d4732d849da866990f532de53d7d0a02847ea374/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/holepunchto/which-runtime/v1.4.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "xache@1.3.0",
+      "registryUrl": "https://registry.npmjs.org/xache/1.3.0",
+      "gitHead": "84cf91bca2e0bd0306d83fc8f5a01adc5b672a37",
+      "repository": "https://github.com/mafintosh/xache",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/xache/84cf91bca2e0bd0306d83fc8f5a01adc5b672a37/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/xache/v1.3.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/xache/84cf91bca2e0bd0306d83fc8f5a01adc5b672a37/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/xache/v1.3.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/xache/84cf91bca2e0bd0306d83fc8f5a01adc5b672a37/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/xache/v1.3.0/AUTHORS",
+          "found": false
+        }
+      ]
+    },
+    {
+      "package": "z32@1.1.0",
+      "registryUrl": "https://registry.npmjs.org/z32/1.1.0",
+      "gitHead": "63bb80e556435419eed53853045eaade1e418121",
+      "repository": "https://github.com/mafintosh/z32",
+      "noticeChecks": [
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/z32/63bb80e556435419eed53853045eaade1e418121/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/z32/v1.1.0/NOTICE",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/z32/63bb80e556435419eed53853045eaade1e418121/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/z32/v1.1.0/COPYRIGHT",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/z32/63bb80e556435419eed53853045eaade1e418121/AUTHORS",
+          "found": false
+        },
+        {
+          "url": "https://raw.githubusercontent.com/mafintosh/z32/v1.1.0/AUTHORS",
+          "found": false
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "name": "libudx",
+      "repository": "holepunchto/libudx",
+      "ref": "a9af5de",
+      "license": "Apache-2.0",
+      "usedBy": "udx-native@1.21.1",
+      "input": "node_modules/udx-native/CMakeLists.txt",
+      "sourceArchive": "https://codeload.github.com/holepunchto/libudx/tar.gz/a9af5de",
+      "archiveSha256": "0a52da83c43bcacf11257e372b66c7d286e25e450b74489ec93a6a8496284ac7"
+    },
+    {
+      "name": "libuv",
+      "repository": "libuv/libuv",
+      "ref": "v1.51.0",
+      "license": "MIT AND BSD-2-Clause AND ISC",
+      "usedBy": "libudx",
+      "input": "libudx/CMakeLists.txt",
+      "sourceArchive": "https://codeload.github.com/libuv/libuv/tar.gz/v1.51.0",
+      "archiveSha256": "27e55cf7083913bfb6826ca78cde9de7647cded648d35f24163f2d31bb9f51cd"
+    },
+    {
+      "name": "libjstl",
+      "repository": "holepunchto/libjstl",
+      "ref": "098664c",
+      "license": "Apache-2.0",
+      "usedBy": "udx-native@1.21.1 and sodium-native@5.1.0",
+      "input": "Both native modules CMakeLists.txt",
+      "sourceArchive": "https://codeload.github.com/holepunchto/libjstl/tar.gz/098664c",
+      "archiveSha256": "7736c86b48cab7a6397e36cca1269502416f2305b7378fe30f93739aef85d387"
+    },
+    {
+      "name": "libsodium",
+      "repository": "jedisct1/libsodium",
+      "ref": "e18eee6",
+      "license": "ISC AND BSD-2-Clause AND CC0-1.0; public-domain source declarations; BLAKE2 multi-license election: CC0-1.0",
+      "usedBy": "sodium-native@5.1.0",
+      "input": "node_modules/sodium-native/CMakeLists.txt",
+      "sourceArchive": "https://codeload.github.com/jedisct1/libsodium/tar.gz/e18eee6",
+      "archiveSha256": "54e3f6e3f20fdfe7d22958f277eb541928d40ea5c1468ef9af60d51f40a91b3a"
+    },
+    {
+      "name": "libutf",
+      "repository": "holepunchto/libutf",
+      "ref": "a1ceca8",
+      "license": "Apache-2.0 (including simdutf source notices)",
+      "usedBy": "bare-url@2.5.4",
+      "input": "node_modules/bare-url/CMakeLists.txt",
+      "sourceArchive": "https://codeload.github.com/holepunchto/libutf/tar.gz/a1ceca8",
+      "archiveSha256": "17b3944aaeabff1ca13aa0ca9b20b639f88b3305c7e004e37ac76fe70ceb7755"
+    },
+    {
+      "name": "libpunycode",
+      "repository": "holepunchto/libpunycode",
+      "ref": "e91ee34",
+      "license": "Apache-2.0",
+      "usedBy": "bare-url@2.5.4",
+      "input": "node_modules/bare-url/CMakeLists.txt",
+      "sourceArchive": "https://codeload.github.com/holepunchto/libpunycode/tar.gz/e91ee34",
+      "archiveSha256": "c6b5f036adfb5963663b86196c9f9a071cceb85cb74f57e04e50fc0fd05e242d"
+    },
+    {
+      "name": "libnormalize",
+      "repository": "holepunchto/libnormalize",
+      "ref": "0e81f65",
+      "license": "Apache-2.0 AND Unicode-3.0 for generated Unicode tables",
+      "usedBy": "bare-url@2.5.4",
+      "input": "node_modules/bare-url/CMakeLists.txt",
+      "sourceArchive": "https://codeload.github.com/holepunchto/libnormalize/tar.gz/0e81f65",
+      "archiveSha256": "409a2437c554e9438b52fb89e059b6b6dc1525e49cef741863d36c9828de8019"
+    },
+    {
+      "name": "libidna",
+      "repository": "holepunchto/libidna",
+      "ref": "1471406",
+      "license": "Apache-2.0 AND Unicode-3.0 for generated Unicode tables",
+      "usedBy": "bare-url@2.5.4",
+      "input": "node_modules/bare-url/CMakeLists.txt",
+      "sourceArchive": "https://codeload.github.com/holepunchto/libidna/tar.gz/1471406",
+      "archiveSha256": "291031d00401bac8e7a3c99f931e04554680217fd5e15b371c6e186758e801c4"
+    },
+    {
+      "name": "liburl",
+      "repository": "holepunchto/liburl",
+      "ref": "2efedc5",
+      "license": "Apache-2.0",
+      "usedBy": "bare-url@2.5.4",
+      "input": "node_modules/bare-url/CMakeLists.txt",
+      "sourceArchive": "https://codeload.github.com/holepunchto/liburl/tar.gz/2efedc5",
+      "archiveSha256": "85fed2bdd7b865f32c9b135809c298a3f77ba8901b443637f70f6748b026322c"
+    },
+    {
+      "name": "bare-compat-napi",
+      "repository": "holepunchto/bare-compat-napi",
+      "ref": "v1.3.5",
+      "license": "Apache-2.0",
+      "usedBy": "sodium-native / udx-native Node-API compatibility headers",
+      "input": "sodium-native dev range ^1.3.5; udx-native dev range ^1.3.0; supplier prebuild exact header revision is not recorded",
+      "provenanceLimitation": true,
+      "sourceArchive": "https://codeload.github.com/holepunchto/bare-compat-napi/tar.gz/v1.3.5",
+      "archiveSha256": "683c21bc80a98c85187e089a89af0a67ca3e5fe02b7f00e2dd51311becd8c7f8"
+    },
+    {
+      "name": "CC0-1.0",
+      "license": "CC0-1.0",
+      "usedBy": "libsodium Argon2 and BLAKE2 source headers",
+      "source": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+      "note": "Official full legal text frozen with SHA-256; see README for Unicode build-version limitation"
+    },
+    {
+      "name": "Unicode-3.0",
+      "license": "Unicode-3.0",
+      "usedBy": "Unicode Character Database used by libnormalize and libidna",
+      "source": "https://www.unicode.org/license.txt",
+      "note": "Official full legal text frozen with SHA-256; see README for Unicode build-version limitation"
+    }
+  ],
+  "files": [
+    {
+      "file": "upstream/licenses/CC0-1.0.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "component": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt"
+    },
+    {
+      "file": "upstream/licenses/Unicode-3.0.txt",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+      "component": "Unicode-3.0",
+      "url": "https://www.unicode.org/license.txt"
+    },
+    {
+      "file": "upstream/native/bare-compat-napi/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "component": "bare-compat-napi",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-compat-napi/v1.3.5/LICENSE"
+    },
+    {
+      "file": "upstream/native/bare-compat-napi/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "component": "bare-compat-napi",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-compat-napi/v1.3.5/NOTICE"
+    },
+    {
+      "file": "upstream/native/bare-compat-napi/provenance/CMakeLists.txt",
+      "sha256": "47a41274cd23b5584d6b2c53d5b83d9ba5597494f4895454f4b0bf40a63706a4",
+      "component": "bare-compat-napi",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-compat-napi/v1.3.5/CMakeLists.txt",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libidna/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "component": "libidna",
+      "url": "https://raw.githubusercontent.com/holepunchto/libidna/1471406/LICENSE"
+    },
+    {
+      "file": "upstream/native/libidna/NOTICE",
+      "sha256": "85d024249b175f7060df56e17179fec6dfc71ef64e029f986f7af0c073f15b35",
+      "component": "libidna",
+      "url": "https://raw.githubusercontent.com/holepunchto/libidna/1471406/NOTICE"
+    },
+    {
+      "file": "upstream/native/libidna/provenance/cmake/tables.cmake",
+      "sha256": "fb195ce3e65729b5346a24725ecfa30987f70e01e44c9f7408839100fbca177a",
+      "component": "libidna",
+      "url": "https://raw.githubusercontent.com/holepunchto/libidna/1471406/cmake/tables.cmake",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libidna/provenance/CMakeLists.txt",
+      "sha256": "1243d3c8d2ef2ba10e687784a48ddc82386248d50de1f07e1e11fc8faa24b5b4",
+      "component": "libidna",
+      "url": "https://raw.githubusercontent.com/holepunchto/libidna/1471406/CMakeLists.txt",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libjstl/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "component": "libjstl",
+      "url": "https://raw.githubusercontent.com/holepunchto/libjstl/098664c/LICENSE"
+    },
+    {
+      "file": "upstream/native/libjstl/NOTICE",
+      "sha256": "785579b4afd80de50086733b862451c03085fcbe87c5ee3ae887276632b2f1eb",
+      "component": "libjstl",
+      "url": "https://raw.githubusercontent.com/holepunchto/libjstl/098664c/NOTICE"
+    },
+    {
+      "file": "upstream/native/libjstl/provenance/CMakeLists.txt",
+      "sha256": "ccd44e2d9b32658efe8872e2c01c1d4cf494ca9f03d8ef89cc949f66a3e0eefb",
+      "component": "libjstl",
+      "url": "https://raw.githubusercontent.com/holepunchto/libjstl/098664c/CMakeLists.txt",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libnormalize/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "component": "libnormalize",
+      "url": "https://raw.githubusercontent.com/holepunchto/libnormalize/0e81f65/LICENSE"
+    },
+    {
+      "file": "upstream/native/libnormalize/NOTICE",
+      "sha256": "85d024249b175f7060df56e17179fec6dfc71ef64e029f986f7af0c073f15b35",
+      "component": "libnormalize",
+      "url": "https://raw.githubusercontent.com/holepunchto/libnormalize/0e81f65/NOTICE"
+    },
+    {
+      "file": "upstream/native/libnormalize/provenance/cmake/tables.cmake",
+      "sha256": "ad270023d08a376b9146a4159f88b09fb3b7bf749bc14f206b397cc6f82b24bf",
+      "component": "libnormalize",
+      "url": "https://raw.githubusercontent.com/holepunchto/libnormalize/0e81f65/cmake/tables.cmake",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libnormalize/provenance/CMakeLists.txt",
+      "sha256": "15b059d402308ca8df1960439c52b562c10b2a29687ca457ed05071b380fcef2",
+      "component": "libnormalize",
+      "url": "https://raw.githubusercontent.com/holepunchto/libnormalize/0e81f65/CMakeLists.txt",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libpunycode/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "component": "libpunycode",
+      "url": "https://raw.githubusercontent.com/holepunchto/libpunycode/e91ee34/LICENSE"
+    },
+    {
+      "file": "upstream/native/libpunycode/NOTICE",
+      "sha256": "85d024249b175f7060df56e17179fec6dfc71ef64e029f986f7af0c073f15b35",
+      "component": "libpunycode",
+      "url": "https://raw.githubusercontent.com/holepunchto/libpunycode/e91ee34/NOTICE"
+    },
+    {
+      "file": "upstream/native/libpunycode/provenance/CMakeLists.txt",
+      "sha256": "42bccf4167c1b6481275555e55c0a37a5962919bf1673cc990e4728c537ac5eb",
+      "component": "libpunycode",
+      "url": "https://raw.githubusercontent.com/holepunchto/libpunycode/e91ee34/CMakeLists.txt",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libsodium/AUTHORS",
+      "sha256": "ecd364ba590239cbd29d051e73a0a8b4bbd719137a0a64a41409e21f3e7a3035",
+      "component": "libsodium",
+      "url": "https://raw.githubusercontent.com/jedisct1/libsodium/e18eee6/AUTHORS"
+    },
+    {
+      "file": "upstream/native/libsodium/LICENSE",
+      "sha256": "508a76d186356c0dd807a670ef510964f8724557024796a2c426c6c0e19ab683",
+      "component": "libsodium",
+      "url": "https://raw.githubusercontent.com/jedisct1/libsodium/e18eee6/LICENSE"
+    },
+    {
+      "file": "upstream/native/libsodium/SOURCE-NOTICES.txt",
+      "sha256": "cf47e7f424fce792bd6e65d48d56a436576ca61588a43ee4f9b5c73cd363ea3d",
+      "component": "libsodium",
+      "sourceArchive": "https://codeload.github.com/jedisct1/libsodium/tar.gz/e18eee6",
+      "inputs": [
+        {
+          "path": "src/libsodium/crypto_core/hsalsa20/ref2/core_hsalsa20_ref2.c",
+          "sha256": "d9fdd18eeaaf6964ecb30eee30314a32abd10360c660af253cdab83826026a13"
+        },
+        {
+          "path": "src/libsodium/crypto_generichash/blake2b/ref/blake2.h",
+          "sha256": "f38e811f02636e9d61e4388c97683400e0058aff514bf57375408e548bff8cb4"
+        },
+        {
+          "path": "src/libsodium/crypto_generichash/blake2b/ref/blake2b-load-sse2.h",
+          "sha256": "daa18d55dfaf3c9a29e7bf390ea0f92aaf291aa0d315d912ae0082fd61e0fe3f"
+        },
+        {
+          "path": "src/libsodium/crypto_generichash/blake2b/ref/blake2b-load-sse41.h",
+          "sha256": "89a96cf99ea570e450f608c509c52f11cb9775de17d201ab0cc57805202a3ac2"
+        },
+        {
+          "path": "src/libsodium/crypto_generichash/blake2b/ref/blake2b-ref.c",
+          "sha256": "b712bc4f00a81ecec8fef02825506334983fa99e549107dc175ff1f48e3b17f6"
+        },
+        {
+          "path": "src/libsodium/crypto_hash/sha256/cp/hash_sha256_cp.c",
+          "sha256": "6bf28c4633eea0ad9c6cf7aafb078fab63d52199a718b5b2311ff5935bfad1fb"
+        },
+        {
+          "path": "src/libsodium/crypto_hash/sha512/cp/hash_sha512_cp.c",
+          "sha256": "5b796efeaf882feda2e79c62d060d36208f2a469b52df9649c23b39253ca408b"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2-core.c",
+          "sha256": "362944ef4df9341ca286ef78b8c940741573dc9003cdc831795fee073212ee26"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2-core.h",
+          "sha256": "b8082c01d727aed35f3d59a34707b7e1df03d8d7c2dd5a02449381d7d3961b02"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2-encoding.c",
+          "sha256": "d1743937f1e5549667fe2d6d65d1c35636b462c95c368fa0900d2e0c00ee223a"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2-fill-block-avx2.c",
+          "sha256": "57c29c603f97fcd367b60cf45ee9ea35fb5c231a5ea4598442fd540f8ecf80ba"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2-fill-block-avx512f.c",
+          "sha256": "0d0b927d51d74a0c757c531eb162f3490dc5517cae8f14018f53ab00c6b41c5a"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2-fill-block-ref.c",
+          "sha256": "fad82b77d79de84a63fbea63bd3a6d747e2968bec3fba90e4bd395f834003b64"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2-fill-block-ssse3.c",
+          "sha256": "8e539874a0e9a9337ffbb83b2ef2e9e6ee3ff40f47f44080859edcf220342d50"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2-fill-block-wasm32.c",
+          "sha256": "bcd2a0d55a022d71193b859a5eca65df78b1ff713d0e2474ac79cbf53ab8b800"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2.c",
+          "sha256": "b91797fc040a6531ac6fd4220226c095d8855b22aa397875165b27c4b4945163"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/argon2/argon2.h",
+          "sha256": "21e275c64fa57b134e635fb1b96619733bf0bfbc6d2c3d1e6553f56d8bb8e52d"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/scryptsalsa208sha256/crypto_scrypt-common.c",
+          "sha256": "15f6fe415af39a8ff1b797396d6217748bf8e8c92beb8aa5c3c6798f855e62cf"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/scryptsalsa208sha256/crypto_scrypt.h",
+          "sha256": "1a2d03934df168a95673f480172db001e8467320c5857853873a04da2d6ff2a9"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/scryptsalsa208sha256/nosse/pwhash_scryptsalsa208sha256_nosse.c",
+          "sha256": "f2e166798ff84ec78a2b2107db62e4f50ec383686fbeb3a81ed94e566d01748d"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/scryptsalsa208sha256/pbkdf2-sha256.c",
+          "sha256": "dffd4251272caaeb23f686e871e8698345eb83b7ae2ad35c0e408d47e8a1b963"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/scryptsalsa208sha256/pbkdf2-sha256.h",
+          "sha256": "78122132391a6e259bad457c376a5d87ac862dd9b3d9c79fe32fef02e57117aa"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/scryptsalsa208sha256/scrypt_platform.c",
+          "sha256": "fe6d0717f2a8034698bd76ffbd679e6a27584040bfb32ce759c6a1798d21f872"
+        },
+        {
+          "path": "src/libsodium/crypto_pwhash/scryptsalsa208sha256/sse/pwhash_scryptsalsa208sha256_sse.c",
+          "sha256": "6bad56dac13d2b4b15fbc2a3973283c8a39b4c7dea6e23e9fe303fbbcdfb5739"
+        },
+        {
+          "path": "src/libsodium/crypto_scalarmult/curve25519/sandy2x/curve25519_sandy2x.c",
+          "sha256": "05e7c47eadd39bed8054871e0a564df07f0fc0c32eb17204e83c1cce97f6c392"
+        },
+        {
+          "path": "src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe.h",
+          "sha256": "2274ea02748ade547d39084c2f5b41cd7f068ec2b648d2bf7dd6a55b07299a96"
+        },
+        {
+          "path": "src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe51_invert.c",
+          "sha256": "572e6a03f0f172c6d3f78ae9ad8df4e3b28215074220bf146fd707db3acaba57"
+        },
+        {
+          "path": "src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe51_nsquare.S",
+          "sha256": "7b8901d717954b3f01b9ca78fb823b451c2a4481babc6bf0ad9c05fde8a1ee3c"
+        },
+        {
+          "path": "src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe51.h",
+          "sha256": "034410eea5c360bdb5ed5e2258e4d260363cececf00bbdad78369ca0e4463561"
+        },
+        {
+          "path": "src/libsodium/crypto_stream/chacha20/ref/chacha20_ref.c",
+          "sha256": "a93ebb4cc15c590798cb095d48ed39eb5d8929fda7904ce148908485e38914c3"
+        },
+        {
+          "path": "src/libsodium/crypto_stream/salsa20/ref/salsa20_ref.c",
+          "sha256": "e47d9a29430d6ee4d2f7789e309984bf98997b3e5e7665f4efb006b705d50fc2"
+        },
+        {
+          "path": "src/libsodium/crypto_stream/salsa2012/ref/stream_salsa2012_ref.c",
+          "sha256": "20cc0512f97f70bcf65561e9bef9f0b042ab49640c443d7e9d454d2401ca166a"
+        },
+        {
+          "path": "src/libsodium/crypto_stream/salsa208/ref/stream_salsa208_ref.c",
+          "sha256": "b9cddcf73aaef798b5c5359d7e629b1859fd8885ddd5b7889977ab17af74b923"
+        },
+        {
+          "path": "src/libsodium/randombytes/sysrandom/randombytes_sysrandom.c",
+          "sha256": "cdb19f38c63c2f0f22af3f938669d0843e170e421c14ea64c607e74cc5cba46b"
+        },
+        {
+          "path": "src/libsodium/sodium/codecs.c",
+          "sha256": "b97dcfd900c05ebc363cf333beee070c4eac39041361068ec7b61ddf29ec862f"
+        }
+      ]
+    },
+    {
+      "file": "upstream/native/libudx/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "component": "libudx",
+      "url": "https://raw.githubusercontent.com/holepunchto/libudx/a9af5de/LICENSE"
+    },
+    {
+      "file": "upstream/native/libudx/NOTICE",
+      "sha256": "f5960ae1216741f15402ef2f09078ba1b46ced2e537404558a55d8598c1e1acf",
+      "component": "libudx",
+      "url": "https://raw.githubusercontent.com/holepunchto/libudx/a9af5de/NOTICE"
+    },
+    {
+      "file": "upstream/native/libudx/provenance/CMakeLists.txt",
+      "sha256": "84322e6783ada0bfd340b5f0fd0d06f023c3efe0c0e79f76d9bba681af096688",
+      "component": "libudx",
+      "url": "https://raw.githubusercontent.com/holepunchto/libudx/a9af5de/CMakeLists.txt",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libudx/SOURCE-NOTICES.txt",
+      "sha256": "557fc5e7758768685c6e711eac338c72df41587dfd2a7c468407bd0172b2c1d7",
+      "component": "libudx",
+      "sourceArchive": "https://codeload.github.com/holepunchto/libudx/tar.gz/a9af5de",
+      "inputs": [
+        {
+          "path": "src/udx_bbr.c",
+          "sha256": "8f430078403517894a5c020b83827b78be23391da2d7986d53fa8fb6c3594924"
+        },
+        {
+          "path": "src/win_filter_f64.c",
+          "sha256": "3b6f5238b02be0f57eb0c61c9ee3a17e65471632e35e6cba30f402780e35b570"
+        },
+        {
+          "path": "src/win_filter.c",
+          "sha256": "7c80432dd8e0b4b4d9866d24a58c1a4510c09f3e82f899e7ed63f295ac4de781"
+        }
+      ]
+    },
+    {
+      "file": "upstream/native/liburl/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "component": "liburl",
+      "url": "https://raw.githubusercontent.com/holepunchto/liburl/2efedc5/LICENSE"
+    },
+    {
+      "file": "upstream/native/liburl/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "component": "liburl",
+      "url": "https://raw.githubusercontent.com/holepunchto/liburl/2efedc5/NOTICE"
+    },
+    {
+      "file": "upstream/native/liburl/provenance/CMakeLists.txt",
+      "sha256": "dc3fc87400f7bae4171322041ee393878094c0fbddee308aec6ff7fb2d56bd4b",
+      "component": "liburl",
+      "url": "https://raw.githubusercontent.com/holepunchto/liburl/2efedc5/CMakeLists.txt",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libutf/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "component": "libutf",
+      "url": "https://raw.githubusercontent.com/holepunchto/libutf/a1ceca8/LICENSE"
+    },
+    {
+      "file": "upstream/native/libutf/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "component": "libutf",
+      "url": "https://raw.githubusercontent.com/holepunchto/libutf/a1ceca8/NOTICE"
+    },
+    {
+      "file": "upstream/native/libutf/provenance/CMakeLists.txt",
+      "sha256": "bc4d9f6698e960c476c08888877b6fcde13bb55177d421ab9782131ecace48a2",
+      "component": "libutf",
+      "url": "https://raw.githubusercontent.com/holepunchto/libutf/a1ceca8/CMakeLists.txt",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libutf/SOURCE-NOTICES.txt",
+      "sha256": "2a134851f61d7cfd391f6ce78f481c5000905dd80e0aa888ea78d8dc49b22e54",
+      "component": "libutf",
+      "sourceArchive": "https://codeload.github.com/holepunchto/libutf/tar.gz/a1ceca8",
+      "inputs": [
+        {
+          "path": "src/ascii/validate.c",
+          "sha256": "df898a53555310427b6cd6b9b3ac3950cfbc01313efab389be5a3c898ec34466"
+        },
+        {
+          "path": "src/latin1/convert-to-utf16.c",
+          "sha256": "8577cf4740e75ad445d3b9595e76c075db420f25eb3ca9c8946b02f7f7860afa"
+        },
+        {
+          "path": "src/latin1/convert-to-utf32.c",
+          "sha256": "7d145dd91c617ced41d078fb441ad8d2aa4eeb5930152524dc0ad52dfb99dd31"
+        },
+        {
+          "path": "src/latin1/convert-to-utf8.c",
+          "sha256": "b89b24324792504db8cbb794235b654d547d8024090753979578da4b349b6da9"
+        },
+        {
+          "path": "src/latin1/length-from-utf16.c",
+          "sha256": "f017c3ff666a9ba7465b604f09f9f320b16d9e87da8d4bbe87a2e1600f3747dd"
+        },
+        {
+          "path": "src/latin1/length-from-utf32.c",
+          "sha256": "f922ffad10686e9032b6812413068b3b8deaa1387320bc0124239d2c0310ce1d"
+        },
+        {
+          "path": "src/latin1/length-from-utf8.c",
+          "sha256": "1c452c2e5d16364c350e543c7735f4cb6e4899c4cd56787b928f798d75d35dfd"
+        },
+        {
+          "path": "src/utf16/convert-to-latin1.c",
+          "sha256": "a903e6abd491331f03b1ad927cbe157ad785be737da5612711455bb698672456"
+        },
+        {
+          "path": "src/utf16/convert-to-utf32.c",
+          "sha256": "a407131029c37e61e609d9bfe1c79a70c1ffa7affa6a7a510f92a0cead9d853c"
+        },
+        {
+          "path": "src/utf16/convert-to-utf8.c",
+          "sha256": "9fb9a6d6328fa34fe737139481c1cb52435bb1615d69837efd05f64b086b5c23"
+        },
+        {
+          "path": "src/utf16/length-from-latin1.c",
+          "sha256": "caa2cec4b227abcc1d96f871e41cd554b1aaa488212965668e622bee5101a3ab"
+        },
+        {
+          "path": "src/utf16/length-from-utf32.c",
+          "sha256": "dade6d3334664b1e10c93ccc3ba3957e370f317e09a4e981e7a9b1173a19795e"
+        },
+        {
+          "path": "src/utf16/length-from-utf8.c",
+          "sha256": "c9613f1f2d2aaf78727f00cbc7a02ee5dc0af5e50b50b47a3723ce6f09f7576e"
+        },
+        {
+          "path": "src/utf16/validate.c",
+          "sha256": "059ff5714d8f322055fb17dddeb8f168ad31f939385a3dc5cc8c22a779c85fbc"
+        },
+        {
+          "path": "src/utf32/convert-to-latin1.c",
+          "sha256": "cb9036181a540289d01bf3713c6e5557d64291146d1c95ccac2bc0f891046f3f"
+        },
+        {
+          "path": "src/utf32/convert-to-utf16.c",
+          "sha256": "4c2c7a6b1fa4655998ec7ce8708d3991e3ffd7c51c92ea3c0f11e5cedcd17781"
+        },
+        {
+          "path": "src/utf32/convert-to-utf8.c",
+          "sha256": "f4524be8b29e54812a66d1e7e83e78970a8dde23e50cd3e8a56321a775ebf1f2"
+        },
+        {
+          "path": "src/utf32/length-from-latin1.c",
+          "sha256": "43792293d5cd6e3ca64e6a02867142d91521ff1009454a06abb9b5cfe15088b3"
+        },
+        {
+          "path": "src/utf32/length-from-utf16.c",
+          "sha256": "e63172f44068651f584789b9031e41a70a870a8ad8845d43fbcc6646ebcec8bb"
+        },
+        {
+          "path": "src/utf32/length-from-utf8.c",
+          "sha256": "a4221371763ec8495d2d1912e6da29701fca2251027545a7ccd4a7c0ff95970e"
+        },
+        {
+          "path": "src/utf32/validate.c",
+          "sha256": "fd4ef2ac3066b1e85c833eff83eea30672e96c5e25accc085153a9a9812ae582"
+        },
+        {
+          "path": "src/utf8/convert-to-latin1.c",
+          "sha256": "627de1856e9c102591c547d02e09434f1495519f74ac7f8f8180a85d4c46860d"
+        },
+        {
+          "path": "src/utf8/convert-to-utf16.c",
+          "sha256": "d1c03d1bbbd30a7a9cc871b456f677be917e5c28c4bb3afe6e9eb6beebe35e7c"
+        },
+        {
+          "path": "src/utf8/convert-to-utf32.c",
+          "sha256": "e1deb93936aa746c6ddad42a2fa0675e74edd22b1503bd08d910a423adf56b50"
+        },
+        {
+          "path": "src/utf8/length-from-latin1.c",
+          "sha256": "f56942947fb60c2bc0031c3beedcdbac74deaf0d87c9617d934df13f45ec04cc"
+        },
+        {
+          "path": "src/utf8/length-from-utf16.c",
+          "sha256": "529c2e2448ec9716c8e5d1255947dfc176c395341d37a1f8f00ed1a97c2659bf"
+        },
+        {
+          "path": "src/utf8/length-from-utf32.c",
+          "sha256": "d22e790bc5ca4ed5e8e26a3eeb602c4d60d703d69a9d76e81150069ebf38c999"
+        },
+        {
+          "path": "src/utf8/validate.c",
+          "sha256": "57a00d3457820ed1764224791ffc8e73d0cae369037fe272208f8f8b7df85b20"
+        }
+      ]
+    },
+    {
+      "file": "upstream/native/libuv/AUTHORS",
+      "sha256": "93de6853ee49c271282569aaca1e7875dbb4f0b72fd26324cde0edb448c661ae",
+      "component": "libuv",
+      "url": "https://raw.githubusercontent.com/libuv/libuv/v1.51.0/AUTHORS"
+    },
+    {
+      "file": "upstream/native/libuv/LICENSE",
+      "sha256": "16de0c32b265cb7d46a6d3bd614f259dd4d693a5e26b3407b04aae8d73041f0c",
+      "component": "libuv",
+      "url": "https://raw.githubusercontent.com/libuv/libuv/v1.51.0/LICENSE"
+    },
+    {
+      "file": "upstream/native/libuv/LICENSE-extra",
+      "sha256": "262c44bd2cdba037e6d2a82fba15f5800d292bc993a6f5d6b6ea487744d02836",
+      "component": "libuv",
+      "url": "https://raw.githubusercontent.com/libuv/libuv/v1.51.0/LICENSE-extra"
+    },
+    {
+      "file": "upstream/native/libuv/provenance/CMakeLists.txt",
+      "sha256": "dcdb12ffcb8bd44fb4cb5db08ffdeb573caaeaf2ae00005ef72941192a9c1dca",
+      "component": "libuv",
+      "url": "https://raw.githubusercontent.com/libuv/libuv/v1.51.0/CMakeLists.txt",
+      "purpose": "Source dependency / generated-data provenance, not another license"
+    },
+    {
+      "file": "upstream/native/libuv/SOURCE-NOTICES.txt",
+      "sha256": "69da32291d3ab7a9a37099c73a4189880c8e333ecc3310861f9604ea1a81e8f0",
+      "component": "libuv",
+      "sourceArchive": "https://codeload.github.com/libuv/libuv/tar.gz/v1.51.0",
+      "inputs": [
+        {
+          "path": "include/uv/aix.h",
+          "sha256": "bed77e4cf6c06f1224e681cbe607eff04713ca0c1e1f4a102e6a6565ee3f02aa"
+        },
+        {
+          "path": "include/uv/bsd.h",
+          "sha256": "963533ff4b16f72a204a8c760896a857c54d0ac50570f1793e3bef1f2ae8b35f"
+        },
+        {
+          "path": "include/uv/darwin.h",
+          "sha256": "222b6dd3ce67cfbb735b14b1662f065fc23570d6969acf463b39d946b7590d8c"
+        },
+        {
+          "path": "include/uv/errno.h",
+          "sha256": "4242edf790e4569ef349026ab4c6e31093334ee5fc02b16ed7a0d9fbacdffd16"
+        },
+        {
+          "path": "include/uv/linux.h",
+          "sha256": "adce0ed0821c8466a87a0a4c9e0df9ea7e4a4b24d099c7d7ed196f72a13f669d"
+        },
+        {
+          "path": "include/uv/os390.h",
+          "sha256": "98388ae32ce2c4390b82c3529539d2a476c44f590e960ed30a79f72b807ecd02"
+        },
+        {
+          "path": "include/uv/posix.h",
+          "sha256": "e9d7218b34e6e89b7b412891b7e2aa8b3a561c5ce9714c1f4def6c8a8593a6a6"
+        },
+        {
+          "path": "include/uv/sunos.h",
+          "sha256": "29d4b4ef48dc3c3ab32d75e0a85bcb80e084d42b32aae40d67fc1d882b93298a"
+        },
+        {
+          "path": "include/uv/threadpool.h",
+          "sha256": "09ae41099af710289155be012df45c2fce04da6a02e813278b4558935e645938"
+        },
+        {
+          "path": "include/uv/tree.h",
+          "sha256": "34393c74082c71ddd5bd9ec4afe30ef03df7fa7bb64be5a50ae070cdfebb5c43"
+        },
+        {
+          "path": "include/uv/unix.h",
+          "sha256": "a246095a1476d76631f5ec85be171aee8107eb0423007546ec91c58887c28f02"
+        },
+        {
+          "path": "include/uv/version.h",
+          "sha256": "aef7fb55ffcece76db9cb7f87d0632e432369747f329679779616cd0721981da"
+        },
+        {
+          "path": "include/uv/win.h",
+          "sha256": "51b6bf729c4c3e66cd89e0b0b0d734998776e675fe0a5eda9db77b634eb83ef0"
+        },
+        {
+          "path": "include/uv.h",
+          "sha256": "fddec8c096616675b4578d85222663c8624dce3ee67f5be1c33ba83eb02a827c"
+        },
+        {
+          "path": "src/fs-poll.c",
+          "sha256": "e4869036bc54bc5a881794ca6aac044c9c567361fff48dd7f02f3a4640e6d271"
+        },
+        {
+          "path": "src/heap-inl.h",
+          "sha256": "e8dbafbe40150143a740e9b1aff03c4e623ebfe5d6b5e1834a09626a303ddbc2"
+        },
+        {
+          "path": "src/idna.c",
+          "sha256": "8dda206c0a115d54ba0c447d44cd734dae7811a91b8527d110e82957b7bfbc9e"
+        },
+        {
+          "path": "src/idna.h",
+          "sha256": "d72fc711db6309e6c6ec0fc777cb0bcbcfa3942262be25d315ac469db2787559"
+        },
+        {
+          "path": "src/inet.c",
+          "sha256": "ff244db2646274941af96691e085826fa041adff56326fe28c26ab5610a96e48"
+        },
+        {
+          "path": "src/queue.h",
+          "sha256": "abdeddeefb025fcdeff7737d4d465d89081ab2c3cc08a423c042ee2093b8695a"
+        },
+        {
+          "path": "src/random.c",
+          "sha256": "4cdc8899cb6aae59896f0d949d2efa8c5b128e9b3671c567a72497e2023a1679"
+        },
+        {
+          "path": "src/strscpy.c",
+          "sha256": "0058568b1a47d2a35ce3dd32d52463af5e066c1065fbb6dc28dd68107a978c1c"
+        },
+        {
+          "path": "src/strscpy.h",
+          "sha256": "e3e5f81613b169ccd76eee4972d37e7cd5d875ac20d578467b2e42ee5c7f4051"
+        },
+        {
+          "path": "src/strtok.c",
+          "sha256": "fdcd8971cef7aff15ed950c8d71521888eb57ab48b62196e1f4170b4cf522d2c"
+        },
+        {
+          "path": "src/strtok.h",
+          "sha256": "2bb2ed731c7afb0efb14670854bc47fe435d72e93cb7b5a1ba99fc5d0548467f"
+        },
+        {
+          "path": "src/thread-common.c",
+          "sha256": "0ce1ce99b53c1e453439fae0be62c417fca8a1850cd97be65ace5b36b306a7b9"
+        },
+        {
+          "path": "src/threadpool.c",
+          "sha256": "e0db34c1bf86f020cc49285a5c3fcc383e9bd2ed7b0b959b5462624705d5322e"
+        },
+        {
+          "path": "src/timer.c",
+          "sha256": "6c23b86920e312253888c0126611c9499e79e73c65e8d75975d5c3dbf87abec2"
+        },
+        {
+          "path": "src/unix/aix-common.c",
+          "sha256": "61a1cbb342c5e334622ba194927ec9cff8642e5dea7c5972c17f531123c3ebcf"
+        },
+        {
+          "path": "src/unix/aix.c",
+          "sha256": "26abd4962b5c14a1bf3a7b3e5243575617d843d135a442af89f06cd9a0cde3ca"
+        },
+        {
+          "path": "src/unix/async.c",
+          "sha256": "445e8582d88068d63bde2dd52dc48ef6c215fa90f7ddeb2e40dcae971df499ea"
+        },
+        {
+          "path": "src/unix/bsd-ifaddrs.c",
+          "sha256": "d3a0267988f2bdf889dba097c00949bc5af80153fc00b4356dc657fdd47b5dc2"
+        },
+        {
+          "path": "src/unix/bsd-proctitle.c",
+          "sha256": "de7a812d80445c3dc10d4a25f5436c73630e2b0da2f8cfb642bacb8e068cdfad"
+        },
+        {
+          "path": "src/unix/core.c",
+          "sha256": "bebf5062eefb617a1d03e5e78f864b6384e14fb7055d534c3a092fc2132f4ac4"
+        },
+        {
+          "path": "src/unix/cygwin.c",
+          "sha256": "37adeb8e987535f9585883cdee0403cad0af4a9d7cf384401ae968f72b80a8b1"
+        },
+        {
+          "path": "src/unix/darwin-proctitle.c",
+          "sha256": "f68470f2a5ee9361d49083f0ec4c42e2a01a082907f9be983f31ab405e77b49d"
+        },
+        {
+          "path": "src/unix/darwin-stub.h",
+          "sha256": "d397fe8920a057dbf335b5eb91c82122e0f0b61281cd0dcb9fd45420bd9de7d8"
+        },
+        {
+          "path": "src/unix/darwin.c",
+          "sha256": "f6a172ce185e547e141945d36ab1e172685d37b763895b31136cfc02d6377bc0"
+        },
+        {
+          "path": "src/unix/dl.c",
+          "sha256": "fe5d987911461b7f680474ee3886884a6f3325dff0a4bc038734a088ee227ff1"
+        },
+        {
+          "path": "src/unix/freebsd.c",
+          "sha256": "39a81bbe51f4007af20c75c4385a2b235b40ccdaf1edda6bb56d556102a71af6"
+        },
+        {
+          "path": "src/unix/fs.c",
+          "sha256": "ffe2cd709c894083d4e470bce5248eee71c5e5594418be3d7a6d80e44d723a61"
+        },
+        {
+          "path": "src/unix/fsevents.c",
+          "sha256": "6d6b9e50ac30ce6c4d0ac046352fc308229f36774b092c3e4e99f434f50d5ca3"
+        },
+        {
+          "path": "src/unix/getaddrinfo.c",
+          "sha256": "c069c71fe9044bd95d4748990382432ef04d72284bd5dfb5181e347a5aad7dae"
+        },
+        {
+          "path": "src/unix/getnameinfo.c",
+          "sha256": "558b560c07b47db60cd04b182cbe10ced589753a904197a9120440fc23be61e5"
+        },
+        {
+          "path": "src/unix/haiku.c",
+          "sha256": "9b14ba20e072d2d4b36200c3c91e476ab28d34c0ee9fe6f9ef65f2f0e88f901b"
+        },
+        {
+          "path": "src/unix/hurd.c",
+          "sha256": "16b53fdde1ae273690bccfa8b7c3c4c22a72c4f4bc8773622dcc2344d7eb5987"
+        },
+        {
+          "path": "src/unix/ibmi.c",
+          "sha256": "450cf7178f4d3b7c3c157ed1bd4c8130941323bd799bc7696fe91d56243ed18c"
+        },
+        {
+          "path": "src/unix/internal.h",
+          "sha256": "6139bb4e3e0fa3668a2d0742a10e9aedcba6045c4f85ef35c8a8946def062977"
+        },
+        {
+          "path": "src/unix/kqueue.c",
+          "sha256": "499e0de21ff7ef39978186ef10af6070ad3e1e8e2dc71532cf6f398f38d7827a"
+        },
+        {
+          "path": "src/unix/linux.c",
+          "sha256": "d527b1b7330c474f60b363b0ec8ccea50bc2f1b7ae7e185fc97b6943bf993d99"
+        },
+        {
+          "path": "src/unix/loop-watcher.c",
+          "sha256": "352e6272f340f424fba5ff6e28705b0b22c3a8903913d0ea6bbb6ba7c2293fb5"
+        },
+        {
+          "path": "src/unix/loop.c",
+          "sha256": "f0edd21e3445ba0531c99c7e370d0201f23e966accd90edace04384eb9904b2a"
+        },
+        {
+          "path": "src/unix/netbsd.c",
+          "sha256": "1f9479148b091dfc89c23e1c59e33c9571618f64484d5fbfcb98b2a0266d7762"
+        },
+        {
+          "path": "src/unix/no-fsevents.c",
+          "sha256": "9d91a46c8477fd7145eac8b668da1041a69f5b12812b18888ad3eae85397d987"
+        },
+        {
+          "path": "src/unix/no-proctitle.c",
+          "sha256": "65a37c263a39f59943856e3d6bf2119692cfaacdde13f05112411cd3edd15ec5"
+        },
+        {
+          "path": "src/unix/openbsd.c",
+          "sha256": "9509f6b8db29cb18ec8a591b30cc72e57c1196b2feaa1ab1e20c1250a4b0b6a6"
+        },
+        {
+          "path": "src/unix/os390-proctitle.c",
+          "sha256": "627cd81bf8925ced5e39ededce1fa50c9b77dba581a35383113a1520e015478d"
+        },
+        {
+          "path": "src/unix/os390-syscalls.c",
+          "sha256": "76c5779fa2be1665b8d82c1e010eb37a9b216f8bdbdbd1a48f8c4f8985edc3d6"
+        },
+        {
+          "path": "src/unix/os390-syscalls.h",
+          "sha256": "a0f585c827df219b526b9786caebc8c21fd4db9ea8d568c07264f24a266cd4f9"
+        },
+        {
+          "path": "src/unix/os390.c",
+          "sha256": "594a6d34d4529fd1b9aedbecf0b6284e4a11f1d631ff06a273ef67a7adc5ce46"
+        },
+        {
+          "path": "src/unix/pipe.c",
+          "sha256": "48f5743581a1caf62369a3db6b36c0c86860308d4086ed9cbc670fff105aa5a1"
+        },
+        {
+          "path": "src/unix/poll.c",
+          "sha256": "e04cbf1cbeb67da8ceab2d86e47eca5fb35524725c316d859b0772debf409c35"
+        },
+        {
+          "path": "src/unix/posix-hrtime.c",
+          "sha256": "e0b6901588b417222c48c6b321d642f53f6b3ccd2512d86f3f5898dcd95b3671"
+        },
+        {
+          "path": "src/unix/posix-poll.c",
+          "sha256": "79668ed80622686315b3be017c2da60ff8c7cbcc711d25177be312cf7c12be59"
+        },
+        {
+          "path": "src/unix/process.c",
+          "sha256": "cedc79cb473c0dde5c270ff2ee7b7956cbdfe0b3aceba19597b9a75a21e119f0"
+        },
+        {
+          "path": "src/unix/procfs-exepath.c",
+          "sha256": "56136e384f79f6691f8cc2976cd01d0a02019802d4be619d7c91cb21d413ada6"
+        },
+        {
+          "path": "src/unix/proctitle.c",
+          "sha256": "16ff3c208dcce3798dc80bf596828a93f6ac42b1732e1ba75c331dfa3e90fffe"
+        },
+        {
+          "path": "src/unix/qnx.c",
+          "sha256": "10108ddca17400c7f684745ee6ca2a58ce4728804068373c8d34462ab21c2e16"
+        },
+        {
+          "path": "src/unix/random-devurandom.c",
+          "sha256": "e774597ce4da739ad57317041aa0aaf00ae48b04f2359940188ab04475613420"
+        },
+        {
+          "path": "src/unix/random-getentropy.c",
+          "sha256": "9bf7967967b6609810f42c72229edd086890864d4b78ed8c3269064a72769fe3"
+        },
+        {
+          "path": "src/unix/random-getrandom.c",
+          "sha256": "149b6b2b9b9213f1355651c618e17b4dd2599ccafa1619ac3a8d7916a471f2a5"
+        },
+        {
+          "path": "src/unix/random-sysctl-linux.c",
+          "sha256": "c5a344dfdd20029700c0686c3ca685e8e67931fa2a35d84b01b10b5a8ad812a0"
+        },
+        {
+          "path": "src/unix/signal.c",
+          "sha256": "010aafee4b3cb7d70626cee3c5ddbf564251b521231f26dddf9d3e7c8204d71f"
+        },
+        {
+          "path": "src/unix/stream.c",
+          "sha256": "dac76e73caef1d01c7122f5d42f5e2d0a06b6a60bf4d83d26849d03aec805733"
+        },
+        {
+          "path": "src/unix/sunos.c",
+          "sha256": "0892b9ba39055ac10eaa785bf348d6aecafe10f3da2124f5e1c72c23a8277b1b"
+        },
+        {
+          "path": "src/unix/sysinfo-loadavg.c",
+          "sha256": "cd11de556cfa6371860a694e2d302037349d94b7b446506e721d412e97ea0334"
+        },
+        {
+          "path": "src/unix/sysinfo-memory.c",
+          "sha256": "d0fc16262a6406a9dd547044895475d9a3b1f1e11bb3b23e4880cf5945121272"
+        },
+        {
+          "path": "src/unix/tcp.c",
+          "sha256": "1f7aea48a4c4b8ae005af27188a9f08c63122493c812c54582c9b4a9e1771da7"
+        },
+        {
+          "path": "src/unix/thread.c",
+          "sha256": "69f6814b5cf8e3bf9709dbfa84ff58358e3ac6c7f9193819860017c2d7ea0a46"
+        },
+        {
+          "path": "src/unix/tty.c",
+          "sha256": "65b98df1215c32ddd87e7b89e2d8d78c7e79a02e2bf4a53e1860f61d00bf431a"
+        },
+        {
+          "path": "src/unix/udp.c",
+          "sha256": "779f1b3cd1550772d753f112c68056bc4de3a36ca1a78f886f5667e9af733955"
+        },
+        {
+          "path": "src/uv-common.c",
+          "sha256": "c311e17ae0f891c9eba52626adf9ea33a91b7459654eb1c20e56c24d30d6b446"
+        },
+        {
+          "path": "src/uv-common.h",
+          "sha256": "7524f791d5648f3e135340ac61bcb242028947a81a5b8b32042f8561848a5397"
+        },
+        {
+          "path": "src/uv-data-getter-setters.c",
+          "sha256": "ce7fab84519adc0f9b63c268fcb5a73e643a4d9a22db125cf58db88a6acd38ee"
+        },
+        {
+          "path": "src/version.c",
+          "sha256": "53296d9934d952545064673758e3ed46c10ab52e34ce540fbab4c595a0b44bfa"
+        },
+        {
+          "path": "src/win/async.c",
+          "sha256": "1e5ada382b401de43aa64e31212bbdb2c6c33d576ae6f19959c7e216a99b3243"
+        },
+        {
+          "path": "src/win/atomicops-inl.h",
+          "sha256": "6e49ffc21c8d8d67d2ba754a64d53ee6129de0c71ebd8cc6a272eee0e0c9b79b"
+        },
+        {
+          "path": "src/win/core.c",
+          "sha256": "3026f2888b3360e65a2e2662508eef6ba9b1af17735391ca6f79dc06887b8b23"
+        },
+        {
+          "path": "src/win/detect-wakeup.c",
+          "sha256": "914143627a1a97fafbf64a71564dce389a877b2e5aa9797f12dbc2811bd71d7a"
+        },
+        {
+          "path": "src/win/dl.c",
+          "sha256": "2b5c586518c6e3b02108e5a47c0ae481a5059dbd2af4031bcc5402b16b013048"
+        },
+        {
+          "path": "src/win/error.c",
+          "sha256": "c804f3da1436393d1170688cb9d0210638174c0f1af03013360a7d0a7eb945a8"
+        },
+        {
+          "path": "src/win/fs-event.c",
+          "sha256": "166e80fd373b44796658f7bd1cdc91f87a623e63bbd9d662f6a47137f0cdc96d"
+        },
+        {
+          "path": "src/win/fs-fd-hash-inl.h",
+          "sha256": "1365f18d01c4117b0f42cfb2e0065f37ad62e4f5214b150cbf660f986955bb2d"
+        },
+        {
+          "path": "src/win/fs.c",
+          "sha256": "60c76976514f427fa0be21c1c7986c2ab1d9e2e77b9d5bcf8c7ab99ed36b0693"
+        },
+        {
+          "path": "src/win/getaddrinfo.c",
+          "sha256": "dcef491fbb292b2fda6d7256c0f1222d79dd2507fd7875bd84aee95e558ab5db"
+        },
+        {
+          "path": "src/win/getnameinfo.c",
+          "sha256": "c002f8d434ea01952671117dcc4f36bcb74cebcaf4f16b60de997afecfdac39b"
+        },
+        {
+          "path": "src/win/handle-inl.h",
+          "sha256": "0b8763a63a0c000820e92fbb52faf6d4df46569f839e3d4471eac12dd7537b5c"
+        },
+        {
+          "path": "src/win/handle.c",
+          "sha256": "36778077a3ad0fb0ee55ccdba904e7393f74601be72be989110be4ee26ff753d"
+        },
+        {
+          "path": "src/win/internal.h",
+          "sha256": "dacd1827aab6d1cd63325fae179f377041e758157469939d81a5804526406e45"
+        },
+        {
+          "path": "src/win/loop-watcher.c",
+          "sha256": "b349a8ebf8f330418f7d15739441fdbd648b96ae7c4161a3d1145494a0c46c3a"
+        },
+        {
+          "path": "src/win/pipe.c",
+          "sha256": "4d370ce0bc10f8ae429f8acb2c7688d74b753e0177f347f5f3d337647e77ca38"
+        },
+        {
+          "path": "src/win/poll.c",
+          "sha256": "b58fcd1b028358f9ff9d2406de6b987aadca7a3c414e9a3b5aff9b12e0975235"
+        },
+        {
+          "path": "src/win/process-stdio.c",
+          "sha256": "7367280da2315b8cf16d42870a972164763b1967f8e39bd141b27726237872d8"
+        },
+        {
+          "path": "src/win/process.c",
+          "sha256": "39516fc8c2316ec53b853a67301958796372676fb1b27d4ec76ec51217ae6f26"
+        },
+        {
+          "path": "src/win/req-inl.h",
+          "sha256": "cf0669d86fe4706ca683cba2a05d01b6130081375ef34fb308276950ab66e4ae"
+        },
+        {
+          "path": "src/win/signal.c",
+          "sha256": "7cbe1ec895c1fa5c974e6d59e55e6a6d7180e9c83ffbffa12691c24c44fdf1f0"
+        },
+        {
+          "path": "src/win/snprintf.c",
+          "sha256": "2596b168ad64f54e94b95779f654326c107f43e0645efa11185f8e9b04ec2f6f"
+        },
+        {
+          "path": "src/win/stream-inl.h",
+          "sha256": "071341e25de533dc19eeb3ee3ff3985caae7578c8da9109ffcf08b6574584712"
+        },
+        {
+          "path": "src/win/stream.c",
+          "sha256": "c6bbfd9ae2948bfd4409d547f5f07b6c8495e4f0ae8e3f5d5c0117918e35b822"
+        },
+        {
+          "path": "src/win/tcp.c",
+          "sha256": "858d50be27eababdb8c17388b3b25d05da0bc8d0c390b8be76f1e8814705ea1d"
+        },
+        {
+          "path": "src/win/thread.c",
+          "sha256": "d674e3a3484034d2b97f892bf6acf6f7ac734df0f340b3aaa63c7edd53358129"
+        },
+        {
+          "path": "src/win/tty.c",
+          "sha256": "5df3f88899bc4c6d85f80b54d4f4f14453359996a2c42693de38ef90c5b9941d"
+        },
+        {
+          "path": "src/win/udp.c",
+          "sha256": "6750811851045125553b3828f8149291d9b14f51f22f0d7ccc86dfcbc82fd57d"
+        },
+        {
+          "path": "src/win/util.c",
+          "sha256": "216adf1d26666ea84277addbc597b0bcb5f079b66fac6567f80d793b977b152a"
+        },
+        {
+          "path": "src/win/winapi.c",
+          "sha256": "4f0421148d21d1a91561d105458d5ab3d283aafb13d8db5a8cb30317d4af30a4"
+        },
+        {
+          "path": "src/win/winapi.h",
+          "sha256": "5e8414cc8f3eefcb8389fd61bea6b9bfe74c057d899a6c9c2b3cdb43f6a3ef16"
+        },
+        {
+          "path": "src/win/winsock.c",
+          "sha256": "f9621966b332d29926ac6471b0aa08ef4f46be0b58cde852155592dc4de88590"
+        },
+        {
+          "path": "src/win/winsock.h",
+          "sha256": "9f95386162246a166dcb2557e3e6b0bf663053975ac19abdf470db6d50adee61"
+        }
+      ]
+    },
+    {
+      "file": "upstream/npm/adaptive-timeout@1.0.1/NOTICE",
+      "sha256": "3ca389dfe964b3d89a67bd7be1abb9a31191437113382108cf69a2bcc2b13481",
+      "package": "adaptive-timeout@1.0.1",
+      "url": "https://raw.githubusercontent.com/holepunchto/adaptive-timeout/8457541bb0f70adb31b46847a901ae2af78e7a18/NOTICE"
+    },
+    {
+      "file": "upstream/npm/b4a@1.9.0/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "b4a@1.9.0",
+      "url": "https://raw.githubusercontent.com/holepunchto/b4a/ff7aea3d28f2be699fc079a9a00841e83eeaabf8/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-addon-resolve@1.10.1/NOTICE",
+      "sha256": "7c0de08a5fc5fdb3df3e6445f11756e9df22e542187c2e2062eff1f99111bbf4",
+      "package": "bare-addon-resolve@1.10.1",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-addon-resolve/ed517fb0d5a09621828ff1d929934f6b55144550/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-ansi-escapes@2.2.3/NOTICE",
+      "sha256": "fd4098360de4b9fb2e003ac7c852e8c86f264a1d6e27c47128e8c8075c81249b",
+      "package": "bare-ansi-escapes@2.2.3",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-ansi-escapes/3987fbc28036b39f5bebe464d99159dbffa6cfca/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-assert@1.2.0/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "bare-assert@1.2.0",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-assert/252af12dddc9b2daaeff6c1196c288dc1cf3ab5c/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-events@2.9.2/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "bare-events@2.9.2",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-events/d3bb6aba4fc1e0e1a395832a2967a11540d18efd/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-fs@4.8.1/NOTICE",
+      "sha256": "fb077635559d54cc8838cf8986be94c0f19da54361ca7e86b99a72af2fc41a5f",
+      "package": "bare-fs@4.8.1",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-fs/dec17980f2347c600c15ab15d4fb6ebe16193a36/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-inspect@3.1.10/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "bare-inspect@3.1.10",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-inspect/36c73abc8f385b54e661d193a503d99225997e51/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-module-resolve@1.12.5/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "bare-module-resolve@1.12.5",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-module-resolve/7eb9db6c56af688e15c790cff460eb59794aa9ad/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-semver@1.1.0/NOTICE",
+      "sha256": "7c0de08a5fc5fdb3df3e6445f11756e9df22e542187c2e2062eff1f99111bbf4",
+      "package": "bare-semver@1.1.0",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-semver/25db5754521e65ccf1a32eff55a4e53f663744a9/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-stream@2.13.4/NOTICE",
+      "sha256": "7c0de08a5fc5fdb3df3e6445f11756e9df22e542187c2e2062eff1f99111bbf4",
+      "package": "bare-stream@2.13.4",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-stream/e00cde60234e0b28599a5eeedfe0401ebf237ded/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-type@1.1.1/NOTICE",
+      "sha256": "7c0de08a5fc5fdb3df3e6445f11756e9df22e542187c2e2062eff1f99111bbf4",
+      "package": "bare-type@1.1.1",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-type/33a5acd4dd335653f44c63f5c3117e973a290a6b/NOTICE"
+    },
+    {
+      "file": "upstream/npm/bare-url@2.5.4/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "bare-url@2.5.4",
+      "url": "https://raw.githubusercontent.com/holepunchto/bare-url/0dea075ef1d4f2016342fbb27ee88030b4e023ef/NOTICE"
+    },
+    {
+      "file": "upstream/npm/blind-relay@1.6.1/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "blind-relay@1.6.1",
+      "url": "https://raw.githubusercontent.com/holepunchto/blind-relay/296032773e6c253a688dec9dd1d31674fdef2f3d/NOTICE"
+    },
+    {
+      "file": "upstream/npm/compact-encoding@3.5.0/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "compact-encoding@3.5.0",
+      "url": "https://raw.githubusercontent.com/holepunchto/compact-encoding/e9d5ef9345e8ac8afbdda7e2010fadf2f060a636/NOTICE"
+    },
+    {
+      "file": "upstream/npm/events-universal@1.0.1/NOTICE",
+      "sha256": "785579b4afd80de50086733b862451c03085fcbe87c5ee3ae887276632b2f1eb",
+      "package": "events-universal@1.0.1",
+      "url": "https://raw.githubusercontent.com/holepunchto/events-universal/a1ce7fedaa117d7a91934ce06ecc0e83f0a9fd3b/NOTICE"
+    },
+    {
+      "file": "upstream/npm/hypercore-id-encoding@1.3.0/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "hypercore-id-encoding@1.3.0",
+      "url": "https://raw.githubusercontent.com/holepunchto/hypercore-id-encoding/5607a0e308d0badebf25f32e94d3615a4c9f22ed/NOTICE"
+    },
+    {
+      "file": "upstream/npm/hyperdht-address@1.1.1/NOTICE",
+      "sha256": "3ca389dfe964b3d89a67bd7be1abb9a31191437113382108cf69a2bcc2b13481",
+      "package": "hyperdht-address@1.1.1",
+      "url": "https://raw.githubusercontent.com/holepunchto/hyperdht-address/383543e9c03a6050bf9c647a9b547d5c5d3ec3fa/NOTICE"
+    },
+    {
+      "file": "upstream/npm/hyperdht@6.34.0/SOURCE-NOTICES.txt",
+      "sha256": "74134e1a86b0bfe986777e3278dc3b9a94fb7bc64e57012b44fa1a3b46676252",
+      "package": "hyperdht@6.34.0",
+      "sourceArchive": "https://registry.npmjs.org/hyperdht/-/hyperdht-6.34.0.tgz",
+      "inputs": [
+        {
+          "path": "lib/nat.js",
+          "sha256": "366943a814a61f41c6a075527d575e6c738f01c4ae47c713168e57a44b9138f2"
+        }
+      ]
+    },
+    {
+      "file": "upstream/npm/hyperschema@1.26.1/NOTICE",
+      "sha256": "ac497655281dc284fd87375e60db2ee206314125241e7a0464ccac7fdfa64c14",
+      "package": "hyperschema@1.26.1",
+      "url": "https://raw.githubusercontent.com/holepunchto/hyperschema/1b2a961d142646911aa039b1cce993effaceafee/NOTICE"
+    },
+    {
+      "file": "upstream/npm/hyperswarm__secret-stream@6.9.2/NOTICE",
+      "sha256": "2b679e8d6aad3651b2c1c07b3a29ba26ed8a2218f86f53c77e67b81d746bb122",
+      "package": "@hyperswarm/secret-stream@6.9.2",
+      "url": "https://raw.githubusercontent.com/holepunchto/hyperswarm-secret-stream/553bd082904aaeb68b0a63b8a8b2c482db4d36e7/NOTICE"
+    },
+    {
+      "file": "upstream/npm/noise-curve-ed@2.1.0/UPSTREAM-TREE.json",
+      "sha256": "784ba4cd894166fa81af014cdc9feebff6e718d1bde1daa89c5fb4229ea60881",
+      "package": "noise-curve-ed@2.1.0",
+      "url": "https://api.github.com/repos/holepunchto/noise-curve-ed/git/trees/v2.1.0?recursive=1",
+      "purpose": "Evidence of missing LICENSE at the official release tag"
+    },
+    {
+      "file": "upstream/npm/noise-handshake@4.2.0/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "noise-handshake@4.2.0",
+      "url": "https://raw.githubusercontent.com/holepunchto/noise-handshake/dc1f9c4398fa4335bbfdca5c4af25fdfdba86057/NOTICE"
+    },
+    {
+      "file": "upstream/npm/require-addon@1.3.0/NOTICE",
+      "sha256": "7c0de08a5fc5fdb3df3e6445f11756e9df22e542187c2e2062eff1f99111bbf4",
+      "package": "require-addon@1.3.0",
+      "url": "https://raw.githubusercontent.com/holepunchto/require-addon/b4e29ff008cf5c90d810a7fd7ff23fb4acb4e492/NOTICE"
+    },
+    {
+      "file": "upstream/npm/sodium-native@5.1.0/SOURCE-NOTICES.txt",
+      "sha256": "1fcb441db22c2fe54dd32f83f57c160efde17a76e7d7dfb010ed65fe97f8e8e3",
+      "package": "sodium-native@5.1.0",
+      "sourceArchive": "https://registry.npmjs.org/sodium-native/-/sodium-native-5.1.0.tgz",
+      "inputs": [
+        {
+          "path": "extensions/pbkdf2/pbkdf2.c",
+          "sha256": "44c2b8d45c5dc3103d9e060f09a6447d62196a1032e8a734986fb7cc67f39abf"
+        },
+        {
+          "path": "extensions/pbkdf2/pbkdf2.h",
+          "sha256": "e464d4c0d0cbd154cb980e923d9c5160cf614db87a8c83e33f1a14812f539bc4"
+        }
+      ]
+    },
+    {
+      "file": "upstream/npm/text-decoder@1.2.7/NOTICE",
+      "sha256": "a5507e890da044d6cc7382d36ee96d354164193c48ebcfbbc0b0de8d0a2f2235",
+      "package": "text-decoder@1.2.7",
+      "url": "https://raw.githubusercontent.com/holepunchto/text-decoder/7d61ece8d9f89788b7a209125ada4b0209038a9f/NOTICE"
+    },
+    {
+      "file": "upstream/npm/udx-native@1.21.1/NOTICE",
+      "sha256": "fb077635559d54cc8838cf8986be94c0f19da54361ca7e86b99a72af2fc41a5f",
+      "package": "udx-native@1.21.1",
+      "url": "https://raw.githubusercontent.com/holepunchto/udx-native/a94258e6911c2a1028a8d4c4e79aab487d5295a7/NOTICE"
+    },
+    {
+      "file": "upstream/npm/udx-native@1.21.1/SOURCE-NOTICES.txt",
+      "sha256": "b041cc3f6c9003525ceb4ff77ea456511b4b5b5363a6686662f6ca0c050cd8fe",
+      "package": "udx-native@1.21.1",
+      "sourceArchive": "https://registry.npmjs.org/udx-native/-/udx-native-1.21.1.tgz",
+      "inputs": [
+        {
+          "path": "lib/ip.js",
+          "sha256": "3eb00a94662159c4568d58411d0e033c707ab7173375b75e8d4967031d306701"
+        }
+      ]
+    },
+    {
+      "file": "upstream/npm/unslab@1.3.0/NOTICE",
+      "sha256": "7c0de08a5fc5fdb3df3e6445f11756e9df22e542187c2e2062eff1f99111bbf4",
+      "package": "unslab@1.3.0",
+      "url": "https://raw.githubusercontent.com/holepunchto/unslab/56642ff4ae5ab6949d1b52f3986cd594d96def9b/NOTICE"
+    },
+    {
+      "file": "upstream/npm/which-runtime@1.4.0/NOTICE",
+      "sha256": "2b679e8d6aad3651b2c1c07b3a29ba26ed8a2218f86f53c77e67b81d746bb122",
+      "package": "which-runtime@1.4.0",
+      "url": "https://raw.githubusercontent.com/holepunchto/which-runtime/d4732d849da866990f532de53d7d0a02847ea374/NOTICE"
+    }
+  ]
+}

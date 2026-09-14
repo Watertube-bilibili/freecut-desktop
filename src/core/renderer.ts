@@ -226,6 +226,7 @@ export function createPreviewRenderer() {
     time: number;
     requestedAt: number;
     lastSeekAt: number;
+    settlingUntil: number;
   };
   const videos = new Map<HTMLVideoElement, VideoState>();
   const stats = { requested: 0, committed: 0, coalesced: 0, seeks: 0, lastCommittedTime: 0 };
@@ -296,7 +297,8 @@ export function createPreviewRenderer() {
       !state?.playing ||
       jumped ||
       (Math.abs(video.currentTime - target) > Math.max(0.35, clip.speed * 0.2) &&
-        now - state.lastSeekAt > 500);
+        now - state.lastSeekAt > 500 &&
+        now >= state.settlingUntil);
     if (!state) {
       state = {
         clip,
@@ -305,6 +307,7 @@ export function createPreviewRenderer() {
         time,
         requestedAt: now,
         lastSeekAt: -Infinity,
+        settlingUntil: 0,
       };
       videos.set(video, state);
     }
@@ -314,6 +317,14 @@ export function createPreviewRenderer() {
       stats.seeks++;
       await seek(video, target, signal);
       state.lastSeekAt = performance.now();
+      // Cold long-GOP seeks can take several hundred milliseconds on a work laptop.
+      // Give native playback time to recover that initial delay instead of seeking
+      // again as soon as the decoder finally becomes ready.
+      const debt =
+        desired?.playing && desired.project === request.project
+          ? Math.max(0, desired.time - time)
+          : 0;
+      state.settlingUntil = state.lastSeekAt + Math.max(1000, Math.min(8000, debt * 5000 + 500));
     }
     checkCancelled(signal);
     state.clip = clip;
@@ -336,7 +347,7 @@ export function createPreviewRenderer() {
       // up gradually without another decode restart; audio keeps its original rate.
       const drift =
         (clip.inPoint + (current.time - clip.start) * clip.speed - video.currentTime) / clip.speed;
-      const correction = Math.abs(drift) > 0.035 ? Math.max(-0.1, Math.min(0.15, drift)) : 0;
+      const correction = Math.abs(drift) > 0.035 ? Math.max(-0.1, Math.min(0.25, drift)) : 0;
       const rate = Math.max(0.0625, Math.min(16, clip.speed * (1 + correction)));
       if (Math.abs(video.playbackRate - rate) > clip.speed * 0.01) video.playbackRate = rate;
       state.playing = true;

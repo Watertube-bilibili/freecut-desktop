@@ -517,6 +517,50 @@ export const en: Record<string, string> = {
   条带蒙版: 'Band mask',
   '可旋转、移动的水平条带': 'A horizontal band you can move and rotate',
   远程协作: 'Remote collaboration',
+  创建房间: 'Create a room',
+  已启用: 'Enabled',
+  '异地协作（邀请码）': 'Across networks (invite code)',
+  '把邀请码发给伙伴，双方无需安装 VPN 或额外组网软件。':
+    'Send an invite code to your collaborators. Neither side needs a VPN or extra networking software.',
+  '这是旧版局域网邀请码，需要双方能直接连接。':
+    'This is a legacy LAN invite. Both computers must be able to connect directly.',
+  '异地协作只需粘贴主机提供的邀请码，无需填写 IP。':
+    'Paste the host’s invite code to connect across networks. No IP address needed.',
+  '高级：局域网 / IP 直连': 'Advanced: LAN / direct IP',
+  '使用局域网 / IP 直连': 'Use LAN / direct IP',
+  '适用于同一局域网，沿用 IP、端口和密钥连接。此方式不加密，请仅在可信网络中使用。':
+    'Connect on the same local network using an IP address, port, and key. This mode is unencrypted; use a trusted network.',
+  '自动连接公网发现节点；无需 VPN 或额外组网软件。部分受限网络可能无法直连。':
+    'Automatically connects to public discovery nodes. No VPN or extra networking software is needed. Some restricted networks may prevent a direct connection.',
+  '正在准备连接…': 'Preparing connection…',
+  取消连接: 'Cancel connection',
+  '正在取消…': 'Cancelling…',
+  '正在生成邀请码…': 'Creating invite code…',
+  '正在检查互联网连接…': 'Checking internet connectivity…',
+  '正在生成加密房间邀请码…': 'Publishing encrypted room invitation…',
+  '正在连接加密协作房间…': 'Connecting to the encrypted room…',
+  '加密房间已开启，把邀请码发给伙伴即可加入。':
+    'Encrypted room open. Share the invite code with your collaborators.',
+  '无法连接公网发现网络，请检查互联网连接或换一个网络重试。':
+    'Could not reach the public discovery network. Check your internet connection or try another network.',
+  '房间发布失败，请换一个网络重试。': 'Could not publish the room. Try another network.',
+  '无法连接房间，请检查邀请码并确认主机仍在运行；部分网络会阻止直连。':
+    'Could not reach the room. Check the invite code and make sure the host is still running. Some networks block direct connections.',
+  '正在连接房间…': 'Connecting to room…',
+  '把邀请码发给伙伴，保持本机和软件运行。':
+    'Share the invite code with your collaborators. Keep this computer and FreeCut running.',
+  '异地协作 · 加密连接': 'Across networks · Encrypted connection',
+  '局域网 / IP 直连': 'LAN / direct IP',
+  异地协作邀请码: 'Invite code for remote collaboration',
+  创建房间并生成邀请码: 'Create room & get invite code',
+  开启局域网房间: 'Start LAN room',
+  '主机创建异地房间，把邀请码发给伙伴；伙伴在“加入房间”中粘贴即可连接。':
+    'The host creates a remote room and shares its invite code. Collaborators paste the code in “Join a room” to connect.',
+  '异地连接使用加密传输。软件不提供流量中继，连接失败时请检查网络后重试。':
+    'Remote connections are encrypted. FreeCut does not provide a traffic relay. If a connection fails, check your network and try again.',
+  '局域网模式使用 IP、端口和房间密钥；旧版邀请码也需要主机地址可达，不能用于自动异地连接。':
+    'LAN mode uses an IP address, port, and room key. Legacy invite codes also require a reachable host address and cannot automatically connect across networks.',
+  '协作房间由你的电脑承载 · 无需注册账号': 'Hosted on your computer · No account needed',
   '邀请码无效，请完整复制主机提供的邀请码。':
     'Invalid invite code. Copy the complete code from the host.',
   '请填写有效的 IPv4 地址、1024 至 65535 之间的端口，以及完整的房间密钥。':

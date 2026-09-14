@@ -249,12 +249,27 @@ function validateManifest(project, manifest) {
 function address(options) {
   let value = options;
   if (typeof options?.invite === 'string') {
-    if (options.invite.length > 512 || !/^freecut1:[A-Za-z0-9_-]+$/.test(options.invite))
+    if (options.invite.length > 512 || !/^freecut[12]:[A-Za-z0-9_-]+$/.test(options.invite))
       throw Error('Invalid invitation.');
     try {
       value = JSON.parse(Buffer.from(options.invite.slice(9), 'base64url').toString('utf8'));
     } catch {
       throw Error('Invalid invitation.');
+    }
+    if (options.invite.startsWith('freecut2:')) {
+      if (
+        !value ||
+        typeof value !== 'object' ||
+        Array.isArray(value) ||
+        Object.keys(value).sort().join(',') !== 'key,publicKey,transport' ||
+        value.transport !== 'dht' ||
+        typeof value.publicKey !== 'string' ||
+        !/^[a-f0-9]{64}$/.test(value.publicKey) ||
+        typeof value.key !== 'string' ||
+        !/^[a-f0-9]{48}$/.test(value.key)
+      )
+        throw Error('Invalid invitation.');
+      return { transport: 'remote', publicKey: value.publicKey, key: value.key };
     }
   }
   if (

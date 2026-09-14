@@ -139,6 +139,63 @@
 .collab-host-port {
   grid-template-columns: minmax(120px, 40%);
 }
+.collab-remote-choice {
+  margin-top: 10px;
+  padding: 13px 14px;
+  background: #202b26;
+  border: 1px solid #3d5d50;
+  border-radius: 8px;
+}
+.collab-remote-choice label,
+.collab-form .collab-lan-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.collab-remote-choice p,
+.collab-advanced > p,
+.collab-network-note {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 8px 0 0;
+}
+.collab-advanced {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.collab-advanced summary {
+  cursor: pointer;
+  color: #c0cbc7;
+  line-height: 1.6;
+}
+.collab-advanced summary span {
+  margin-left: 10px;
+  color: var(--accent);
+  font-size: 11px;
+}
+.collab-form .collab-lan-toggle {
+  margin-top: 14px;
+}
+.collab-form .collab-lan-toggle input {
+  width: auto;
+  min-height: auto;
+  flex-shrink: 0;
+}
+.collab-advanced > label:not(.collab-lan-toggle) {
+  margin: 12px 0 8px;
+}
+.collab-invite-code {
+  font-family: ui-monospace, Consolas, monospace;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  font-size: 11px;
+}
+.collab-connection > .collab-transport-label {
+  color: #93d6b7;
+  font-size: 11px;
+}
 .collab-action-summary {
   margin: 10px 0 2px;
   padding: 14px;

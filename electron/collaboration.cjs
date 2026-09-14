@@ -1,6 +1,6 @@
 'use strict';
-// A room is opened only by the explicit host() call. Transport is direct HTTP
-// for a trusted LAN/VPN; this is not a public relay or an encrypted transport.
+// Rooms open only through host(). Remote rooms carry loopback HTTP over Noise;
+// explicit LAN rooms use direct HTTP for trusted networks.
 const http = require('node:http');
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
@@ -18,6 +18,19 @@ const {
   mergeProjects,
 } = require('./collaboration-protocol.cjs');
 const { MEDIA_EXTENSIONS } = require('./media.cjs');
+// Ordinary editing and LAN rooms must keep working even if a damaged install
+// is missing a platform-specific P2P native addon. Load it only on explicit use.
+function createRemoteTransport(options) {
+  let remote;
+  try {
+    remote = require('./collaboration-remote.cjs');
+  } catch {
+    throw Error(
+      'Internet collaboration is unavailable in this installation. Reinstall the latest version to restore it.',
+    );
+  }
+  return remote.createRemoteTransport(options);
+}
 const clone = (value) => structuredClone(value);
 const nameOf = (value) =>
   (typeof value === 'string'
@@ -62,7 +75,7 @@ function json(response, status, data) {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-store',
     'X-Content-Type-Options': 'nosniff',
-    Connection: 'close',
+    Connection: response.req?.headers.connection === 'keep-alive' ? 'keep-alive' : 'close',
   });
   response.end(JSON.stringify(data));
 }
@@ -116,6 +129,7 @@ function createCollaborationService({
   importPath,
   emitState = () => {},
   emitProject = () => {},
+  remoteFactory = createRemoteTransport,
 }) {
   const storage = createCollaborationStorage(userData);
   let mode = 'disconnected',
@@ -130,6 +144,11 @@ function createCollaborationService({
     stopped = false,
     remoteJoined = false,
     generation = 0;
+  let transport = 'lan',
+    phase,
+    remoteTransport,
+    remotePublicKey,
+    remoteAgent;
   let name = 'Editor',
     message = '',
     error,
@@ -152,15 +171,27 @@ function createCollaborationService({
     storedBytes = 0;
   const state = () => ({
     mode,
+    transport,
+    ...(phase ? { phase } : {}),
     peerId,
     revision,
-    addresses: mode === 'hosting' ? localAddresses() : endpoint ? [endpoint.host] : [],
-    port,
+    addresses:
+      transport === 'remote'
+        ? []
+        : mode === 'hosting'
+          ? localAddresses()
+          : endpoint
+            ? [endpoint.host]
+            : [],
+    port: transport === 'remote' ? 0 : port,
     peers: [...peers.values()].map(({ id, name: peerName }) => ({ id, name: peerName })),
     ...(mode === 'hosting'
       ? {
           key,
-          invite: `freecut1:${Buffer.from(JSON.stringify({ host: localAddresses()[0], port, key })).toString('base64url')}`,
+          invite:
+            transport === 'remote'
+              ? `freecut2:${Buffer.from(JSON.stringify({ transport: 'dht', publicKey: remotePublicKey, key })).toString('base64url')}`
+              : `freecut1:${Buffer.from(JSON.stringify({ host: localAddresses()[0], port, key })).toString('base64url')}`,
         }
       : {}),
     message,
@@ -172,6 +203,20 @@ function createCollaborationService({
     if (Object.hasOwn(patch, 'error')) error = patch.error;
     if (Object.hasOwn(patch, 'transferring')) transferring = patch.transferring;
     emitState(state());
+  }
+  function remoteFor(activeGeneration) {
+    return remoteFactory({
+      onPhase(value) {
+        if (generation !== activeGeneration) return;
+        phase = value;
+        const messages = {
+          network: 'Checking internet connectivity…',
+          announcing: 'Publishing encrypted room invitation…',
+          connecting: 'Connecting to the encrypted room…',
+        };
+        update(messages[value] ? { message: messages[value] } : {});
+      },
+    });
   }
   const exclusive = (action) => {
     const next = serial.then(action, action);
@@ -337,7 +382,7 @@ function createCollaborationService({
           port: target.port,
           path: route,
           method,
-          agent: false,
+          agent: remoteAgent || false,
           headers: {
             Authorization: `Bearer ${target.key}`,
             'X-FreeCut-Peer': peerId,
@@ -383,7 +428,7 @@ function createCollaborationService({
           port: target.port,
           path: `/v1/media/${fileKey(entry)}`,
           method: 'PUT',
-          agent: false,
+          agent: remoteAgent || false,
           headers: {
             Authorization: `Bearer ${target.key}`,
             'X-FreeCut-Peer': peerId,
@@ -636,6 +681,13 @@ function createCollaborationService({
     }
     for (const socket of sockets) socket.destroy();
     sockets.clear();
+    remoteAgent?.destroy();
+    remoteAgent = undefined;
+    const previousRemote = remoteTransport;
+    remoteTransport = undefined;
+    remotePublicKey = undefined;
+    phase = undefined;
+    await previousRemote?.close();
     mode = 'disconnected';
     endpoint = undefined;
     key = undefined;
@@ -656,8 +708,14 @@ function createCollaborationService({
   }
   async function host(options) {
     if (mode !== 'disconnected') throw Error('Leave the current room before opening another.');
-    const desiredPort = options.port ?? 45823;
-    if (!Number.isInteger(desiredPort) || desiredPort < 1024 || desiredPort > 65535)
+    if (options.transport !== undefined && !['lan', 'remote'].includes(options.transport))
+      throw Error('Invalid collaboration transport.');
+    transport = options.transport || 'lan';
+    const desiredPort = transport === 'remote' ? 0 : (options.port ?? 45823);
+    if (
+      transport === 'lan' &&
+      (!Number.isInteger(desiredPort) || desiredPort < 1024 || desiredPort > 65535)
+    )
       throw Error('Use a port between 1024 and 65535.');
     const activeGeneration = ++generation;
     stopped = false;
@@ -683,19 +741,27 @@ function createCollaborationService({
         },
       );
       listener.maxConnections = 24;
+      listener.keepAliveTimeout = 60000;
       listener.on('connection', (socket) => {
         sockets.add(socket);
         socket.on('close', () => sockets.delete(socket));
-        socket.setTimeout(35000, () => socket.destroy());
+        socket.setTimeout(60000, () => socket.destroy());
       });
       server = listener;
       await new Promise((resolve, reject) => {
         listener.once('error', reject);
-        listener.listen(port, '0.0.0.0', resolve);
+        listener.listen(port, transport === 'remote' ? '127.0.0.1' : '0.0.0.0', resolve);
       });
       if (generation !== activeGeneration) {
         listener.close();
         throw Error('Collaboration was closed.');
+      }
+      port = listener.address().port;
+      if (transport === 'remote') {
+        remoteTransport = remoteFor(activeGeneration);
+        const result = await remoteTransport.host({ targetPort: port });
+        if (generation !== activeGeneration) throw Error('Collaboration was closed.');
+        remotePublicKey = result.publicKey;
       }
       mode = 'hosting';
       cleanup = setInterval(() => {
@@ -715,7 +781,10 @@ function createCollaborationService({
       }, 30000);
       cleanup.unref();
       update({
-        message: 'Room open. Share the IP address, port, and key over a trusted connection.',
+        message:
+          transport === 'remote'
+            ? 'Encrypted room open. Share the invitation with your collaborators.'
+            : 'Room open. Share the IP address, port, and key over a trusted connection.',
         transferring: false,
       });
       return state();
@@ -786,8 +855,9 @@ function createCollaborationService({
     const activeGeneration = ++generation;
     stopped = false;
     mode = 'connecting';
-    endpoint = target;
-    port = target.port;
+    transport = target.transport === 'remote' ? 'remote' : 'lan';
+    endpoint = transport === 'lan' ? target : undefined;
+    port = target.port || 0;
     peerId = crypto.randomUUID();
     name = nameOf(options.name);
     update({
@@ -796,6 +866,18 @@ function createCollaborationService({
       transferring: true,
     });
     try {
+      if (transport === 'remote') {
+        remoteTransport = remoteFor(activeGeneration);
+        const tunnel = await remoteTransport.join({ publicKey: target.publicKey });
+        if (generation !== activeGeneration) throw Error('Collaboration was closed.');
+        endpoint = { ...tunnel, key: target.key };
+        remoteAgent = new http.Agent({
+          keepAlive: true,
+          maxSockets: 6,
+          maxFreeSockets: 4,
+          keepAliveMsecs: 15000,
+        });
+      }
       const value = await requestJSON('POST', '/v1/join', { name });
       if (!ID.test(value.peerId)) throw Error('Invalid room response.');
       peerId = value.peerId;

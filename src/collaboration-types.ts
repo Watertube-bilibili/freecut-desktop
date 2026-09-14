@@ -6,6 +6,8 @@ export interface CollaborationPeer {
 }
 export interface CollaborationState {
   mode: 'disconnected' | 'hosting' | 'joined' | 'connecting';
+  transport?: 'remote' | 'lan';
+  phase?: 'network' | 'announcing' | 'connecting' | 'ready';
   peerId: string;
   revision: number;
   addresses: string[];
@@ -31,6 +33,7 @@ export type CollaborationPublishResult =
 export interface CollaborationAPI {
   host: (options: {
     project: Project;
+    transport?: 'remote' | 'lan';
     port?: number;
     name?: string;
   }) => Promise<CollaborationState>;

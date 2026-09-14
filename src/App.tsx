@@ -332,11 +332,11 @@ export default function App() {
     closeContextMenu();
     setCollaborationOpen(true);
   }
-  async function hostCollaboration(port: number, name: string) {
+  async function hostCollaboration(port: number, name: string, transport: 'remote' | 'lan' = 'remote') {
     const session = collaborationSession.current;
     if (!session) throw Error(t('远程协作需要桌面版。'));
     setCollaborationBusy(true);
-    try { await session.host(port, name); enterEditor(); }
+    try { await session.host(port, name, transport); enterEditor(); }
     finally { setCollaborationBusy(false); }
   }
   async function joinCollaboration(options: CollaborationJoinOptions) {

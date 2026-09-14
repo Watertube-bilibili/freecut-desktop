@@ -31,7 +31,7 @@ async function createNode() {
         return node.ping({ host: ip, port: Number(port) });
       })), 8000, 'Public discovery did not respond');
       return node;
-    } catch { await node.destroy({ force: true }); }
+    } catch { await deadline(node.destroy({ force: true }), 5000, 'Discovery cleanup timed out').catch(() => {}); }
   }
   throw Error('No network interface reached the public discovery nodes');
 }
@@ -54,7 +54,9 @@ function parse(buffer) {
 }
 async function main() {
   assert(['host', 'join'].includes(mode), 'Use host or join');
+  const guard = setTimeout(() => { console.error('Raw Internet test deadline reached'); process.exit(1); }, mode === 'host' ? 16 * 60000 : 4 * 60000);
   await fs.mkdir(output, { recursive: true });
+  console.log('Checking public discovery connectivity.');
   const node = await createNode();
   const sockets = new Set();
   const report = { mode, platform: process.platform, arch: process.arch, started: new Date().toISOString(), passed: false };
@@ -126,7 +128,8 @@ async function main() {
   finally {
     await fs.writeFile(path.join(output, `${mode}-report.json`), JSON.stringify(report, null, 2));
     for (const socket of sockets) socket.destroy();
-    await node.destroy({ force: true });
+    await deadline(node.destroy({ force: true }), 5000, 'Discovery cleanup timed out').catch(() => {});
+    clearTimeout(guard);
   }
   console.log(JSON.stringify(report));
 }

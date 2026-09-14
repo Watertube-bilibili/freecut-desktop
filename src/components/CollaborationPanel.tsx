@@ -11,7 +11,7 @@ export interface CollaborationPanelProps {
   conflict?: string;
   onKeepLocal?: () => void;
   onUseRemote?: () => void;
-  onHost: (port: number, name: string) => Promise<void>;
+  onHost: (port: number, name: string, transport?: 'remote' | 'lan') => Promise<void>;
   onJoin: (options: CollaborationJoinOptions) => Promise<void>;
   onLeave: () => Promise<void>;
   onClose: () => void;
@@ -22,6 +22,17 @@ const CONNECTION_COPY: Record<string, string> = {
   'Disconnected. Downloaded media remains available on this computer.':
     '已断开连接，下载的素材仍保留在本机。',
   'Preparing project media…': '正在准备工程素材…',
+  'Checking internet connectivity…': '正在检查互联网连接…',
+  'Publishing encrypted room invitation…': '正在生成加密房间邀请码…',
+  'Connecting to the encrypted room…': '正在连接加密协作房间…',
+  'Encrypted room open. Share the invitation with your collaborators.':
+    '加密房间已开启，把邀请码发给伙伴即可加入。',
+  'Could not reach the peer network. Check your internet connection or try another network.':
+    '无法连接公网发现网络，请检查互联网连接或换一个网络重试。',
+  'The room could not be published on the peer network. Try another network.':
+    '房间发布失败，请换一个网络重试。',
+  'Could not reach this room. Check the invitation and ask the host to keep the room open. Some networks block direct connections.':
+    '无法连接房间，请检查邀请码并确认主机仍在运行；部分网络会阻止直连。',
   'Room open. Share the IP address, port, and key over a trusted connection.':
     '房间已开启，请把 IP、端口和密钥分享给可信伙伴。',
   'Connection lost. Your local project and downloaded media are retained.':
@@ -79,8 +90,10 @@ export default function CollaborationPanel({
   const id = useId();
   const dialog = useRef<HTMLDivElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const cancelRequested = useRef(false);
   const [tab, setTab] = useState<'host' | 'join'>('host');
-  const [joinMethod, setJoinMethod] = useState<'address' | 'invite'>('address');
+  const [joinMethod, setJoinMethod] = useState<'address' | 'invite'>('invite');
+  const [hostTransport, setHostTransport] = useState<'remote' | 'lan'>('remote');
   const [name, setName] = useState(readName);
   const [port, setPort] = useState('45823');
   const [host, setHost] = useState('');
@@ -89,9 +102,27 @@ export default function CollaborationPanel({
   const [localError, setLocalError] = useState('');
   const [copied, setCopied] = useState('');
   const [pending, setPending] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const connected = state.mode === 'hosting' || state.mode === 'joined';
   const working = busy || pending || state.mode === 'connecting';
   const shownError = localError || error || state.error;
+  const activeTransport =
+    connected || state.mode === 'connecting'
+      ? (state.transport ?? 'lan')
+      : tab === 'host'
+        ? hostTransport
+        : joinMethod === 'address' || invite.trim().startsWith('freecut1:')
+          ? 'lan'
+          : 'remote';
+  const lanForm = tab === 'host' ? hostTransport === 'lan' : joinMethod === 'address';
+  const progressText =
+    state.phase === 'network'
+      ? t('正在准备连接…')
+      : state.phase === 'announcing'
+        ? t('正在生成邀请码…')
+        : state.transferring
+          ? t('正在同步工程与素材…')
+          : t('正在连接房间…');
 
   useEffect(() => {
     const previous = document.activeElement;
@@ -152,18 +183,17 @@ export default function CollaborationPanel({
     try {
       await action();
     } catch (caught) {
-      setLocalError(caught instanceof Error ? caught.message : String(caught));
+      if (!cancelRequested.current)
+        setLocalError(caught instanceof Error ? caught.message : String(caught));
     } finally {
       setPending(false);
     }
   }
 
   async function connect() {
-    const parsedPort = Number(port);
-    if (
-      (tab === 'host' || joinMethod === 'address') &&
-      (!Number.isInteger(parsedPort) || parsedPort < 1024 || parsedPort > 65535)
-    ) {
+    cancelRequested.current = false;
+    const parsedPort = tab === 'host' && hostTransport === 'remote' ? 45823 : Number(port);
+    if (lanForm && (!Number.isInteger(parsedPort) || parsedPort < 1024 || parsedPort > 65535)) {
       setLocalError(t('端口请输入 1024 至 65535 之间的整数。'));
       return;
     }
@@ -175,13 +205,25 @@ export default function CollaborationPanel({
     }
     await run(() =>
       tab === 'host'
-        ? onHost(parsedPort, displayName)
+        ? onHost(parsedPort, displayName, hostTransport)
         : onJoin(
             joinMethod === 'invite'
               ? { invite: invite.trim(), name: displayName }
               : { host: host.trim(), port: parsedPort, key: key.trim(), name: displayName },
           ),
     );
+  }
+
+  async function cancelConnection() {
+    cancelRequested.current = true;
+    setCancelling(true);
+    try {
+      await onLeave();
+    } catch (caught) {
+      setLocalError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setCancelling(false);
+    }
   }
 
   async function copy(value: string, label: string) {
@@ -251,43 +293,66 @@ export default function CollaborationPanel({
                 </div>
                 <p>
                   {state.mode === 'hosting'
-                    ? t('把连接地址和房间密钥发给伙伴，保持本机和软件运行。')
+                    ? activeTransport === 'remote'
+                      ? t('把邀请码发给伙伴，保持本机和软件运行。')
+                      : t('把连接地址和房间密钥发给伙伴，保持本机和软件运行。')
                     : t('你们的时间轴修改会同步，每个人可以独立预览。')}
+                </p>
+                <p className="collab-transport-label">
+                  {activeTransport === 'remote' ? t('异地协作 · 加密连接') : t('局域网 / IP 直连')}
                 </p>
                 {state.mode === 'hosting' && (
                   <div className="collab-sharing">
-                    <label>{t('连接地址')}</label>
-                    {state.addresses.map((address) => {
-                      const value = addressWithPort(address, state.port);
-                      return (
-                        <div className="collab-copy-row" key={address}>
-                          <Network size={16} aria-hidden="true" />
-                          <input
-                            aria-label={t('连接地址')}
-                            value={value}
-                            readOnly
-                            onFocus={(event) => event.target.select()}
-                          />
-                          {copyButton(value, t('复制地址 {address}', { address: value }))}
-                        </div>
-                      );
-                    })}
-                    {state.addresses.length === 0 && (
-                      <p>{t('未找到局域网地址，请检查本机网络连接。')}</p>
-                    )}
-                    {state.key && (
+                    {activeTransport === 'lan' && (
                       <>
-                        <label htmlFor={`${id}-room-key`}>{t('房间密钥')}</label>
-                        <div className="collab-copy-row">
-                          <input
-                            id={`${id}-room-key`}
-                            value={state.key}
-                            readOnly
-                            spellCheck={false}
-                            onFocus={(event) => event.target.select()}
-                          />
-                          {copyButton(state.key, t('复制房间密钥'))}
-                        </div>
+                        <label>{t('连接地址')}</label>
+                        {state.addresses.map((address) => {
+                          const value = addressWithPort(address, state.port);
+                          return (
+                            <div className="collab-copy-row" key={address}>
+                              <Network size={16} aria-hidden="true" />
+                              <input
+                                aria-label={t('连接地址')}
+                                value={value}
+                                readOnly
+                                onFocus={(event) => event.target.select()}
+                              />
+                              {copyButton(value, t('复制地址 {address}', { address: value }))}
+                            </div>
+                          );
+                        })}
+                        {state.addresses.length === 0 && (
+                          <p>{t('未找到局域网地址，请检查本机网络连接。')}</p>
+                        )}
+                        {state.key && (
+                          <>
+                            <label htmlFor={`${id}-room-key`}>{t('房间密钥')}</label>
+                            <div className="collab-copy-row">
+                              <input
+                                id={`${id}-room-key`}
+                                value={state.key}
+                                readOnly
+                                spellCheck={false}
+                                onFocus={(event) => event.target.select()}
+                              />
+                              {copyButton(state.key, t('复制房间密钥'))}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    )}
+                    {activeTransport === 'remote' && state.invite && (
+                      <>
+                        <label htmlFor={`${id}-share-invite`}>{t('异地协作邀请码')}</label>
+                        <textarea
+                          id={`${id}-share-invite`}
+                          className="collab-invite-code"
+                          value={state.invite}
+                          rows={3}
+                          readOnly
+                          spellCheck={false}
+                          onFocus={(event) => event.target.select()}
+                        />
                       </>
                     )}
                     {state.invite && (
@@ -356,7 +421,7 @@ export default function CollaborationPanel({
                     }}
                   >
                     {value === 'host' ? <Monitor size={17} /> : <Link2 size={17} />}
-                    {value === 'host' ? t('本机开房间') : t('加入房间')}
+                    {value === 'host' ? t('创建房间') : t('加入房间')}
                   </button>
                 ))}
               </div>
@@ -384,101 +449,130 @@ export default function CollaborationPanel({
                   onChange={(event) => setName(event.target.value)}
                 />
 
-                {tab === 'join' && (
-                  <fieldset className="collab-join-method" disabled={working}>
-                    <legend>{t('连接方式')}</legend>
+                {tab === 'host' && (
+                  <div className="collab-remote-choice">
                     <label>
                       <input
                         type="radio"
-                        name={`${id}-method`}
-                        checked={joinMethod === 'address'}
-                        onChange={() => setJoinMethod('address')}
-                      />
-                      {t('IP 地址与端口')}
-                    </label>
-                    <label>
-                      <input
-                        type="radio"
-                        name={`${id}-method`}
-                        checked={joinMethod === 'invite'}
-                        onChange={() => setJoinMethod('invite')}
-                      />
-                      {t('邀请码')}
-                    </label>
-                  </fieldset>
-                )}
-
-                {tab === 'join' && joinMethod === 'invite' ? (
-                  <>
-                    <label htmlFor={`${id}-invite`}>{t('粘贴邀请码')}</label>
-                    <textarea
-                      id={`${id}-invite`}
-                      value={invite}
-                      spellCheck={false}
-                      autoComplete="off"
-                      placeholder="freecut1:…"
-                      rows={3}
-                      maxLength={4096}
-                      required
-                      disabled={working}
-                      onChange={(event) => setInvite(event.target.value)}
-                    />
-                    <p className="collab-hint">
-                      {t('邀请码包含地址和房间密钥，需要能直接连接主机。')}
-                    </p>
-                  </>
-                ) : (
-                  <div
-                    className={`collab-address-fields ${tab === 'host' ? 'collab-host-port' : ''}`}
-                  >
-                    {tab === 'join' && (
-                      <div>
-                        <label htmlFor={`${id}-host`}>{t('主机 IP 地址')}</label>
-                        <input
-                          id={`${id}-host`}
-                          value={host}
-                          placeholder="192.168.1.23"
-                          spellCheck={false}
-                          autoComplete="off"
-                          required
-                          maxLength={255}
-                          disabled={working}
-                          onChange={(event) => setHost(event.target.value)}
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <label htmlFor={`${id}-port`}>{t('端口')}</label>
-                      <input
-                        id={`${id}-port`}
-                        value={port}
-                        type="number"
-                        min={1024}
-                        max={65535}
-                        step={1}
-                        required
+                        name={id + '-transport'}
+                        checked={hostTransport === 'remote'}
                         disabled={working}
-                        onChange={(event) => setPort(event.target.value)}
+                        onChange={() => setHostTransport('remote')}
                       />
-                    </div>
+                      {t('异地协作（邀请码）')}
+                    </label>
+                    <p>{t('把邀请码发给伙伴，双方无需安装 VPN 或额外组网软件。')}</p>
                   </div>
                 )}
 
-                {tab === 'join' && joinMethod === 'address' && (
+                {tab === 'join' && (
                   <>
-                    <label htmlFor={`${id}-key`}>{t('房间密钥')}</label>
-                    <input
-                      id={`${id}-key`}
-                      value={key}
+                    <label htmlFor={id + '-invite'}>{t('粘贴邀请码')}</label>
+                    <textarea
+                      id={id + '-invite'}
+                      value={invite}
                       spellCheck={false}
                       autoComplete="off"
-                      placeholder={t('由开房间的人提供')}
-                      maxLength={256}
-                      required
-                      disabled={working}
-                      onChange={(event) => setKey(event.target.value)}
+                      placeholder="freecut2:…"
+                      rows={3}
+                      maxLength={4096}
+                      required={joinMethod === 'invite'}
+                      disabled={working || joinMethod === 'address'}
+                      onChange={(event) => setInvite(event.target.value)}
                     />
+                    <p className="collab-hint">
+                      {invite.trim().startsWith('freecut1:')
+                        ? t('这是旧版局域网邀请码，需要双方能直接连接。')
+                        : t('异地协作只需粘贴主机提供的邀请码，无需填写 IP。')}
+                    </p>
                   </>
+                )}
+
+                <details className="collab-advanced">
+                  <summary>
+                    {t('高级：局域网 / IP 直连')}
+                    {lanForm && <span>{t('已启用')}</span>}
+                  </summary>
+                  <label className="collab-lan-toggle">
+                    <input
+                      type="checkbox"
+                      checked={lanForm}
+                      disabled={working}
+                      onChange={(event) =>
+                        tab === 'host'
+                          ? setHostTransport(event.target.checked ? 'lan' : 'remote')
+                          : setJoinMethod(event.target.checked ? 'address' : 'invite')
+                      }
+                    />
+                    {t('使用局域网 / IP 直连')}
+                  </label>
+                  <p>
+                    {t(
+                      '适用于同一局域网，沿用 IP、端口和密钥连接。此方式不加密，请仅在可信网络中使用。',
+                    )}
+                  </p>
+                  {lanForm && (
+                    <>
+                      <div
+                        className={
+                          'collab-address-fields ' + (tab === 'host' ? 'collab-host-port' : '')
+                        }
+                      >
+                        {tab === 'join' && (
+                          <div>
+                            <label htmlFor={id + '-host'}>{t('主机 IP 地址')}</label>
+                            <input
+                              id={id + '-host'}
+                              value={host}
+                              placeholder="192.168.1.23"
+                              spellCheck={false}
+                              autoComplete="off"
+                              required
+                              maxLength={255}
+                              disabled={working}
+                              onChange={(event) => setHost(event.target.value)}
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <label htmlFor={id + '-port'}>{t('端口')}</label>
+                          <input
+                            id={id + '-port'}
+                            value={port}
+                            type="number"
+                            min={1024}
+                            max={65535}
+                            step={1}
+                            required
+                            disabled={working}
+                            onChange={(event) => setPort(event.target.value)}
+                          />
+                        </div>
+                      </div>
+                      {tab === 'join' && (
+                        <>
+                          <label htmlFor={id + '-key'}>{t('房间密钥')}</label>
+                          <input
+                            id={id + '-key'}
+                            value={key}
+                            spellCheck={false}
+                            autoComplete="off"
+                            placeholder={t('由开房间的人提供')}
+                            maxLength={256}
+                            required
+                            disabled={working}
+                            onChange={(event) => setKey(event.target.value)}
+                          />
+                        </>
+                      )}
+                    </>
+                  )}
+                </details>
+
+                {!lanForm && (
+                  <p className="collab-network-note">
+                    {t('自动连接公网发现节点；无需 VPN 或额外组网软件。部分受限网络可能无法直连。')}
+                  </p>
                 )}
 
                 <div className="collab-action-summary">
@@ -503,19 +597,21 @@ export default function CollaborationPanel({
                     <Link2 size={17} />
                   )}
                   {working
-                    ? t('正在连接…')
+                    ? progressText
                     : tab === 'host'
-                      ? t('开启房间并共享工程')
+                      ? hostTransport === 'remote'
+                        ? t('创建房间并生成邀请码')
+                        : t('开启局域网房间')
                       : t('连接并加入房间')}
                 </button>
               </form>
             </>
           )}
 
-          {(state.transferring || state.mode === 'connecting') && (
+          {(state.transferring || state.mode === 'connecting' || working) && (
             <div className="collab-progress" role="status">
               <LoaderCircle size={16} className="collab-spinner" />
-              <span>{state.transferring ? t('正在同步工程与素材…') : t('正在连接…')}</span>
+              <span>{progressText}</span>
             </div>
           )}
           {state.message && (
@@ -553,14 +649,21 @@ export default function CollaborationPanel({
 
           <details className="collab-help">
             <summary>{t('怎样让两台电脑连上？')}</summary>
-            <p>
-              {t('无需公共服务器。同一局域网或同一 VPN 内，输入主机 IP、端口和房间密钥即可加入。')}
-            </p>
-            <p>
-              {t(
-                '这是未加密的直接连接，请在可信网络中使用。跨网络时需要先建立可信 VPN；邀请码不会自动穿透路由器。',
-              )}
-            </p>
+            {activeTransport === 'remote' ? (
+              <>
+                <p>{t('主机创建异地房间，把邀请码发给伙伴；伙伴在“加入房间”中粘贴即可连接。')}</p>
+                <p>
+                  {t('自动连接公网发现节点；无需 VPN 或额外组网软件。部分受限网络可能无法直连。')}
+                </p>
+                <p>{t('异地连接使用加密传输。软件不提供流量中继，连接失败时请检查网络后重试。')}</p>
+              </>
+            ) : (
+              <p>
+                {t(
+                  '局域网模式使用 IP、端口和房间密钥；旧版邀请码也需要主机地址可达，不能用于自动异地连接。',
+                )}
+              </p>
+            )}
             <p>
               {t(
                 '仅共享当前工程及其引用的素材。素材会下载到参与者本机，方便各自预览、保存和导出。',
@@ -571,7 +674,9 @@ export default function CollaborationPanel({
 
         <footer className="collab-footer">
           <span>
-            {connected ? t('关闭面板后，协作连接仍会保留。') : t('本机直连 · 无需注册账号')}
+            {connected
+              ? t('关闭面板后，协作连接仍会保留。')
+              : t('协作房间由你的电脑承载 · 无需注册账号')}
           </span>
           {connected && (
             <button
@@ -581,6 +686,16 @@ export default function CollaborationPanel({
               onClick={() => void run(onLeave)}
             >
               {state.mode === 'hosting' ? t('结束房间') : t('离开房间')}
+            </button>
+          )}
+          {!connected && (state.mode === 'connecting' || pending || cancelling) && (
+            <button
+              type="button"
+              className="collab-leave"
+              disabled={cancelling}
+              onClick={() => void cancelConnection()}
+            >
+              {cancelling ? t('正在取消…') : t('取消连接')}
             </button>
           )}
         </footer>
