@@ -101,6 +101,8 @@ Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按�
 
 来源、依赖许可、品牌及专利边界排查见 docs/RELEASE-REVIEW-030.md；工程核查不等于商标核准、专利自由实施意见或零诉讼风险承诺。免费剪辑不改变第三方模型的用途限制。
 
+新增 P2P 依赖的原始声明与原生子库来源随安装包提供，见[本次依赖清单](https://github.com/${repo}/blob/main/docs/third-party/p2p/README.md)。其中 noise-curve-ed 2.1.0 的上游只提供 ISC 元数据，完整版权人及许可原文仍待补充；清单如实保留该未解项，不宣称许可或专利风险为零。
+
 欢迎下载体验和支持开源：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。[爱发电自愿支持](https://afdian.com/a/watertube)不影响任何功能使用。
 `;
     await fs.writeFile(path.join(out,'release-notes.md'),notes);await fs.writeFile(path.join(out,'release-manifest.json'),JSON.stringify({runId,tag,head:build.head_sha,assets},null,2));console.log(`Prepared ${assets.length} verified assets`);

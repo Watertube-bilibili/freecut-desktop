@@ -6,6 +6,7 @@
 
 - **真实跨网生产协议测试通过**：[GitHub Actions 34857859032](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34857859032)。一端是用户的 Windows x64 电脑，一端是 GitHub 提供的 Linux x64 临时云虚拟机。运行实际 `createCollaborationService` / HyperDHT / Noise / HTTP 协议，只共享脚本生成的 WAV，不读取用户素材。加入并下载 1,280,044 字节用时 8,358 ms；反向上传 960,044 字节、双方工程改动、最终确认和退出后素材保留均通过 SHA-256 校验，客户端总用时 14,534 ms。测试采用受控素材导入回调，不等同于两台完整桌面 UI 的公网联动测试。GitHub 只用于测试，不是生产房间服务器。
 - **Windows 实际打包原生模块通过**：从 `release/win-unpacked/FreeCut.exe` 启动 Electron 44.2.0，确认 udx-native 1.21.1 和 sodium-native 5.1.0 的当前平台 `.node` 实际位于 `app.asar.unpacked`，未借用源码依赖。隔离 DHT 中双向各 3,145,728 字节一致、节点销毁完成。报告 `freecut-native-smoke-VWdJiL/native-report.json`。同一打包程序的实际导入、保存重开和 MP4 导出也通过，0 渲染错误。
+- **Windows 实际 Setup 通过**：4 组验收覆盖自定义安装页面、114 个文件逐一散列、原始 app.asar/单一运行时、安装后真实编辑器启动及卸载保留个人工程。报告 `setup-runtime-test-mPR3k5/setup-report.json`。本机快速打包的 Setup 为 145,720,999 字节，SHA-256 `CFBB8CF40B22F060D3BE8DC6A2AFDEE32CAC234E583B0455866B7DA79358A111`；它与 CI 发布版压缩参数不同，不冒充最终 Release 文件散列。
 
 - 协作后端：原有 11 项与新增远端 10 项测试通过。使用本机隔离 DHT 网络、真实 Noise 与 HTTP；覆盖 3 MiB 双向字节一致、工程修订、素材校验、错误密钥、退出保留素材、更换房间公钥、初始化取消和失败清理，并验证缺少原生组件仍能打开普通编辑与 LAN 协作。
 - 双桌面界面：9 组通过，0 渲染错误；默认异地邀请码表单、高级 LAN、双向工程和素材、拖动期间合并、两种布局与英文、旧邀请码、取消挂起连接并保存草稿。报告 `freecut-collab-ui-9Qmon2/report.json`。这些界面测试仅用本机连接，不作为跨公网证据。

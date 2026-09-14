@@ -1,0 +1,18 @@
+{
+  "date": "2026-09-14",
+  "workflow": "https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34857859032",
+  "sourceCommit": "7c53e652727777ab4a125d64e26ad709ba9c88b9",
+  "test": "scripts/verify-internet-collaboration.cjs",
+  "scope": "Production room service and transport, with controlled generated-WAV import callbacks; separate Windows and Linux computers on the Internet.",
+  "hostPlatform": "win32-x64",
+  "guestPlatform": "linux-x64",
+  "joinMilliseconds": 8358,
+  "guestTotalMilliseconds": 14534,
+  "hostToGuestBytes": 1280044,
+  "guestToHostBytes": 960044,
+  "mediaHashesVerified": true,
+  "bidirectionalEdits": true,
+  "retainedMediaAfterLeave": true,
+  "passed": true,
+  "limitations": "One tested network pair, not all NATs; no bulk media relay; not a two-GUI cross-network test or a capacity stress test. Only synthetic media was shared."
+}
