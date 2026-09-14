@@ -19,6 +19,8 @@ export interface CollaborationPanelProps {
 
 const NAME_KEY = 'freecut-collaboration-name';
 const CONNECTION_COPY: Record<string, string> = {
+  'Internet collaboration is unavailable in this installation. Reinstall the latest version to restore it.':
+    '此安装中的异地协作组件不可用，请重新安装最新版本修复。',
   'Disconnected. Downloaded media remains available on this computer.':
     '已断开连接，下载的素材仍保留在本机。',
   'Preparing project media…': '正在准备工程素材…',

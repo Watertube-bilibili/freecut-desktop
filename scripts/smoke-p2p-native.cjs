@@ -8,6 +8,23 @@ const path = require('node:path');
 const os = require('node:os');
 const assert = require('node:assert/strict');
 
+async function bounded(promise, milliseconds) {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(Error('Packaged native verification exceeded its time limit')),
+          milliseconds,
+        );
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function main() {
   const root = path.resolve(__dirname, '..');
   const directory = await fs.mkdtemp(
@@ -29,7 +46,7 @@ async function main() {
       env,
       timeout: 60000,
     });
-    report.result = await application.evaluate(async ({ app, dialog }, packagedRequested) => {
+    const verification = application.evaluate(async ({ app, dialog }, packagedRequested) => {
       const require = process
         .getBuiltinModule('node:module')
         .createRequire(`${app.getAppPath()}/package.json`);
@@ -163,6 +180,7 @@ async function main() {
         await testnet.destroy();
       }
     }, Boolean(executablePath));
+    report.result = await bounded(verification, 60000);
     assert.equal(report.result.transferredEachDirection, 3 * 1024 * 1024);
     report.passed = true;
   } catch (error) {

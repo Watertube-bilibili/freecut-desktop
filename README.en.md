@@ -20,6 +20,8 @@ Preview playback now decodes continuously; scrubbing coalesces queued work witho
 
 The 0.3.2 installer updates verified old FreeCut desktop and Start menu shortcuts, including when the install location changes. A separate icon file and Windows refresh notification address stale icons after upgrades. Fresh installations use the same new icon. User-customized shortcuts are preserved.
 
+Automatic updates are enabled by default. Each launch checks this repository's Releases after about 12 seconds, downloads and verifies a newer matching package, then checks again every four hours. When idle, a countdown starts installation while unsaved projects retain their save prompt. If the Internet collaboration component is missing, the app explains how to reinstall; solo editing can still start.
+
 Export automatically chooses the appropriate path. Eligible everyday cuts, joins, still images, and constant-speed edits run directly through FFmpeg. Complex visuals such as text, keyframes, and masks use the preview's compositor and send RGBA frames straight to the encoder, rendering and encoding together without creating a temporary PNG for every frame. There is no additional mode to select. Complex effects still require frame-by-frame decoding and composition; results depend on the project and computer. The [0.3.2 verification record](docs/VERIFICATION-032.md) distinguishes correctness checks from measurements of the same project before and after the change.
 
 FLAC and other audio files with embedded album artwork are recognized as audio instead of treating the cover as video. Reopening an older project rereads available affected media and repairs the mistaken type while preserving clip position, timing, and volume animation.

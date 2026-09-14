@@ -517,6 +517,8 @@ export const en: Record<string, string> = {
   条带蒙版: 'Band mask',
   '可旋转、移动的水平条带': 'A horizontal band you can move and rotate',
   远程协作: 'Remote collaboration',
+  '此安装中的异地协作组件不可用，请重新安装最新版本修复。':
+    'Internet collaboration is unavailable in this installation. Reinstall the latest version to restore it.',
   创建房间: 'Create a room',
   已启用: 'Enabled',
   '异地协作（邀请码）': 'Across networks (invite code)',

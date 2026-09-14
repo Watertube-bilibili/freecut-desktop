@@ -30,6 +30,8 @@
 
 操作步骤见 [中文使用说明](docs/QUICKSTART.md)，实际测试范围见 [验证记录](docs/VERIFICATION.md)。
 
+自动更新默认开启：每次启动约 12 秒后检查本仓库 Release，发现新版自动下载和校验；运行期间每 4 小时再检查。下载就绪后在空闲时倒计时安装，未保存工程仍会提示保存。若异地组件缺失，界面提示重新安装，普通单人剪辑仍可启动。
+
 让 AI 使用本软件剪片：安装免费的 [shuiguan-cut Skill](docs/AI-EDITING.md)，从本地素材生成可继续编辑的工程，并通过真实应用导出 MP4。
 
 英文宣传片已通过真实 FreeCut 导出并发布：55 秒、1080p、全静音，保留 `@我叫水管同学` 署名，只引导下载和 GitHub Star。[观看 / 下载英文宣传片](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4)，可以自行加音乐。[真实导出与静音检查](videos/freecut-launch-en-edit/QA.md)和[英文视觉源](videos/freecut-launch-en)分别记录。
