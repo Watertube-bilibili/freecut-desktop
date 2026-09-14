@@ -97,6 +97,12 @@ jobs:
         run: node scripts/regression-language.cjs
       - name: Verify preview seeking and layout changes with real video
         run: node scripts/regression-preview.cjs
+      - name: Verify continuous preview playback and moving-frame latency
+        run: node scripts/regression-preview-playback.cjs
+      - name: Verify two-editor direct collaboration with real media
+        run: node scripts/regression-collaboration-ui.cjs
+      - name: Verify timeline pointer capture and gesture cleanup
+        run: node scripts/regression-timeline-gesture.cjs
       - name: Verify home, recent projects and unsaved exit protection
         run: node scripts/regression-home.cjs
       - name: Verify one-click keyframes and professional mode interoperability

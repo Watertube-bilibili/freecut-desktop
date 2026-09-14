@@ -15,6 +15,7 @@ import {
   Play,
   Clock3,
   ChevronRight,
+  Users,
 } from 'lucide-react';
 import type { ProjectSummary } from '../types';
 import './home.css';
@@ -36,6 +37,8 @@ interface Props {
   openRecent: (id: string) => void;
   removeRecent: (id: string) => void;
   notify: (message: string) => void;
+  collaborate?: () => void;
+  collaborating?: boolean;
 }
 const links = {
   bilibili: 'https://space.bilibili.com/390310418?spm_id_from=333.1007.0.0',
@@ -83,6 +86,9 @@ export default function Home(props: Props) {
           </div>
         </div>
         <nav aria-label={t('首页导航')}>
+          {props.collaborate && <button onClick={props.collaborate}>
+            <Users size={19} /> {t(props.collaborating ? '协作中' : '远程协作')}
+          </button>}
           <button
             className={page === 'projects' ? 'active' : ''}
             onClick={() => setPage('projects')}

@@ -8,6 +8,7 @@ directories:
 files:
   - dist/**/*
   - electron/**/*.cjs
+  - electron/**/*.mjs
   - electron/*.ps1
   - electron/*.sh
   - '!electron/**/*.test.cjs'

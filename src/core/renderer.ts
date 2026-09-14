@@ -119,6 +119,21 @@ export async function renderProject(
   time: number,
   options?: RenderOptions,
 ) {
+  return renderFrame(canvas, project, time, options);
+}
+type PrepareVideo = (
+  video: HTMLVideoElement,
+  clip: Clip,
+  time: number,
+  signal?: AbortSignal,
+) => Promise<void>;
+async function renderFrame(
+  canvas: HTMLCanvasElement,
+  project: Project,
+  time: number,
+  options?: RenderOptions,
+  prepareVideo?: PrepareVideo,
+) {
   checkCancelled(options?.signal);
   const epoch = cacheEpoch;
   const width = options?.width ?? project.width,
@@ -156,10 +171,10 @@ export async function renderProject(
             time < c.start + c.duration,
         ),
       );
-    for (const clip of ordered) {
+    const prepareSource = async (clip: Clip) => {
       checkCancelled(options?.signal);
       const asset = project.assets.find((a) => a.id === clip.assetId);
-      if (asset?.kind === 'audio') continue;
+      if (asset?.kind === 'audio') return null;
       let source: Source | undefined;
       if (asset) {
         if (asset.missing) throw new Error(`找不到素材 ${asset.name}，请使用“重新链接素材”恢复。`);
@@ -167,10 +182,21 @@ export async function renderProject(
           load(asset, `${options?.sourceScope ?? canvasIds.get(canvas)}:${clip.id}`),
           options?.signal,
         );
-        if (source instanceof HTMLVideoElement)
-          await seek(source, clip.inPoint + (time - clip.start) * clip.speed, options?.signal);
+        if (source instanceof HTMLVideoElement) {
+          if (prepareVideo) await prepareVideo(source, clip, time, options?.signal);
+          else await seek(source, clip.inPoint + (time - clip.start) * clip.speed, options?.signal);
+        }
       }
+      return source;
+    };
+    // Preview layers can decode concurrently, then composite in track order.
+    // Strict export retains its bounded sequential source preparation.
+    const prepared = prepareVideo ? await Promise.all(ordered.map(prepareSource)) : undefined;
+    for (let index = 0; index < ordered.length; index++) {
       checkCancelled(options?.signal);
+      const clip = ordered[index];
+      const source = prepared ? prepared[index] : await prepareSource(clip);
+      if (source === null) continue;
       drawClip(ctx, clip, source, time - clip.start, project, width, height);
     }
     checkCancelled(options?.signal);
@@ -190,15 +216,26 @@ export async function renderProject(
   }
 }
 
-/** Latest-only interactive preview. renderProject itself remains strict for export. */
+/** Interactive decoding is independent from the frame-exact export renderer. */
 export function createPreviewRenderer() {
   const sourceScope = crypto.randomUUID();
+  type VideoState = {
+    clip: Clip;
+    assetUrl: string;
+    playing: boolean;
+    time: number;
+    requestedAt: number;
+    lastSeekAt: number;
+  };
+  const videos = new Map<HTMLVideoElement, VideoState>();
+  const stats = { requested: 0, committed: 0, coalesced: 0, seeks: 0, lastCommittedTime: 0 };
   type Request = {
     canvas: HTMLCanvasElement;
     project: Project;
     time: number;
     width: number;
     height: number;
+    playing: boolean;
     promise: Promise<boolean>;
     resolve: (committed: boolean) => void;
     reject: (reason: unknown) => void;
@@ -208,7 +245,110 @@ export function createPreviewRenderer() {
     desired: Request | undefined;
   let running = false,
     disposed = false,
+    suspended = false,
     lastCanvas: HTMLCanvasElement | undefined;
+  function pauseInactive(request?: Request) {
+    for (const [video, state] of videos) {
+      const clip = request?.project.clips.find((item) => item.id === state.clip.id);
+      const track = request?.project.tracks.find((item) => item.id === clip?.trackId);
+      const asset = request?.project.assets.find((item) => item.id === clip?.assetId);
+      if (
+        !request?.playing ||
+        !clip ||
+        !track ||
+        track.hidden ||
+        clip.assetId !== state.clip.assetId ||
+        asset?.url !== state.assetUrl ||
+        request.time < clip.start ||
+        request.time >= clip.start + clip.duration
+      ) {
+        video.pause();
+        state.playing = false;
+      }
+    }
+  }
+  async function prepareVideo(
+    request: Request,
+    video: HTMLVideoElement,
+    clip: Clip,
+    time: number,
+    signal?: AbortSignal,
+  ) {
+    const now = performance.now();
+    const target = Math.min(
+      Math.max(0, clip.inPoint + (time - clip.start) * clip.speed),
+      Math.max(0, video.duration - 0.001),
+    );
+    let state = videos.get(video);
+    const elapsed = state ? (now - state.requestedAt) / 1000 : 0;
+    const changed =
+      !state ||
+      state.clip.start !== clip.start ||
+      state.clip.inPoint !== clip.inPoint ||
+      state.clip.speed !== clip.speed;
+    // Seeking on every animation frame forces long-GOP footage to restart decoding
+    // continuously. Let the browser's native media clock run between real jumps.
+    const jumped = state && Math.abs(time - state.time - elapsed) > 0.12;
+    const continuous = request.playing && clip.speed >= 0.0625 && clip.speed <= 16;
+    const shouldSeek =
+      !continuous ||
+      changed ||
+      !state?.playing ||
+      jumped ||
+      (Math.abs(video.currentTime - target) > Math.max(0.35, clip.speed * 0.2) &&
+        now - state.lastSeekAt > 500);
+    if (!state) {
+      state = {
+        clip,
+        assetUrl: request.project.assets.find((asset) => asset.id === clip.assetId)?.url ?? '',
+        playing: false,
+        time,
+        requestedAt: now,
+        lastSeekAt: -Infinity,
+      };
+      videos.set(video, state);
+    }
+    if (shouldSeek) {
+      video.pause();
+      state.playing = false;
+      stats.seeks++;
+      await seek(video, target, signal);
+      state.lastSeekAt = performance.now();
+    }
+    checkCancelled(signal);
+    state.clip = clip;
+    state.time = time;
+    state.requestedAt = now;
+    // A pause, project switch, or disposal can arrive while a decoder is seeking.
+    // Never restart that stale playback after it completes.
+    const current = desired;
+    const stillPlaying =
+      continuous &&
+      !disposed &&
+      !suspended &&
+      current?.playing &&
+      current.project === request.project &&
+      current.time >= clip.start &&
+      current.time < clip.start + clip.duration &&
+      target < video.duration - 0.001;
+    if (stillPlaying) {
+      // A long initial seek can leave the video slightly behind the timeline. Catch
+      // up gradually without another decode restart; audio keeps its original rate.
+      const drift =
+        (clip.inPoint + (current.time - clip.start) * clip.speed - video.currentTime) / clip.speed;
+      const correction = Math.abs(drift) > 0.035 ? Math.max(-0.1, Math.min(0.15, drift)) : 0;
+      const rate = Math.max(0.0625, Math.min(16, clip.speed * (1 + correction)));
+      if (Math.abs(video.playbackRate - rate) > clip.speed * 0.01) video.playbackRate = rate;
+      state.playing = true;
+      if (video.paused)
+        void video.play().catch(() => {
+          if (video.paused) state!.playing = false;
+        });
+    } else {
+      video.pause();
+      state.playing = false;
+    }
+  }
   async function pump() {
     if (running || disposed) return;
     running = true;
@@ -218,17 +358,29 @@ export function createPreviewRenderer() {
         pending = undefined;
         active = new AbortController();
         try {
-          await renderProject(request.canvas, request.project, request.time, {
-            width: request.width,
-            height: request.height,
-            sourceScope,
-            signal: active.signal,
-          });
+          await renderFrame(
+            request.canvas,
+            request.project,
+            request.time,
+            {
+              width: request.width,
+              height: request.height,
+              sourceScope,
+              signal: active.signal,
+            },
+            (video, clip, time, signal) => prepareVideo(request, video, clip, time, signal),
+          );
           lastCanvas = request.canvas;
+          stats.committed++;
+          stats.lastCommittedTime = request.time;
           request.resolve(true);
         } catch (error) {
-          if (active.signal.aborted || disposed) request.resolve(false);
+          const cancelled = active.signal.aborted;
+          // Cancel the other parallel layer preparations after one layer fails.
+          active.abort();
+          if (cancelled || disposed) request.resolve(false);
           else {
+            pauseInactive();
             if (desired === request) desired = undefined;
             request.reject(error);
           }
@@ -245,18 +397,22 @@ export function createPreviewRenderer() {
       canvas: HTMLCanvasElement,
       project: Project,
       time: number,
-      options?: Pick<RenderOptions, 'width' | 'height'>,
+      options?: Pick<RenderOptions, 'width' | 'height'> & { playing?: boolean },
     ): Promise<boolean> {
       if (disposed) return Promise.resolve(false);
+      suspended = false;
       const width = options?.width ?? project.width,
-        height = options?.height ?? project.height;
+        height = options?.height ?? project.height,
+        playing = options?.playing ?? false;
+      stats.requested++;
       if (
         desired &&
         desired.canvas === canvas &&
         desired.project === project &&
         desired.time === time &&
         desired.width === width &&
-        desired.height === height
+        desired.height === height &&
+        desired.playing === playing
       )
         return desired.promise;
       // A remounted preview immediately inherits the most recent complete frame.
@@ -265,23 +421,54 @@ export function createPreviewRenderer() {
         canvas.height = lastCanvas.height;
         canvas.getContext('2d')!.drawImage(lastCanvas, 0, 0);
       }
-      pending?.resolve(false);
-      active?.abort();
+      // Finish the in-flight decoder work. Cancelling it on every new time request
+      // starves playback; dropping only the queued request bounds work and latency.
+      if (pending) {
+        pending.resolve(false);
+        stats.coalesced++;
+      }
       let resolve!: Request['resolve'], reject!: Request['reject'];
       const promise = new Promise<boolean>((yes, no) => {
         resolve = yes;
         reject = no;
       });
-      desired = pending = { canvas, project, time, width, height, promise, resolve, reject };
+      desired = pending = {
+        canvas,
+        project,
+        time,
+        width,
+        height,
+        playing,
+        promise,
+        resolve,
+        reject,
+      };
+      pauseInactive(desired);
       void pump();
       return promise;
     },
+    getStats() {
+      return {
+        ...stats,
+        playingVideos: [...videos.keys()].filter((video) => !video.paused).length,
+      };
+    },
+    pause() {
+      suspended = true;
+      pauseInactive();
+      // The next request must render again even if its time has not changed.
+      desired = undefined;
+      pending?.resolve(false);
+      pending = undefined;
+    },
     dispose() {
       disposed = true;
+      pauseInactive();
       active?.abort();
       pending?.resolve(false);
       pending = undefined;
       desired = undefined;
+      videos.clear();
       for (const [key, media] of sources)
         if (key.startsWith(`${sourceScope}:`)) {
           sources.delete(key);

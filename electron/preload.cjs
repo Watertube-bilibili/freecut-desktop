@@ -31,6 +31,15 @@ function subscribe(channel, callback) {
 contextBridge.exposeInMainWorld(
   'freecut',
   Object.freeze({
+    collaboration: Object.freeze({
+      host: (options) => ipcRenderer.invoke('freecut:collaboration-host', options),
+      join: (options) => ipcRenderer.invoke('freecut:collaboration-join', options),
+      leave: () => ipcRenderer.invoke('freecut:collaboration-leave'),
+      state: () => ipcRenderer.invoke('freecut:collaboration-state'),
+      publish: (options) => ipcRenderer.invoke('freecut:collaboration-publish', options),
+      onState: (callback) => subscribe('freecut:collaboration-state', callback),
+      onProject: (callback) => subscribe('freecut:collaboration-project', callback),
+    }),
     setLanguage: (language) => ipcRenderer.invoke('freecut:set-language', language),
     importMedia: () => ipcRenderer.invoke('freecut:import-media'),
     saveProject: (project) => ipcRenderer.invoke('freecut:save-project', project),

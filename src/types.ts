@@ -131,6 +131,7 @@ export interface ExportProgress {
   progress: number;
 }
 export interface DesktopAPI {
+  collaboration: import('./collaboration-types').CollaborationAPI;
   setLanguage: (language: 'zh-CN' | 'en') => Promise<'zh-CN' | 'en'>;
   listSounds: () => Promise<
     { id: string; name: string; category: string; duration: number; license: string }[]

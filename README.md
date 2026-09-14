@@ -14,9 +14,11 @@
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-当前版本为已发布的 **0.3.2 开发预览版**，本次更新导出架构，并修复带专辑封面的音频识别和 Windows 旧快捷方式图标。软件并未完整覆盖剪映。无账户要求，媒体在本地处理；更新与可选模型下载需要网络。已完成和待完成能力请看 [功能矩阵](docs/FEATURE-MATRIX.md)。
+当前开发版本为 **0.4.0 预览版**，本次修复播放和拖动时间线时预览长时间不刷新，并新增由本机主持的 IP＋端口直连协作。安装包正在验证；可用状态以 [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.0-preview.1) 为准。软件并未完整覆盖剪映。无账户要求；单人媒体处理在本地，开启协作后工程和素材会传给房间成员。
 
-0.3.2 的 [Windows / Mac 三平台构建](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722)及[发布校验](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34141085758)均成功，发布源码提交为 `aba5cac`。新增导出路径、音频封面修复和快捷方式检查的具体范围见[本次验证记录](docs/VERIFICATION-032.md)。
+0.4.0 新增移动视频连续播放、真实编辑器双布局和两份桌面应用直连协作验收；实际结果与适用范围见 [0.4.0 验证记录](docs/VERIFICATION-040.md)。旧版安装图标与导出改造记录保留在 [0.3.2 验证记录](docs/VERIFICATION-032.md)。
+
+预览播放现在使用连续解码，拖动时合并待处理请求，不再反复取消尚未完成的画面；暂停后仍精确定位，导出保持独立逐帧渲染。新增“远程协作”：一台电脑创建房间，其他人输入 IPv4、端口、密钥或邀请码加入，自动同步素材和不同位置的编辑；同参数冲突保留本地内容并提示选择。无需公共服务器，适用于已互通的可信局域网或 VPN；邀请码不提供中继或 NAT 穿透。详细操作、HTTP 传输边界和容量限制见 [协作说明](docs/COLLABORATION.md)。
 
 0.3.2 安装器会更新已核实归属的旧版 FreeCut 桌面和开始菜单入口，安装位置改变也能迁移；使用独立图标文件并通知 Windows 刷新，解决升级后仍显示旧图标的问题。首次安装同样创建新图标，用户自行修改过的快捷方式会保留。
 
@@ -55,23 +57,24 @@
 - 启动首页：我的项目、搜索与排序、设置、关于；最近工程跨次启动保留，关于页可打开[我的 B站主页](https://space.bilibili.com/390310418?spm_id_from=333.1007.0.0)。
 - 未保存时退出、返回首页、新建和打开项目前询问保存；取消保存或保存失败会保留当前工程。
 - 普通（易用）关键帧模式，一键记录整组画面、前后跳转、删除和动画预设；专业模式保留精确参数及缓动编辑。
-- 预览先完成视频定位和合成，再更新画布；快速拖动时间尺时优先处理最新位置，布局切换保留已显示画面。
+- 播放时连续解码视频；快速拖动时间尺时合并待处理请求，布局切换保留已显示画面。
+- 本机主持的 IP＋端口直连协作，自动同步工程与素材，独立编辑自动合并，同参数冲突保留草稿。适用于可信局域网或加密 VPN。
 - 左上角切换专业布局 / 手机风格，首次启动引导重点介绍切换入口。
 - 按需下载开源运行环境和模型：自动识别字幕、中文语音朗读、ChatTTS 自然对话朗读。安装后本地执行，不上传音视频。
 - 独立设计的 Windows 安装界面，一键安装到 C 盘、D 盘或自定义目录；自动从本仓库 Release 检查、校验、下载更新，安装前保留未保存工程提示。
 
 ## 下载和运行
 
-[下载 0.3.2 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.2-preview.1)：已提供 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中英文教程和 SHA-256 清单。按下表选择适合自己电脑的一份应用包。中英文共用同一份应用包，首次启动默认简体中文。
+[查看 0.4.0 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.0-preview.1)：下表为本次版本的安装包名称，以 Release 附件可用状态为准。提供 Windows 安装版 / 便携版、Mac Intel / Apple Silicon 的 DMG / ZIP，以及匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 
 | 你的电脑 / 用途 | 推荐下载 | 说明 |
 | --- | --- | --- |
-| Windows 10/11 x64，日常使用 | `FreeCut-0.3.2-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘；覆盖安装会修复符合条件的旧快捷方式与图标。 |
-| Windows 10/11 x64，免安装 | `FreeCut-0.3.2-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表与模型，移动时一起保留。 |
-| Mac M 系列芯片 | `FreeCut-0.3.2-mac-arm64.dmg` | 打开后拖入 Applications。 |
-| Mac Intel 处理器 | `FreeCut-0.3.2-mac-x64.dmg` | 安装方法同上。 |
+| Windows 10/11 x64，日常使用 | `FreeCut-0.4.0-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘；覆盖安装会修复符合条件的旧快捷方式与图标。 |
+| Windows 10/11 x64，免安装 | `FreeCut-0.4.0-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表与模型，移动时一起保留。 |
+| Mac M 系列芯片 | `FreeCut-0.4.0-mac-arm64.dmg` | 打开后拖入 Applications。 |
+| Mac Intel 处理器 | `FreeCut-0.4.0-mac-x64.dmg` | 安装方法同上。 |
 | Mac 需要 ZIP | 对应芯片的 `mac-arm64.zip` / `mac-x64.zip` | 解压得到同一应用；DMG、ZIP 任选一种。 |
 
 普通使用只需一份应用包，无需下载 `source` 源码包。Mac 可在「 → 关于本机」查看芯片。Windows 未签名；Mac 使用临时签名，尚未配置正式 Developer ID 和 Apple 公证。
@@ -118,7 +121,7 @@ node installer/smoke.cjs
 
 桌面回归覆盖保存退出、真实视频定位、普通关键帧、预览拖拽、蒙版像素、短窗口滚动、立体声预览与导出，以及更新时的保存/取消/失败路径。脚本使用独立临时用户目录；更新回归仅替换网络响应和最后的安装启动器，不改用户安装。`npm run test:desktop` 完成构建和桌面回归。真实语音测试脚本默认禁止下载；命令与模型验收结果见模型文档。
 
-0.3.2 发布构建对应 `aba5cac`，Windows x64、Mac Intel 和 Apple 芯片均通过本次 CI 的回归和打包后媒体验收。详细范围见[本次验证记录](docs/VERIFICATION-032.md)和[对应 CI](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722)；这些结果不代表所有硬件、素材和长工程均已验证。
+历史 0.3.2 发布构建对应 `aba5cac`，Windows x64、Mac Intel 和 Apple 芯片均通过该版本 CI 的回归和打包后媒体验收。详细范围见[旧版验证记录](docs/VERIFICATION-032.md)和[对应 CI](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722)；0.4.0 的验证状态单独记录在 [本次验证记录](docs/VERIFICATION-040.md)。这些结果不代表所有硬件、素材和长工程均已验证。
 
 同工程导出对照中，普通剪辑样本从 **18.025 秒降至 3.070 秒**；带叠加画面的复杂样本从 **15.170 秒变为 15.761 秒，没有提速**。这些是指定设备和样本的实测结果，不能推算所有项目的加速倍数；测试方法与范围见[导出验证记录](docs/VERIFICATION-032.md)。
 

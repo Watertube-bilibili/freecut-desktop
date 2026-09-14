@@ -42,6 +42,7 @@ import {
   Keyboard,
   PanelRightOpen,
   House,
+  Users,
 } from 'lucide-react';
 import type { AnimProperty, Clip, MediaAsset, Project, ProjectSummary, Transform } from './types';
 import {
@@ -68,6 +69,9 @@ import UpdateNotice from './components/UpdateNotice';
 import BrandIcon from './components/BrandIcon';
 import SoundLibrary from './components/SoundLibrary';
 import ContextMenu, { type ContextMenuItem } from './components/ContextMenu';
+import CollaborationPanel from './components/CollaborationPanel';
+import { CollaborationSession, disconnectedCollaboration } from './core/collaboration-session';
+import type { CollaborationJoinOptions } from './collaboration-types';
 import { t, useI18n, type Language } from './i18n';
 import { version as appVersion } from '../package.json';
 
@@ -194,6 +198,12 @@ function demoProject() {
 export default function App() {
   const { language, setLanguage } = useI18n();
   const [contextMenu, setContextMenu] = useState<EditorMenu>();
+  const [collaborationOpen, setCollaborationOpen] = useState(false);
+  const [collaborationState, setCollaborationState] = useState(disconnectedCollaboration);
+  const [collaborationBusy, setCollaborationBusy] = useState(false);
+  const [collaborationError, setCollaborationError] = useState('');
+  const [collaborationConflicts, setCollaborationConflicts] = useState<string[]>([]);
+  const collaborationSession = useRef<CollaborationSession | null>(null);
   const [clipboard, setClipboard] = useState<Clip>();
   const closeContextMenu = useCallback(() => setContextMenu(undefined), []);
   const [project, setProject] = useState<Project>(() => {
@@ -204,7 +214,7 @@ export default function App() {
     return createLocalizedProject();
   });
   const [selected, setSelected] = useState<string>(),
-    [time, setTime] = useState(0),
+    [time, setTimeState] = useState(0),
     [playing, setPlaying] = useState(false),
     [tab, setTab] = useState('media'),
     [inspectorTab, setInspectorTab] = useState('basic'),
@@ -254,6 +264,7 @@ export default function App() {
   const previewGesture = useRef<
     { id: string; before: Clip; session: number; localTime: number } | undefined
   >(undefined);
+  const timelineGesture = useRef(false);
   const history = useRef<Project[]>([]),
     future = useRef<Project[]>([]),
     projectRef = useRef(project),
@@ -267,8 +278,11 @@ export default function App() {
     job = useRef<string | undefined>(undefined),
     toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   projectRef.current = project;
-  timeRef.current = time;
   playingRef.current = playing;
+  const setTime = useCallback((value: number) => {
+    timeRef.current = value;
+    setTimeState(value);
+  }, []);
   const clip = project.clips.find((c) => c.id === selected),
     duration = durationOf(project);
   const notify = useCallback((message: string) => {
@@ -280,6 +294,70 @@ export default function App() {
     savedRef.current = JSON.stringify(snapshot);
     setSavedFingerprint(savedRef.current);
   }, []);
+  useEffect(() => {
+    const api = window.freecut?.collaboration;
+    if (!api) return;
+    const session = new CollaborationSession(api, {
+      read: () => projectRef.current,
+      canApply: () => !fileOperation.current && !closingRef.current &&
+        !previewGesture.current && !timelineGesture.current && !job.current,
+      apply: (next, initial) => {
+        const p = validateProject(next);
+        if (initial) { replaceProject(p, false); return; }
+        closeContextMenu();
+        projectRef.current = p;
+        setProject(p);
+        setSelected(id => p.clips.some(clip => clip.id === id) ? id : undefined);
+        history.current = [];
+        future.current = [];
+        setHistoryVersion(value => value + 1);
+        if (timeRef.current > durationOf(p)) setTime(durationOf(p));
+      },
+      state: setCollaborationState,
+      conflict: fields => {
+        setCollaborationConflicts(fields);
+        if (fields.length) setCollaborationOpen(true);
+      },
+      error: setCollaborationError,
+    });
+    collaborationSession.current = session;
+    session.start();
+    return () => { session.dispose(); collaborationSession.current = null; };
+  }, []);
+  useEffect(() => { collaborationSession.current?.projectChanged(); }, [project]);
+  function showCollaboration() {
+    finishPreviewGesture(false);
+    playingRef.current = false;
+    setPlaying(false);
+    closeContextMenu();
+    setCollaborationOpen(true);
+  }
+  async function hostCollaboration(port: number, name: string) {
+    const session = collaborationSession.current;
+    if (!session) throw Error(t('远程协作需要桌面版。'));
+    setCollaborationBusy(true);
+    try { await session.host(port, name); enterEditor(); }
+    finally { setCollaborationBusy(false); }
+  }
+  async function joinCollaboration(options: CollaborationJoinOptions) {
+    const session = collaborationSession.current;
+    if (!session) throw Error(t('远程协作需要桌面版。'));
+    setCollaborationBusy(true);
+    try {
+      if (JSON.stringify(projectRef.current) !== savedRef.current && !(await save())) return;
+      await session.join(options);
+    } finally { setCollaborationBusy(false); }
+  }
+  async function leaveCollaboration() {
+    setCollaborationBusy(true);
+    try { await collaborationSession.current?.leave(); setCollaborationError(''); }
+    finally { setCollaborationBusy(false); }
+  }
+  async function adoptRoomProject() {
+    setCollaborationBusy(true);
+    try { if (await save()) collaborationSession.current?.adoptRemote(); }
+    finally { setCollaborationBusy(false); }
+  }
   useEffect(() => {
     void window.freecut?.setLanguage?.(language).catch(() => {
       notify(t('无法同步系统对话框语言，请重新打开软件。'));
@@ -370,6 +448,11 @@ export default function App() {
   }
   function navigate(action: () => void | Promise<void>) {
     if (fileOperation.current || closingRef.current) return;
+    if (collaborationSession.current?.state.mode !== 'disconnected' && collaborationSession.current) {
+      notify(t('请先退出协作，再打开或新建其他工程。'));
+      showCollaboration();
+      return;
+    }
     finishPreviewGesture(true);
     setPlaying(false);
     if (JSON.stringify(projectRef.current) !== savedRef.current) setPendingNavigation({ action });
@@ -686,15 +769,24 @@ export default function App() {
   }, [project]);
   useEffect(() => {
     let raf = 0,
-      last = performance.now();
+      last = performance.now(),
+      lastUI = 0;
     const tick = (now: number) => {
       if (playingRef.current) {
         const end = durationOf(projectRef.current);
         const next = timeRef.current + (now - last) / 1000;
         if (next >= end) {
+          playingRef.current = false;
           setTime(end);
           setPlaying(false);
-        } else setTime(next);
+        } else {
+          // The playback clock must not wait for React to render the whole editor.
+          timeRef.current = next;
+          if (now - lastUI >= 1000 / 30) {
+            setTimeState(next);
+            lastUI = now;
+          }
+        }
       }
       last = now;
       raf = requestAnimationFrame(tick);
@@ -710,23 +802,36 @@ export default function App() {
       raf = 0,
       lastProject: Project | undefined,
       lastTime = -1,
+      lastPlaying = false,
+      lastRequest = 0,
       lastCanvas: HTMLCanvasElement | null = null;
     const preview = createPreviewRenderer();
     function draw() {
       if (dead) return;
       const p = projectRef.current,
-        t = timeRef.current;
+        t = timeRef.current,
+        isPlaying = playingRef.current,
+        now = performance.now();
+      if (!canvas.current && lastCanvas) {
+        preview.pause();
+        lastCanvas = null;
+      }
       if (
         canvas.current &&
-        (lastProject !== p || lastTime !== t || lastCanvas !== canvas.current)
+        (lastProject !== p || lastTime !== t || lastPlaying !== isPlaying || lastCanvas !== canvas.current) &&
+        (!isPlaying || lastProject !== p || lastPlaying !== isPlaying || lastCanvas !== canvas.current ||
+          now - lastRequest >= 1000 / Math.min(30, p.fps) - 1)
       ) {
         lastProject = p;
         lastTime = t;
         lastCanvas = canvas.current;
+        lastPlaying = isPlaying;
+        lastRequest = now;
         void preview
           .request(canvas.current, p, t, {
             width: Math.round((720 * p.width) / Math.max(p.width, p.height)),
             height: Math.round((720 * p.height) / Math.max(p.width, p.height)),
+            playing: isPlaying,
           })
           .then((committed) => {
             if (committed && !dead) setError('');
@@ -1345,6 +1450,7 @@ export default function App() {
         exportOpen ||
         aiOpen ||
         helpOpen ||
+        collaborationOpen ||
         onboarding ||
         closingRef.current ||
         fileOperation.current ||
@@ -1405,6 +1511,7 @@ export default function App() {
     exportOpen,
     aiOpen,
     helpOpen,
+    collaborationOpen,
     onboarding,
     pendingNavigation,
     remove,
@@ -1761,10 +1868,25 @@ export default function App() {
           fileBusy ||
           busy ||
           playing ||
+          collaborationOpen || collaborationState.mode !== 'disconnected' ||
           (!home && (exportOpen || aiOpen || onboarding || helpOpen)) ||
           !!pendingNavigation
         }
       />
+      {collaborationOpen && (
+        <CollaborationPanel
+          state={collaborationState}
+          busy={collaborationBusy || fileBusy || busy}
+          error={collaborationError}
+          conflict={collaborationConflicts.length ? t('有修改冲突，本地内容已保留。') : undefined}
+          onHost={hostCollaboration}
+          onJoin={joinCollaboration}
+          onLeave={leaveCollaboration}
+          onClose={() => setCollaborationOpen(false)}
+          onKeepLocal={() => void leaveCollaboration().catch(e => setCollaborationError(e.message))}
+          onUseRemote={() => void adoptRoomProject().catch(e => setCollaborationError(e.message))}
+        />
+      )}
       {home ? (
         <Home
           projects={recentProjects}
@@ -1774,10 +1896,10 @@ export default function App() {
           setMode={changeKeyframeMode}
           create={() => navigate(() => replaceProject(createLocalizedProject()))}
           open={() => void open()}
-          demo={() => {
+          demo={() => navigate(() => {
             replaceProject(demoProject(), false);
             setTime(2);
-          }}
+          })}
           resume={enterEditor}
           hasSession={hasSession}
           openRecent={(id) => void openRecent(id)}
@@ -1788,6 +1910,8 @@ export default function App() {
               .catch((e) => notify(String(e)));
           }}
           notify={notify}
+          collaborate={showCollaboration}
+          collaborating={collaborationState.mode === 'hosting' || collaborationState.mode === 'joined'}
         />
       ) : (
         <>
@@ -1855,6 +1979,14 @@ export default function App() {
               <button title={t('保存工程 Ctrl+S')} onClick={() => void save()}>
                 <Save size={16} />
                 <span>{t('保存')}</span>
+              </button>
+              <button
+                title={t('远程协作')}
+                className={collaborationState.mode === 'hosting' || collaborationState.mode === 'joined' ? 'collaboration-connected' : ''}
+                onClick={showCollaboration}
+              >
+                <Users size={17} />
+                <span>{t(collaborationState.mode === 'hosting' || collaborationState.mode === 'joined' ? '协作中' : '远程协作')}</span>
               </button>
               <button
                 className="icon-button"
@@ -2359,7 +2491,7 @@ export default function App() {
                 </div>
                 <span className="preview-quality">
                   {t('预览适配')}
-                  <span>·</span> {project.fps} fps
+                  <span>·</span> ≤{Math.min(30, project.fps)} fps
                 </span>
               </div>
               <div className="quick-tools">
@@ -2509,6 +2641,13 @@ export default function App() {
                 setProject(next);
               }}
               record={record}
+              onGestureChange={(active) => {
+                timelineGesture.current = active;
+                if (active) {
+                  playingRef.current = false;
+                  setPlaying(false);
+                } else collaborationSession.current?.projectChanged();
+              }}
               addAsset={addAssetToTrack}
               addTrack={() => toolButtons[6].action()}
               onClipContextMenu={(event, id) => openContextMenu(event, { kind: 'clip', id })}

@@ -1,4 +1,4 @@
-# 水管剪辑 0.3.1 使用说明
+# 水管剪辑 0.4.0 使用说明
 
 [简体中文](QUICKSTART.md) · [English](QUICKSTART.en.md)
 
@@ -10,11 +10,11 @@
 
 | 电脑或用途 | 下载文件 | 使用方式 |
 | --- | --- | --- |
-| Windows 10/11 x64，日常使用 | `FreeCut-0.3.1-win-x64-Setup.exe` | 自定义安装页面选择 C 盘、D 盘或自定义目录，安装后通过快捷方式打开。 |
-| Windows 10/11 x64，免安装 | `FreeCut-0.3.1-win-x64-Portable.exe` | 放到可写文件夹直接运行。旁边的 `FreeCutData` 保存设置、最近项目列表和模型，移动时一起保留。 |
-| Mac Apple 芯片（M 系列） | `FreeCut-0.3.1-mac-arm64.dmg` | 打开后把 FreeCut 拖入 Applications。 |
-| Mac Intel 处理器 | `FreeCut-0.3.1-mac-x64.dmg` | 安装方法同上。 |
-| Mac 压缩包 | `FreeCut-0.3.1-mac-arm64.zip` 或 `FreeCut-0.3.1-mac-x64.zip` | 解压得到对应芯片的 FreeCut.app；与 DMG 任选一种。 |
+| Windows 10/11 x64，日常使用 | `FreeCut-0.4.0-win-x64-Setup.exe` | 自定义安装页面选择 C 盘、D 盘或自定义目录，安装后通过快捷方式打开。 |
+| Windows 10/11 x64，免安装 | `FreeCut-0.4.0-win-x64-Portable.exe` | 放到可写文件夹直接运行。旁边的 `FreeCutData` 保存设置、最近项目列表和模型，移动时一起保留。 |
+| Mac Apple 芯片（M 系列） | `FreeCut-0.4.0-mac-arm64.dmg` | 打开后把 FreeCut 拖入 Applications。 |
+| Mac Intel 处理器 | `FreeCut-0.4.0-mac-x64.dmg` | 安装方法同上。 |
+| Mac 压缩包 | `FreeCut-0.4.0-mac-arm64.zip` 或 `FreeCut-0.4.0-mac-x64.zip` | 解压得到对应芯片的 FreeCut.app；与 DMG 任选一种。 |
 
 Mac 的「 → 关于本机」可查看芯片。普通用户只需下载一份应用包，不需要下载 `source` 源码归档。`SHA256SUMS.txt` 提供各文件校验值。
 
@@ -121,3 +121,7 @@ SenseVoice 下载改为分段续传并做完整散列校验。下载后立即报
 ## 当前边界
 
 手机风格是桌面软件的布局，不是原生手机安装包。当前没有专门转场库、曲线变速、倒放、智能抠像、运动跟踪、代理媒体、完整高级调色或云协作。长片和 4K 的逐帧导出会占用时间与临时磁盘。建议先使用常见 MP4/H.264、PNG/JPEG、WAV/MP3 素材验证自己的工作流。
+
+## 远程协作
+
+从首页或编辑器进入“远程协作”，本机创建房间，或输入 IPv4、端口、房间密钥 / 邀请码加入。素材会自动下载。适用于已互通的可信局域网或 VPN；HTTP 连接带密钥鉴权但未额外加密，邀请码不提供穿透。加入前保存当前工程，遇到冲突明确选择，保存工程后保留下载的素材。见[完整协作说明](COLLABORATION.md)。

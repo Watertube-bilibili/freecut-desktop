@@ -516,5 +516,104 @@ export const en: Record<string, string> = {
   柔和曲线的爱心窗口: 'A heart window with soft curves',
   条带蒙版: 'Band mask',
   '可旋转、移动的水平条带': 'A horizontal band you can move and rotate',
+  远程协作: 'Remote collaboration',
+  '邀请码无效，请完整复制主机提供的邀请码。':
+    'Invalid invite code. Copy the complete code from the host.',
+  '请填写有效的 IPv4 地址、1024 至 65535 之间的端口，以及完整的房间密钥。':
+    'Enter a valid IPv4 address, a port between 1024 and 65535, and the complete room key.',
+  '房间密钥不正确，请向主机确认后重试。':
+    'The room key is incorrect. Check with the host and try again.',
+  '房间已有 8 位成员，请等其他成员退出后再加入。':
+    'The room already has 8 people. Wait for someone to leave before joining.',
+  '主机已结束房间，你的本地工程已保留。':
+    'The host ended the room. Your local project has been retained.',
+  '远程协作需要桌面版。': 'Remote collaboration requires the desktop app.',
+  '请先退出协作，再打开或新建其他工程。':
+    'Leave the collaboration room before opening or creating another project.',
+  '有修改冲突，本地内容已保留。': 'Some edits conflict. Your local changes have been retained.',
+  协作中: 'Collaborating',
+  '已断开连接，下载的素材仍保留在本机。':
+    'Disconnected. Downloaded media remains available on this computer.',
+  '正在准备工程素材…': 'Preparing project media…',
+  '房间已开启，请把 IP、端口和密钥分享给可信伙伴。':
+    'Room open. Share the IP address, port, and key with trusted collaborators.',
+  '连接已中断，本地工程和下载的素材已保留。':
+    'Connection lost. Your local project and downloaded media are retained.',
+  '正在连接并下载工程素材…': 'Connecting and downloading project media…',
+  '已连接，编辑内容会与主机同步。': 'Connected. Edits synchronize with the host.',
+  '主机没有响应，请检查 IP、端口和网络连接。':
+    'The host did not respond. Check the IP address, port, and network connection.',
+  '素材传输超时，请检查网络后重试。': 'Media transfer timed out. Check your network and try again.',
+  '素材上传超时，请检查网络后重试。': 'Media upload timed out. Check your network and try again.',
+  '尚未连接协作房间。': 'Not connected to a collaboration room.',
+  '协作房间已关闭。': 'The collaboration room was closed.',
+  '请先重新导入丢失的素材，再共享工程。': 'Reimport missing media before sharing this project.',
+  '素材下载校验失败，请重新加入房间。':
+    'Media download failed integrity verification. Rejoin the room to retry.',
+  '用自己的电脑开房间，一起剪同一个工程。':
+    'Host a room on your computer and edit one project together.',
+  关闭协作面板: 'Close collaboration panel',
+  连接状态: 'Connection status',
+  房间已开启: 'Room is live',
+  已加入协作: 'Connected to room',
+  本机是主机: 'This computer is the host',
+  协作成员: 'Collaborator',
+  '把连接地址和房间密钥发给伙伴，保持本机和软件运行。':
+    'Share the address and room key with your collaborators. Keep this computer and FreeCut running.',
+  '你们的时间轴修改会同步，每个人可以独立预览。':
+    'Timeline edits are shared. Each person can preview independently.',
+  连接地址: 'Connection address',
+  '复制地址 {address}': 'Copy address {address}',
+  '未找到局域网地址，请检查本机网络连接。':
+    'No local network address found. Check your network connection.',
+  房间密钥: 'Room key',
+  复制房间密钥: 'Copy room key',
+  复制邀请码: 'Copy invite code',
+  已复制: 'Copied',
+  房间成员: 'People in this room',
+  剪辑伙伴: 'Collaborator',
+  你: 'You',
+  在线: 'Online',
+  协作方式: 'Collaboration mode',
+  本机开房间: 'Host a room',
+  加入房间: 'Join a room',
+  你的昵称: 'Your name',
+  选填: 'Optional',
+  让伙伴知道你是谁: 'How should others recognize you?',
+  连接方式: 'Connection method',
+  'IP 地址与端口': 'IP address & port',
+  邀请码: 'Invite code',
+  粘贴邀请码: 'Paste an invite code',
+  '邀请码包含地址和房间密钥，需要能直接连接主机。':
+    'The invite contains an address and room key. Your computer must be able to reach the host directly.',
+  '主机 IP 地址': 'Host IP address',
+  端口: 'Port',
+  由开房间的人提供: 'Ask the host for the room key',
+  共享当前工程: 'Share the current project',
+  '伙伴加入后会下载工程中引用的素材，不会获得你电脑上的其他文件。':
+    'Collaborators download the media referenced by this project. Other files on your computer are not shared.',
+  从主机同步工程与素材: 'Get the project and media from the host',
+  '加入后打开协作工程；当前工程的未保存修改会先询问保存。':
+    'Joining opens the shared project. You will be asked to save any unsaved changes first.',
+  '正在连接…': 'Connecting…',
+  开启房间并共享工程: 'Start room & share project',
+  连接并加入房间: 'Connect & join room',
+  '正在同步工程与素材…': 'Syncing project and media…',
+  保留本地并退出协作: 'Keep my version & leave room',
+  保存本地副本并采用房间版本: 'Save my copy & use room version',
+  '怎样让两台电脑连上？': 'How do I connect two computers?',
+  '无需公共服务器。同一局域网或同一 VPN 内，输入主机 IP、端口和房间密钥即可加入。':
+    'No public server is needed. On the same local network or VPN, enter the host IP, port, and room key to join.',
+  '这是未加密的直接连接，请在可信网络中使用。跨网络时需要先建立可信 VPN；邀请码不会自动穿透路由器。':
+    'This direct connection is unencrypted. Use a trusted network, or a trusted VPN between networks. Invite codes do not bypass routers.',
+  '仅共享当前工程及其引用的素材。素材会下载到参与者本机，方便各自预览、保存和导出。':
+    'Only the current project and its referenced media are shared. Media is downloaded to each participant’s computer for preview, saving, and export.',
+  '关闭面板后，协作连接仍会保留。': 'Closing this panel keeps you connected.',
+  '本机直连 · 无需注册账号': 'Direct connection · No account needed',
+  结束房间: 'End room',
+  离开房间: 'Leave room',
+  '端口请输入 1024 至 65535 之间的整数。': 'Enter a whole-number port between 1024 and 65535.',
+  '暂时无法复制，请选中文本后手动复制。':
+    'Copy is unavailable. Select the text and copy it manually.',
   ...enApp,
 };

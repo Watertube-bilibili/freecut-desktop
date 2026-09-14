@@ -1,4 +1,4 @@
-# FreeCut 0.3.1 Quickstart
+# FreeCut 0.4.0 Quickstart
 
 [简体中文](QUICKSTART.md) · [English](QUICKSTART.en.md)
 
@@ -10,10 +10,10 @@ Get one application file from [GitHub Releases](https://github.com/Watertube-bil
 
 | Computer / preference | File | Use |
 | --- | --- | --- |
-| Windows 10/11 x64, regular installation | `FreeCut-0.3.1-win-x64-Setup.exe` | Choose C drive, D drive, or a custom folder in the installer. |
-| Windows 10/11 x64, no installation | `FreeCut-0.3.1-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder when moving it. |
-| Mac with Apple silicon (M series) | `FreeCut-0.3.1-mac-arm64.dmg` | Open and drag FreeCut into Applications. |
-| Mac with an Intel processor | `FreeCut-0.3.1-mac-x64.dmg` | Open and drag FreeCut into Applications. |
+| Windows 10/11 x64, regular installation | `FreeCut-0.4.0-win-x64-Setup.exe` | Choose C drive, D drive, or a custom folder in the installer. |
+| Windows 10/11 x64, no installation | `FreeCut-0.4.0-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder when moving it. |
+| Mac with Apple silicon (M series) | `FreeCut-0.4.0-mac-arm64.dmg` | Open and drag FreeCut into Applications. |
+| Mac with an Intel processor | `FreeCut-0.4.0-mac-x64.dmg` | Open and drag FreeCut into Applications. |
 | Mac, archive preference | Matching `mac-arm64.zip` or `mac-x64.zip` | Extract FreeCut.app; choose ZIP or DMG, not both. |
 
 Check Apple menu → About This Mac for your chip. Source archives are for developers and license compliance; you do not need them to run the app. `SHA256SUMS.txt` provides download hashes. Windows builds are unsigned; Mac builds use an ad hoc signature and are not notarized. Mobile-style layout is inside the desktop application, not an iOS or Android app.
@@ -70,3 +70,7 @@ Home → Settings → Software updates checks this repository's Releases, downlo
 ## Current limits
 
 FreeCut does not yet provide every feature of established editors. Multi-select clips, nested timelines, multicam, proxy generation, speed curves, motion tracking, advanced color grading and cloud collaboration are still pending. Export is currently H.264/AAC MP4. Use the [English README](../README.en.md) and [feature matrix](FEATURE-MATRIX.md) for the implemented scope, and [verification record](VERIFICATION.md) for tested boundaries.
+
+## Direct collaboration
+
+Choose Remote collaboration from Home or the editor. Host a room or join with IPv4, port and room key / invite code. Shared media downloads automatically. Use a reachable trusted LAN or VPN; this authenticated HTTP connection is not additionally encrypted, and invites do not provide NAT traversal. Save before joining, resolve conflicts explicitly, and keep downloaded media with your project. See [the complete collaboration guide](COLLABORATION.md#english).

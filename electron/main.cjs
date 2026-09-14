@@ -14,6 +14,7 @@ const { createExporter, validateProject, validateOptions } = require('./export.c
 const { createCloseGuard } = require('./close-guard.cjs');
 const { createRecentProjects } = require('./recent-projects.cjs');
 const { createUpdater } = require('./updater.cjs');
+const { createCollaborationService } = require('./collaboration.cjs');
 const { prepareUpdateInstall } = require('./update-install.cjs');
 const appVersion = require('../package.json').version;
 let uiLanguage = 'zh-CN';
@@ -66,6 +67,7 @@ let window = null,
   shutdown = null,
   disposing = null;
 let updater = null,
+  collaboration = null,
   pendingUpdate = null,
   updateStarting = false,
   approvingQuit = false;
@@ -203,6 +205,7 @@ function disposeResources() {
       exporter?.dispose(),
       chattts?.dispose?.(),
       ai?.cancel?.(),
+      collaboration?.dispose(),
     ]).finally(() => {
       disposing = null;
     });
@@ -225,6 +228,22 @@ function installIPC() {
     return uiLanguage;
   });
   recentProjects = createRecentProjects({ userData: app.getPath('userData') });
+  collaboration = createCollaborationService({
+    userData: app.getPath('userData'),
+    resolveAsset: media.resolveAsset,
+    importPath,
+    emitState: (data) => {
+      if (window && !window.isDestroyed()) window.webContents.send('freecut:collaboration-state', data);
+    },
+    emitProject: (data) => {
+      if (window && !window.isDestroyed()) window.webContents.send('freecut:collaboration-project', data);
+    },
+  });
+  handle('freecut:collaboration-host', (options) => collaboration.host(options));
+  handle('freecut:collaboration-join', (options) => collaboration.join(options));
+  handle('freecut:collaboration-leave', () => collaboration.leave());
+  handle('freecut:collaboration-state', () => collaboration.state());
+  handle('freecut:collaboration-publish', (options) => collaboration.publish(options));
   exporter = createExporter({
     ffmpegPath,
     resolveAsset: media.resolveAsset,

@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Eye,
   EyeOff,
@@ -26,6 +26,7 @@ interface Props {
   commit: (f: (p: Project) => Project) => void;
   setLive: (p: Project) => void;
   record: (p: Project) => void;
+  onGestureChange?: (active: boolean) => void;
   addAsset: (id: string, trackId: string, start: number) => void;
   addTrack: () => void;
   onClipContextMenu: (event: React.MouseEvent, clipId: string) => void;
@@ -47,6 +48,7 @@ export default function Timeline({
   commit,
   setLive,
   record,
+  onGestureChange,
   addAsset,
   addTrack,
   onClipContextMenu,
@@ -56,6 +58,10 @@ export default function Timeline({
   const { t } = useI18n();
   const scroller = useRef<HTMLDivElement>(null),
     headerScroller = useRef<HTMLDivElement>(null);
+  const dragCleanup = useRef<(() => void) | undefined>(undefined);
+  const gestureChange = useRef(onGestureChange);
+  gestureChange.current = onGestureChange;
+  useEffect(() => () => dragCleanup.current?.(), []);
   const layouts = new Map(
     project.tracks.map((track) => {
       const ends: number[] = [],
@@ -103,16 +109,26 @@ export default function Timeline({
     );
   };
   function startDrag(e: React.PointerEvent, clip: Clip, mode: 'move' | 'left' | 'right') {
-    if (e.button !== 0 || project.tracks.find((t) => t.id === clip.trackId)?.locked) return;
+    if (
+      e.button !== 0 ||
+      dragCleanup.current ||
+      project.tracks.find((t) => t.id === clip.trackId)?.locked
+    )
+      return;
     e.preventDefault();
     e.stopPropagation();
     select(clip.id);
     const target = e.currentTarget as HTMLElement;
-    target.setPointerCapture(e.pointerId);
+    try {
+      target.setPointerCapture(e.pointerId);
+    } catch {
+      return;
+    }
     const origin = e.clientX,
       snapshot = project;
     let next = snapshot;
     let moved = false;
+    let ended = false;
     const move = (event: PointerEvent) => {
       const delta = (event.clientX - origin) / zoom;
       if (Math.abs(delta) < 0.01) return;
@@ -158,15 +174,30 @@ export default function Timeline({
       next = { ...snapshot, clips: snapshot.clips.map((c) => (c.id === clip.id ? edited : c)) };
       setLive(next);
     };
-    const end = () => {
+    const finish = (saveUndo: boolean) => {
+      if (ended) return;
+      ended = true;
       target.removeEventListener('pointermove', move);
       target.removeEventListener('pointerup', end);
       target.removeEventListener('pointercancel', end);
-      if (moved) record(snapshot);
+      target.removeEventListener('lostpointercapture', end);
+      dragCleanup.current = undefined;
+      try {
+        // Record before unlocking remote synchronization. An unmount may belong to
+        // a new project, so never push the old project's snapshot into its history.
+        if (saveUndo && moved) record(snapshot);
+      } finally {
+        if (target.hasPointerCapture(e.pointerId)) target.releasePointerCapture(e.pointerId);
+        gestureChange.current?.(false);
+      }
     };
+    const end = () => finish(true);
+    dragCleanup.current = () => finish(false);
     target.addEventListener('pointermove', move);
     target.addEventListener('pointerup', end);
     target.addEventListener('pointercancel', end);
+    target.addEventListener('lostpointercapture', end);
+    gestureChange.current?.(true);
   }
   const changeTrack = (id: string, values: Partial<Track>) =>
     commit((p) => ({ ...p, tracks: p.tracks.map((t) => (t.id === id ? { ...t, ...values } : t)) }));
