@@ -176,7 +176,7 @@ async function main() {
       const project = await save(client, 'client-joined.freecut');
       assert.equal(project.assets.length, 1);
       assert.notEqual(project.assets[0].path, green);
-      assert.ok(project.assets[0].path.startsWith(path.join(client.profile, 'collaboration')));
+      assert.equal(path.dirname(project.assets[0].path), await fs.realpath(path.join(client.profile, 'collaboration')));
       assert.deepEqual(await fs.readFile(project.assets[0].path), await fs.readFile(green));
       await expect.poll(async () => (await previewPixel(client))[1]).toBeGreaterThan(150);
     });
@@ -207,7 +207,7 @@ async function main() {
       const asset = project.assets.find((asset) => asset.name === 'shared-blue.png');
       assert.ok(asset);
       assert.notEqual(asset.path, blue);
-      assert.ok(asset.path.startsWith(path.join(host.profile, 'collaboration')));
+      assert.equal(path.dirname(asset.path), await fs.realpath(path.join(host.profile, 'collaboration')));
       assert.deepEqual(await fs.readFile(asset.path), await fs.readFile(blue));
       const clientProject = await save(client, 'client-with-guest-media.freecut');
       assert.equal(clientProject.clips.length, project.clips.length);
