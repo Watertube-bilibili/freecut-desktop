@@ -131,6 +131,13 @@ async function main() {
         width: innerWidth,
         height: innerHeight,
         documentWidth: document.documentElement.scrollWidth,
+        overflowingControls: Array.from(document.querySelectorAll('.topbar > *, .top-actions > *, .timeline-toolbar > *, .statusbar > *, .tool-nav > *, .workspace > *'))
+          .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
+          .map(element => {
+            const bounds = element.getBoundingClientRect();
+            return { element: element.tagName.toLowerCase(), className: element.className, title: element.getAttribute('title'), x: bounds.x, right: bounds.right, width: bounds.width };
+          })
+          .filter(bounds => bounds.x < -1 || bounds.right > innerWidth + 1),
         panels: selectors.flatMap((selector) =>
           Array.from(document.querySelectorAll(selector))
             .filter((e) => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden')
@@ -151,7 +158,7 @@ async function main() {
     });
     report.layouts ??= [];
     report.layouts.push({ label, ...boxes });
-    assert(boxes.documentWidth <= boxes.width + 1, label + ' has page-level horizontal overflow');
+    assert(boxes.documentWidth <= boxes.width + 1, label + ' has page-level horizontal overflow: ' + JSON.stringify({ width: boxes.width, documentWidth: boxes.documentWidth, controls: boxes.overflowingControls }));
     for (const b of boxes.panels)
       assert(
         b.x >= -1 && b.right <= boxes.width + 1,

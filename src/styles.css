@@ -1757,6 +1757,9 @@ kbd {
   }
 }
 @media (max-width: 1250px) {
+  .top-actions > button:not(.primary) > span {
+    display: none;
+  }
   .workspace {
     grid-template-columns: 59px 222px minmax(250px, 1fr) 259px;
   }

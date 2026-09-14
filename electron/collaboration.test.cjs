@@ -311,15 +311,28 @@ test(
           .status,
         400,
       );
+      const oversized = await raw(port, 'POST', '/v1/prepare', room.key, id, {
+        project: project(),
+        media: [],
+        padding: 'x'.repeat(LIMITS.project + 131073),
+      }).catch((failure) => {
+        // The server rejects the advertised length before reading the
+        // oversized body. macOS may report the peer closing the socket
+        // while this test client is still writing, before delivering 400.
+        if (!['ECONNRESET', 'EPIPE'].includes(failure.code)) throw failure;
+        return { reset: true };
+      });
+      assert(oversized.status === 400 || oversized.reset === true);
+      const afterOversized = await raw(port, 'GET', '/v1/events?since=0&sequence=0', room.key, id);
       assert.equal(
-        (
-          await raw(port, 'POST', '/v1/prepare', room.key, id, {
-            project: project(),
-            media: [],
-            padding: 'x'.repeat(LIMITS.project + 131073),
-          })
-        ).status,
-        400,
+        afterOversized.status,
+        200,
+        'the server remains available after rejecting the body',
+      );
+      assert.equal(
+        JSON.parse(afterOversized.text).revision,
+        0,
+        'the oversized body did not publish a project',
       );
       const source = project();
       source.assets.push({
