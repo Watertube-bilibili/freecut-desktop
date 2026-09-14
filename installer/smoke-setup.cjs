@@ -275,7 +275,9 @@ async function main() {
       'Setup installs one verified runtime and the original app.asar, preserving user files',
       async () => {
         await page.locator('#primary').click();
-        await expect(page.locator('#completeView')).toBeVisible();
+        // Installation copies and verifies hundreds of MB; Playwright's 5 s
+        // assertion default is shorter than a healthy install on slower disks.
+        await expect(page.locator('#completeView')).toBeVisible({ timeout: 120000 });
         const installed = await backend.inspectTarget(target, { update: true }),
           manifest = await backend.readManifest(path.join(source, backend.EMBEDDED_MANIFEST));
         assert.deepEqual(installed.installed.files, manifest.files);

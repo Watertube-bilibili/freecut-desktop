@@ -82,6 +82,9 @@ jobs:
             artifacts/FreeCut-ffmpeg-source-${{ matrix.engine }}.tar.gz
           key: ${{ steps.ffmpeg-cache.outputs.cache-primary-key }}
       - run: npm ci
+      - name: Prepare pinned Electron before parallel tests
+        timeout-minutes: 7
+        run: node scripts/prepare-electron.cjs
       - run: node scripts/prepare-ffmpeg.mjs
       - run: npm test
       - name: Verify bundled P2P notices
