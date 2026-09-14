@@ -7,7 +7,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
 const crypto = require('node:crypto');
-const { createCollaborationService } = require('./collaboration.cjs');
+const { createCollaborationService, createCollaborationStorage } = require('./collaboration.cjs');
 const {
   canonicalProject,
   validateManifest,
@@ -222,7 +222,9 @@ test(
       });
       assert.notEqual(joined.project.assets[0].path, source);
       assert(
-        joined.project.assets[0].path.startsWith(path.join(directory, 'guest', 'collaboration')),
+        joined.project.assets[0].path.startsWith(
+          await fs.realpath(path.join(directory, 'guest', 'collaboration')),
+        ),
       );
       assert.deepEqual(await fs.readFile(joined.project.assets[0].path), await fs.readFile(source));
       const remoteFile = path.join(directory, 'guest-import.wav');
@@ -231,7 +233,9 @@ test(
       const published = await guest.service.publish({ project: joined.project, baseRevision: 0 });
       assert.equal(published.ok, true);
       const received = host.events.at(-1).project.assets[1];
-      assert(received.path.startsWith(path.join(directory, 'host', 'collaboration')));
+      assert(
+        received.path.startsWith(await fs.realpath(path.join(directory, 'host', 'collaboration'))),
+      );
       assert.deepEqual(await fs.readFile(received.path), await fs.readFile(remoteFile));
       // Raw room protocol never contains host paths or local media access tokens.
       const rawJoin = await raw(port, 'POST', '/v1/join', room.key, null, {
@@ -538,6 +542,67 @@ test(
       assert.equal(result.project.clips[0].duration, 2);
       assert.equal(animated.clips[0].keyframes.x[0].time, 4, 'local draft was not altered');
     }),
+);
+
+test(
+  'storage accepts canonical profile aliases but rejects a redirected cache child',
+  { timeout: 15000 },
+  async () => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'freecut-collaboration-storage-'));
+    try {
+      const profile = path.join(directory, 'RealProfile');
+      const alias = path.join(directory, 'ProfileAlias');
+      const other = path.join(directory, 'OtherProfile');
+      const protectedDirectory = path.join(directory, 'Protected');
+      await fs.mkdir(profile);
+      await fs.mkdir(other);
+      await fs.mkdir(protectedDirectory);
+      await fs.writeFile(path.join(protectedDirectory, 'keep.txt'), 'must remain unchanged');
+      await fs.symlink(profile, alias, process.platform === 'win32' ? 'junction' : 'dir');
+      const storage = createCollaborationStorage(alias);
+      const root = await storage();
+      assert.equal(root, await fs.realpath(path.join(profile, 'collaboration')));
+      assert.equal(await storage(), root, 'a stable trusted parent alias remains accepted');
+      await fs.symlink(
+        protectedDirectory,
+        path.join(other, 'collaboration'),
+        process.platform === 'win32' ? 'junction' : 'dir',
+      );
+      await assert.rejects(createCollaborationStorage(other)(), /symbolic link/);
+      assert.deepEqual(await fs.readdir(protectedDirectory), ['keep.txt']);
+      assert.equal(
+        await fs.readFile(path.join(protectedDirectory, 'keep.txt'), 'utf8'),
+        'must remain unchanged',
+      );
+      // Changing the profile alias after the anchor was established is rejected.
+      await fs.unlink(alias);
+      await fs.symlink(other, alias, process.platform === 'win32' ? 'junction' : 'dir');
+      await assert.rejects(storage(), /profile location changed/);
+    } finally {
+      await fs.rm(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'Windows profile and cache casing differences resolve to the same anchored directory',
+  { skip: process.platform !== 'win32', timeout: 15000 },
+  async () => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'freecut-collaboration-case-'));
+    try {
+      const profile = path.join(directory, 'MixedCaseProfile');
+      await fs.mkdir(profile);
+      await fs.mkdir(path.join(profile, 'Collaboration'));
+      const provided = path
+        .join(directory, 'mixedcaseprofile')
+        .replace(/^[A-Z]:/, (drive) => drive.toLowerCase());
+      const root = await createCollaborationStorage(provided)();
+      assert.equal(root, await fs.realpath(path.join(profile, 'Collaboration')));
+      assert((await fs.lstat(root)).isDirectory());
+    } finally {
+      await fs.rm(directory, { recursive: true, force: true });
+    }
+  },
 );
 
 const ffmpeg =

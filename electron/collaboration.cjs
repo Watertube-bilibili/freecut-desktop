@@ -82,6 +82,34 @@ async function readJSON(stream, maximum = LIMITS.project + 131072) {
     throw Error('Invalid JSON request.');
   }
 }
+function createCollaborationStorage(userData) {
+  let anchor;
+  const comparable = (value) => (process.platform === 'win32' ? value.toLowerCase() : value);
+  return async () => {
+    // System profile parents may legitimately be aliases (/var on macOS,
+    // runner Temp paths or differently cased drive letters on Windows).
+    // Resolve that trusted parent first, then inspect our own child directly.
+    await fsp.mkdir(userData, { recursive: true });
+    const canonical = await fsp.realpath(userData);
+    if (anchor && comparable(anchor) !== comparable(canonical))
+      throw Error('Collaboration profile location changed.');
+    anchor ??= canonical;
+    const requested = path.join(anchor, 'collaboration');
+    try {
+      await fsp.mkdir(requested);
+    } catch (failure) {
+      if (failure.code !== 'EEXIST') throw failure;
+    }
+    const entry = await fsp.lstat(requested);
+    if (!entry.isDirectory() || entry.isSymbolicLink())
+      throw Error('Collaboration storage must not be a symbolic link.');
+    const root = await fsp.realpath(requested);
+    const parent = await fsp.realpath(path.dirname(root));
+    if (comparable(parent) !== comparable(anchor))
+      throw Error('Collaboration storage is outside its profile.');
+    return root;
+  };
+}
 function createCollaborationService({
   userData,
   resolveAsset,
@@ -89,7 +117,7 @@ function createCollaborationService({
   emitState = () => {},
   emitProject = () => {},
 }) {
-  const root = path.join(userData, 'collaboration');
+  const storage = createCollaborationStorage(userData);
   let mode = 'disconnected',
     peerId = crypto.randomUUID(),
     revision = 0,
@@ -175,16 +203,11 @@ function createCollaborationService({
     }
     update();
   }
-  async function storage() {
-    await fsp.mkdir(root, { recursive: true });
-    if ((await fsp.realpath(root)) !== path.resolve(root))
-      throw Error('Collaboration storage must not be a symbolic link.');
-  }
   async function storeStream(input, entry, expectedHash, activeGeneration) {
     if (transferCount >= LIMITS.transfers) throw Error('Too many simultaneous media transfers.');
     if (storedBytes + entry.size > LIMITS.room)
       throw Error('This room has reached its 32 GB media limit.');
-    await storage();
+    const root = await storage();
     const disk = await fsp.statfs(root);
     if (generation !== activeGeneration) throw Error('Collaboration was closed.');
     if (disk.bavail * disk.bsize < entry.size + 256 * 1024 ** 2)
@@ -854,4 +877,4 @@ function createCollaborationService({
   }
   return { state, host, join, leave, publish, dispose };
 }
-module.exports = { createCollaborationService };
+module.exports = { createCollaborationService, createCollaborationStorage };
