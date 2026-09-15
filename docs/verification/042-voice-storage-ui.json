@@ -1,0 +1,42 @@
+{
+  "version": "0.4.2",
+  "platform": "win32",
+  "startedAt": "2026-09-15T14:15:06.933Z",
+  "finishedAt": "2026-09-15T14:15:15.001Z",
+  "checks": [
+    {
+      "name": "Fresh Chinese interface keeps the model location off the automatic caption tab",
+      "passed": true
+    },
+    {
+      "name": "Canceling the native folder picker leaves the current location unchanged",
+      "passed": true
+    },
+    {
+      "name": "Choosing a parent creates FreeCut-VoiceModels and prevents concurrent voice operations while switching",
+      "passed": true
+    },
+    {
+      "name": "The full path is copyable and shared by both voice providers",
+      "passed": true
+    },
+    {
+      "name": "English labels and long folder paths fit a 1100 by 720 window",
+      "passed": true
+    },
+    {
+      "name": "The custom path and English choice survive a full Electron restart",
+      "passed": true
+    },
+    {
+      "name": "A rejected destination is translated without changing settings or overwriting files",
+      "passed": true
+    },
+    {
+      "name": "Restoring defaults retains the old custom folder and survives another restart",
+      "passed": true
+    }
+  ],
+  "rendererErrors": [],
+  "passed": true
+}

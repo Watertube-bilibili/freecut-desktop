@@ -22,7 +22,17 @@ export interface AIStatus {
   busy: boolean;
   models: AIModelStatus[];
 }
+export interface VoiceStorageState {
+  path: string;
+  defaultPath: string;
+  custom: boolean;
+  busy: boolean;
+}
 export interface AIApi {
+  voiceStorageStatus: () => Promise<VoiceStorageState>;
+  voiceStorageChoose: () => Promise<VoiceStorageState | null>;
+  voiceStorageReset: () => Promise<VoiceStorageState>;
+  voiceStorageCopy: () => Promise<void>;
   aiStatus: () => Promise<AIStatus>;
   aiInstall: (request: { modelId: AIModelId }) => Promise<AIStatus>;
   aiTranscribe: (request: {

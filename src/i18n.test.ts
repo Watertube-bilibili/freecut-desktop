@@ -92,6 +92,15 @@ describe('interface language', () => {
     expect(api.statusText('识别语句 2 / 5')).toBe('Transcribing sentence 2 / 5');
     expect(api.statusText('校验 中文模型.onnx')).toBe('Verifying 中文模型.onnx');
     expect(api.statusText('校验 设置')).toBe('Verifying 设置');
+    expect(api.statusText('准备 ChatTTS 还需要约 3.5 GB 可用空间。')).toBe(
+      'Preparing ChatTTS requires approximately 3.5 GB of additional free space.',
+    );
+    expect(api.statusText('ChatTTS 运行环境所在磁盘还需要约 1.2 GB 可用空间。')).toBe(
+      'The ChatTTS runtime drive needs approximately 1.2 GB of additional free space.',
+    );
+    expect(api.statusText('ChatTTS 模型所在磁盘还需要约 0.8 GB 可用空间。')).toBe(
+      'The ChatTTS model drive needs approximately 0.8 GB of additional free space.',
+    );
     expect(api.statusText('服务错误 E123：自定义详情')).toBe('Status: 服务错误 E123：自定义详情');
   });
 

@@ -68,6 +68,7 @@ let window = null,
   disposing = null;
 let updater = null,
   collaboration = null,
+  voiceStorage = null,
   pendingUpdate = null,
   updateStarting = false,
   approvingQuit = false;
@@ -206,6 +207,7 @@ function disposeResources() {
       chattts?.dispose?.(),
       ai?.cancel?.(),
       collaboration?.dispose(),
+      voiceStorage?.dispose(),
     ]).finally(() => {
       disposing = null;
     });
@@ -221,6 +223,25 @@ function completeQuit() {
 }
 
 function installIPC() {
+  voiceStorage = require('./voice-storage.cjs').createVoiceModelStorage({ userData: app.getPath('userData') });
+  handle('freecut:voice-storage-status', () => voiceStorage.status());
+  handle('freecut:voice-storage-copy', () => {
+    // Copy only the host-owned setting; the renderer cannot read the clipboard
+    // or use this channel to write arbitrary contents.
+    return require('electron').clipboard.writeText(voiceStorage.status().path);
+  });
+  handle('freecut:voice-storage-choose', async () => {
+    if (voiceStorage.status().busy) throw Error('语音模型正在下载、生成或切换目录，请完成或取消当前任务后重试。');
+    const selected = await dialog.showOpenDialog(window, {
+      title: uiText('选择语音模型存储位置', 'Choose voice model storage'),
+      buttonLabel: uiText('使用此文件夹', 'Use this folder'),
+      defaultPath: voiceStorage.status().path,
+      properties: ['openDirectory', 'createDirectory'],
+    });
+    if (selected.canceled || !selected.filePaths?.[0]) return null;
+    return voiceStorage.choose(selected.filePaths[0]);
+  });
+  handle('freecut:voice-storage-reset', () => voiceStorage.reset());
   handle('freecut:set-language', (language) => {
     if (language !== 'zh-CN' && language !== 'en') throw Error('Unsupported interface language');
     uiLanguage = language;
@@ -410,6 +431,7 @@ function installIPC() {
       importPath,
       validateSender,
       validateMediaPath: media.validateMediaPath,
+      voiceStorage,
     });
   if (fs.existsSync(path.join(__dirname, 'chattts.cjs')))
     chattts = require('./chattts.cjs').registerChatTTS({
@@ -417,6 +439,7 @@ function installIPC() {
       app,
       importPath,
       validateSender,
+      voiceStorage,
     });
   require('./sound-library.cjs').registerSoundLibrary({ ipcMain, app, importPath, validateSender });
 }

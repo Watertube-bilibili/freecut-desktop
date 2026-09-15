@@ -58,6 +58,21 @@ export function statusText(message: string): string {
   if (language === 'zh-CN') return message;
   if (Object.hasOwn(en, message)) return t(message);
   const patterns: [RegExp, string, string[]][] = [
+    [
+      /^准备 ChatTTS 还需要约 ([\d.]+) GB 可用空间。$/,
+      '准备 ChatTTS 还需要约 {size} GB 可用空间。',
+      ['size'],
+    ],
+    [
+      /^ChatTTS 运行环境所在磁盘还需要约 ([\d.]+) GB 可用空间。$/,
+      'ChatTTS 运行环境所在磁盘还需要约 {size} GB 可用空间。',
+      ['size'],
+    ],
+    [
+      /^ChatTTS 模型所在磁盘还需要约 ([\d.]+) GB 可用空间。$/,
+      'ChatTTS 模型所在磁盘还需要约 {size} GB 可用空间。',
+      ['size'],
+    ],
     [/^校验 (.+)$/, '校验 {name}', ['name']],
     [/^下载 (.+)$/, '下载 {name}', ['name']],
     [/^续传 (.+)$/, '续传 {name}', ['name']],

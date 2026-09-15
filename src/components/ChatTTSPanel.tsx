@@ -231,7 +231,15 @@ export default function ChatTTSPanel({ onAddAsset }: { onAddAsset: (asset: Media
       {error && (
         <div className="chattts-error" role="alert">
           <strong>{t('操作未完成')}</strong>
-          <p>{t('错误详情：{detail}', { detail: t(error) })}</p>
+          <p>
+            {t('错误详情：{detail}', {
+              detail: statusText(
+                error
+                  .replace(/^Error invoking remote method '[^']+':\s*/u, '')
+                  .replace(/^(?:Error:\s*)+/u, ''),
+              ),
+            })}
+          </p>
         </div>
       )}
       {audio && (

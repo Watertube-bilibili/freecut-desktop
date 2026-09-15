@@ -207,11 +207,16 @@ async function installed(directory, full = false) {
   } catch { return false; }
 }
 
-function createAIService({ app, ffmpegPath, importPath, validateMediaPath }) {
+async function installedModelFiles(directory) {
+  const receipt = JSON.parse(await fsp.readFile(path.join(directory, 'installed.json'), 'utf8'));
+  return [...receipt.files.map(file => file.name), 'installed.json'];
+}
+
+function createAIService({ app, ffmpegPath, importPath, validateMediaPath, voiceStorage }) {
   const base = path.join(app.getPath('userData'), 'ai');
   const runtime = path.join(base, `runtime-${VERSION}-${process.platform}-${process.arch}`);
   const native = NATIVE[`${process.platform}-${process.arch}`];
-  const modelPath = id => path.join(base, id + '-v1');
+  const modelPath = id => id === 'tts-zh' && voiceStorage ? voiceStorage.modelPath(id) : path.join(base, id + '-v1');
   let active;
   const status = async () => ({ supported: !!native, platform: `${process.platform}-${process.arch}`, runtimeReady: await installed(runtime, true), busy: !!active,
     models: await Promise.all(Object.entries(MODELS).map(async ([id, m]) => ({ id, name: m.name, bytes: m.bytes, diskBytes: m.diskBytes, license: m.license, installed: await installed(modelPath(id), true) }))) });
@@ -226,6 +231,7 @@ function createAIService({ app, ffmpegPath, importPath, validateMediaPath }) {
   async function operation(progress, fn, context = {}) {
     if (active) throw Error('已有 AI 任务运行中，请等待或取消');
     if (!native) throw Error('当前仅支持 Windows x64 和 macOS x64 / arm64');
+    const release = voiceStorage?.beginTask();
     const controller = new AbortController(); active = controller;
     let phase = '准备';
     const emit = data => { phase = data.message || data.phase; if (!controller.signal.aborted) progress(data); };
@@ -235,21 +241,27 @@ function createAIService({ app, ffmpegPath, importPath, validateMediaPath }) {
       await diagnostic({ ...context, result: controller.signal.aborted ? 'cancelled' : 'failed', phase, error: message.slice(0, 4000), code: errorCode(error) });
       progress({ phase: 'error', message, progress: 0 }); throw Error(message);
     }
-    finally { active = undefined; }
+    finally { active = undefined; release?.(); }
   }
   async function installOne(target, build, signal) {
     if (await installed(target, true)) return;
     const stage = target + '-staging-' + crypto.randomUUID();
+    const permitted = target === runtime || Object.keys(MODELS).some(id => target === modelPath(id));
+    if (!permitted || path.dirname(stage) !== path.dirname(target)) throw Error('无效安装目录');
     try {
+      await voiceStorage?.ensureDirectory(path.dirname(target));
       await fsp.mkdir(stage, { recursive: true }); await build(stage); signal.throwIfAborted(); await manifest(stage);
+      if (target === modelPath('tts-zh')) await voiceStorage?.markModel('tts-zh', stage);
       // Only app-owned, validated siblings can be replaced.
-      if (!inside(base, target) || !inside(base, stage)) throw Error('无效安装目录');
+      if (!voiceStorage && (!inside(base, target) || !inside(base, stage))) throw Error('无效安装目录');
+      for (const directory of [stage, target]) { const info = await fsp.lstat(directory).catch(error => { if (error.code === 'ENOENT') return null; throw error; }); if (info && (!info.isDirectory() || info.isSymbolicLink())) throw Error('模型安装目录不能是链接或文件'); }
       if (await exists(target)) await fsp.rm(target, { recursive: true, force: true });
       await fsp.rename(stage, target);
-    } finally { if (inside(base, stage)) await fsp.rm(stage, { recursive: true, force: true }); }
+    } finally { if (permitted && path.dirname(stage) === path.dirname(target) && stage.startsWith(target + '-staging-')) await fsp.rm(stage, { recursive: true, force: true }); }
   }
   const install = (id, progress) => operation(progress, async (signal, emit) => {
     if (!Object.hasOwn(MODELS, id)) throw Error('未知模型');
+    if (id === 'tts-zh') await voiceStorage?.assertModelWritable(id);
     await installOne(runtime, async stage => {
       for (const pkg of [RUNTIME, native]) {
         const archive = await download(packageFile(pkg), path.join(base, 'downloads'), emit, signal);
@@ -258,8 +270,10 @@ function createAIService({ app, ffmpegPath, importPath, validateMediaPath }) {
       }
     }, signal);
     await installOne(modelPath(id), async stage => {
+      const downloads = id === 'tts-zh' && voiceStorage ? voiceStorage.cachePath(id) : path.join(base, 'downloads');
+      await voiceStorage?.ensureDirectory(downloads);
       for (const spec of MODELS[id].files) {
-        const source = await download(spec, path.join(base, 'downloads'), emit, signal);
+        const source = await download(spec, downloads, emit, signal);
         emit({ phase: 'installing', message: '安装模型到本机', progress: 0 });
         if (id === 'tts-zh') await extract(source, stage, true, signal);
         else await fsp.copyFile(source, path.join(stage, spec.name));
@@ -388,5 +402,5 @@ function speechSpans(samples, rate) {
   return spans;
 }
 
-module.exports = { registerAI, createAIService, MODELS, NATIVE, verifyFile, extract, speechSpans, download, describeError };
+module.exports = { registerAI, createAIService, MODELS, NATIVE, verifyFile, extract, speechSpans, download, describeError, installedModelFiles, verifyInstalledModel: directory => installed(directory, true) };
 if (process.argv.includes('--freecut-ai-worker') && process.send) process.once('message', request => worker(request).then(value => { process.send({ type: 'result', value }, () => process.exit(0)); }).catch(error => { process.send({ type: 'error', message: error.message }, () => process.exit(1)); }));

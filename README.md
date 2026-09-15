@@ -14,9 +14,11 @@
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-当前已发布 **0.4.1 预览版**，新增异地邀请码协作，并修复播放和拖动时间线时预览长时间不刷新。Windows 安装版 / 便携版、Mac Apple Silicon / Intel 的 DMG / ZIP 均已通过构建及打包验证，可从 [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.1-preview.1) 下载。软件并未完整覆盖剪映。无账户要求；单人媒体处理在本地，开启协作后工程和素材会传给房间成员。
+当前版本为 **0.4.2 预览版**，新增自定义朗读模型下载目录。在“AI 语音 → 语音朗读”选择父目录后，软件自动创建 `FreeCut-VoiceModels` 子目录，用于 ChatTTS、轻量 AISHELL 中文朗读模型及其模型缓存。发布和安装包状态见 [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1)，本次验证单独记录在 [0.4.2 验证记录](docs/VERIFICATION-042.md)。软件并未完整覆盖剪映。无账户要求；单人媒体处理在本地，开启协作后工程和素材会传给房间成员。
 
-0.4.1 已通过本机双桌面应用协作、Windows 与异地 Linux 机器之间的真实加密工程/素材传输，以及 Windows 打包程序中的原生传输检查；窄窗口工具栏自动收紧文字。具体样本、时间、最终发行状态和适用范围见 [0.4.1 验证记录](docs/VERIFICATION-041.md)及[跨网测试摘要](docs/verification/041-internet.json)。旧版安装图标与导出改造记录保留在 [0.3.2 验证记录](docs/VERIFICATION-032.md)。
+历史 0.4.1 已通过本机双桌面应用协作、Windows 与异地 Linux 机器之间的真实加密工程/素材传输，以及 Windows 打包程序中的原生传输检查；窄窗口工具栏自动收紧文字。具体样本、时间、发行状态和适用范围见 [0.4.1 验证记录](docs/VERIFICATION-041.md)及[跨网测试摘要](docs/verification/041-internet.json)，这些结果不等同于 0.4.2 已重新完成跨网测试。旧版安装图标与导出改造记录保留在 [0.3.2 验证记录](docs/VERIFICATION-032.md)。
+
+切换朗读模型目录时，已完整安装的模型先复制、校验，成功后才启用新位置，源文件保留；失败则继续使用原目录。旧下载缓存和未完成文件保留原位，不参与迁移，后续朗读模型下载缓存使用新位置。下载或生成期间不能切换，可恢复默认，并记住下次启动的选择。Python、sherpa 运行环境、生成的音频，以及 SenseVoice / Whisper 自动字幕模型仍在原位置；自定义的是朗读模型和后续模型缓存，不能把整个应用的数据目录一起搬走。详见[模型目录说明](docs/AI-MODELS.md#自定义朗读模型目录)。
 
 预览播放现在使用连续解码，拖动时合并待处理请求，不再反复取消尚未完成的画面；暂停后仍精确定位，导出保持独立逐帧渲染。“远程协作”默认使用异地邀请码：一台电脑创建房间，另一台粘贴邀请码，软件通过公开发现节点寻找对方并尝试 NAT 穿透，使用加密点对点连接自动传输素材和编辑。不需要注册账户、自建服务器或另装 VPN；房主需持续在线。部分受限网络不能直连，当前不提供媒体流量中继，不能保证所有网络都可连接。高级选项保留旧的 IP＋端口局域网方式。操作、隐私和容量限制见 [协作说明](docs/COLLABORATION.md)。
 
@@ -63,20 +65,21 @@
 - 本机主持的异地邀请码协作，自动发现、尝试穿透并建立加密连接，无需额外 VPN；同步工程与素材，独立编辑自动合并，同参数冲突保留草稿。高级选项保留 IP＋端口局域网协作。
 - 左上角切换专业布局 / 手机风格，首次启动引导重点介绍切换入口。
 - 按需下载开源运行环境和模型：自动识别字幕、中文语音朗读、ChatTTS 自然对话朗读。安装后本地执行，不上传音视频。
+- 自定义 ChatTTS 与轻量中文朗读模型的存放目录；已有模型复制校验后启用，支持恢复默认，中英文界面均可操作。
 - 独立设计的 Windows 安装界面，一键安装到 C 盘、D 盘或自定义目录；自动从本仓库 Release 检查、校验、下载更新，安装前保留未保存工程提示。
 
 ## 下载和运行
 
-[下载 0.4.1 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.1-preview.1)：下表中的安装包均已发布，另附匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
+[查看 0.4.2 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1)：下表为本次安装包文件名，正式下载以该 Release 的已发布附件为准，另附匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 
 | 你的电脑 / 用途 | 推荐下载 | 说明 |
 | --- | --- | --- |
-| Windows 10/11 x64，日常使用 | `FreeCut-0.4.1-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘；覆盖安装会修复符合条件的旧快捷方式与图标。 |
-| Windows 10/11 x64，免安装 | `FreeCut-0.4.1-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表与模型，移动时一起保留。 |
-| Mac M 系列芯片 | `FreeCut-0.4.1-mac-arm64.dmg` | 打开后拖入 Applications。 |
-| Mac Intel 处理器 | `FreeCut-0.4.1-mac-x64.dmg` | 安装方法同上。 |
+| Windows 10/11 x64，日常使用 | `FreeCut-0.4.2-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘；覆盖安装会修复符合条件的旧快捷方式与图标。 |
+| Windows 10/11 x64，免安装 | `FreeCut-0.4.2-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表与默认模型，移动时一起保留；另选的朗读模型目录也需保留。 |
+| Mac M 系列芯片 | `FreeCut-0.4.2-mac-arm64.dmg` | 打开后拖入 Applications。 |
+| Mac Intel 处理器 | `FreeCut-0.4.2-mac-x64.dmg` | 安装方法同上。 |
 | Mac 需要 ZIP | 对应芯片的 `mac-arm64.zip` / `mac-x64.zip` | 解压得到同一应用；DMG、ZIP 任选一种。 |
 
 普通使用只需一份应用包，无需下载 `source` 源码包。Mac 可在「 → 关于本机」查看芯片。Windows 未签名；Mac 使用临时签名，尚未配置正式 Developer ID 和 Apple 公证。
@@ -123,7 +126,7 @@ node installer/smoke.cjs
 
 桌面回归覆盖保存退出、真实视频定位、普通关键帧、预览拖拽、蒙版像素、短窗口滚动、立体声预览与导出，以及更新时的保存/取消/失败路径。脚本使用独立临时用户目录；更新回归仅替换网络响应和最后的安装启动器，不改用户安装。`npm run test:desktop` 完成构建和桌面回归。真实语音测试脚本默认禁止下载；命令与模型验收结果见模型文档。
 
-历史 0.3.2 发布构建对应 `aba5cac`，Windows x64、Mac Intel 和 Apple 芯片均通过该版本 CI 的回归和打包后媒体验收。详细范围见[旧版验证记录](docs/VERIFICATION-032.md)和[对应 CI](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722)；0.4.1 的验证状态单独记录在 [本次验证记录](docs/VERIFICATION-041.md)。这些结果不代表所有硬件、素材和长工程均已验证。
+历史 0.3.2 发布构建对应 `aba5cac`，Windows x64、Mac Intel 和 Apple 芯片均通过该版本 CI 的回归和打包后媒体验收。详细范围见[旧版验证记录](docs/VERIFICATION-032.md)和[对应 CI](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722)；0.4.1 的历史结果见[协作验证记录](docs/VERIFICATION-041.md)，0.4.2 的目录设置和发行检查见[本次验证记录](docs/VERIFICATION-042.md)。这些结果不代表所有硬件、素材和长工程均已验证。
 
 同工程导出对照中，普通剪辑样本从 **18.025 秒降至 3.070 秒**；带叠加画面的复杂样本从 **15.170 秒变为 15.761 秒，没有提速**。这些是指定设备和样本的实测结果，不能推算所有项目的加速倍数；测试方法与范围见[导出验证记录](docs/VERIFICATION-032.md)。
 

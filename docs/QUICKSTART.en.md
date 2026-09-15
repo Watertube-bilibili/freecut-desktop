@@ -1,4 +1,4 @@
-# FreeCut 0.4.1 Quickstart
+# FreeCut 0.4.2 Quickstart
 
 [简体中文](QUICKSTART.md) · [English](QUICKSTART.en.md)
 
@@ -10,10 +10,10 @@ Get one application file from [GitHub Releases](https://github.com/Watertube-bil
 
 | Computer / preference | File | Use |
 | --- | --- | --- |
-| Windows 10/11 x64, regular installation | `FreeCut-0.4.1-win-x64-Setup.exe` | Choose C drive, D drive, or a custom folder in the installer. |
-| Windows 10/11 x64, no installation | `FreeCut-0.4.1-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder when moving it. |
-| Mac with Apple silicon (M series) | `FreeCut-0.4.1-mac-arm64.dmg` | Open and drag FreeCut into Applications. |
-| Mac with an Intel processor | `FreeCut-0.4.1-mac-x64.dmg` | Open and drag FreeCut into Applications. |
+| Windows 10/11 x64, regular installation | `FreeCut-0.4.2-win-x64-Setup.exe` | Choose C drive, D drive, or a custom folder in the installer. |
+| Windows 10/11 x64, no installation | `FreeCut-0.4.2-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder and any separately selected speech-model folder when moving the app. |
+| Mac with Apple silicon (M series) | `FreeCut-0.4.2-mac-arm64.dmg` | Open and drag FreeCut into Applications. |
+| Mac with an Intel processor | `FreeCut-0.4.2-mac-x64.dmg` | Open and drag FreeCut into Applications. |
 | Mac, archive preference | Matching `mac-arm64.zip` or `mac-x64.zip` | Extract FreeCut.app; choose ZIP or DMG, not both. |
 
 Check Apple menu → About This Mac for your chip. Source archives are for developers and license compliance; you do not need them to run the app. `SHA256SUMS.txt` provides download hashes. Windows builds are unsigned; Mac builds use an ad hoc signature and are not notarized. Mobile-style layout is inside the desktop application, not an iOS or Android app.
@@ -60,6 +60,12 @@ Text inputs keep their normal editing shortcuts. In a menu, use arrows to naviga
 The built-in sound library contains 16 original synthesized CC0 sound effects that can be previewed and inserted directly. Audio controls offer stereo balance, separate left/right gains, left-only, right-only, mixed mono and swapped channels. These do not separate voices from a mixed recording.
 
 AI Voice provides optional SenseVoice or Whisper tiny automatic captions, Chinese VITS speech, and experimental ChatTTS. Download the runtime and model from their panels, then generate locally. These are not bundled with the installer. Downloads can be cancelled and retried, with integrity checks and resume support. Review transcription and speech results before publishing. ChatTTS's official model is CC BY-NC 4.0 and is limited to non-commercial use; other models have their own terms. FreeCut's free software policy does not change third-party licenses. Optional model inference on Mac still needs device validation.
+
+In 0.4.2, open **AI Voice → Text to speech** to choose a model-download parent folder. FreeCut creates a `FreeCut-VoiceModels` subfolder automatically; choosing `D:\Models`, for example, uses `D:\Models\FreeCut-VoiceModels`. This location holds ChatTTS and lightweight AISHELL Chinese speech models and their model caches.
+
+Fully installed models are copied and verified before the new location becomes active. Original files remain, and a failed change keeps the previous location. Existing download caches and incomplete files are not copied; subsequent model downloads use the new cache location. Folder changes are blocked during downloads or generation. You can restore the default, and your choice persists across restarts. Copying requires space for both model copies and does not automatically reclaim the original files or old caches.
+
+Python and sherpa runtimes, generated audio, and SenseVoice/Whisper caption models stay in their original locations. Keep those locations writable and retain audio referenced by projects. A separately selected model folder does not move automatically with Portable. This setting does not move all application data or change any model license.
 
 ## Saving and updates
 

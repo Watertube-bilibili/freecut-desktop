@@ -51,13 +51,11 @@ if(mode==='verify'){
 
 ## 本次更新
 
-- 修复视频播放和拖动时间线时预览长时间停在旧画面：播放使用连续解码，拖动合并待处理请求，完成当前画面后优先显示最新位置。专业布局和手机布局采用同一修复，暂停定位仍精确。
-- 新增异地邀请码协作：首页或编辑器进入“远程协作”，保持默认异地方式创建房间，对方粘贴邀请码即可尝试连接，无需另装 VPN、注册账户或自建服务器。高级选项保留 IP＋端口局域网连接。
-- 工程和素材双向同步，不同位置的编辑自动合并；同参数冲突保留本地草稿并提供选择。拖动中收到远端修改会延后处理，防止覆盖未完成的操作；播放位置与选中对象各自独立。
-- 异地方式通过公开发现节点和 NAT 穿透建立 Noise 加密点对点连接，房主需保持在线。部分受限网络无法直连，当前没有媒体流量中继。旧 LAN 模式的 HTTP 未额外加密。连接期间可取消；隐私、容量与缓存说明见 docs/COLLABORATION.md。
-- 保留自动 FFmpeg 原生导出和复杂画面的 RGBA 管道；本次预览修复不改变导出的精确逐帧路径，也不承诺所有机器和工程固定帧率。
-- 保留带封面 FLAC 的音频识别和旧版快捷方式图标修复。需要更新已安装桌面入口时，请下载 Setup 覆盖安装；便携版不会改写快捷方式。
-- 同步中英文 README、协作说明、安装包选择和实际验证记录。
+- 新增自定义朗读模型目录：在“AI 语音 → 语音朗读”选择父目录，软件自动创建 FreeCut-VoiceModels 子目录，存放 ChatTTS、轻量 AISHELL 中文朗读模型及其模型缓存。
+- 已完整安装的模型先复制并校验，成功后才启用新位置，源文件保留；复制、校验或配置保存失败时继续使用原目录。旧下载缓存和未完成文件不复制，后续模型下载缓存使用新位置。不会在切换时自动删除原模型或旧缓存，因此需为新旧两份模型预留空间。
+- 下载或生成期间禁止切换；支持恢复默认，并跨次启动记住配置。中英文界面都能设置模型目录。
+- Python、sherpa 运行环境、生成音频和 SenseVoice / Whisper 自动字幕模型保留原位置。本次只调整朗读模型及其模型缓存，不迁移整个应用数据目录，也不改变模型许可。
+- 同步中英文 README、模型说明和使用教程。保留连续预览、异地邀请码协作、FFmpeg 原生导出、复杂画面 RGBA 管道、带封面音频识别与旧快捷方式修复；本次未新增其他编辑功能。
 - 保留中英文界面、右键剪辑、双布局、直接拖动/缩放/旋转、易用关键帧、蒙版、原创滤镜与音效、左右声道、自动字幕和语音朗读。首次启动默认简体中文，可切换并记住 English。
 - 全部功能永久免费，不设会员、不设付费解锁，导出无水印。
 
@@ -65,11 +63,11 @@ if(mode==='verify'){
 
 FreeCut is a free, open-source desktop video editor created by a junior high school student using GPT-6 and Codex. All features are free forever, with no membership, paid unlocks or export watermark.
 
-This release fixes stalled preview playback and scrubbing in both layouts. Playback decodes continuously, while scrubbing coalesces pending work instead of repeatedly cancelling unfinished frames. Paused positioning remains precise, and the frame-exact export path stays separate. Frame rates still depend on the project and hardware.
+This release adds a custom speech-model download location. Open AI Voice → Text to speech and choose a parent folder. FreeCut automatically creates a FreeCut-VoiceModels subfolder for ChatTTS, lightweight AISHELL Chinese speech models, and their model caches.
 
-Remote collaboration is hosted on your own computer. Create the default Internet room and share its invitation; the other participant pastes it to connect without an account, self-deployed server or separate VPN. Projects and media synchronize in both directions. Disjoint edits merge automatically; conflicts preserve your local draft. Remote changes wait until an active drag finishes, and each editor keeps an independent playhead and selection.
+Fully installed models are copied and verified before the new location becomes active. Original files remain; failed copying, verification or configuration changes keep the previous location. Existing download caches and incomplete files are not copied; subsequent model downloads use the new cache location. Downloads and generation block folder changes. You can restore the default location, and the setting persists across restarts in both interface languages. Copying needs space for both model copies and does not automatically remove original files or old caches.
 
-Public discovery nodes and NAT traversal attempt a Noise-encrypted peer-to-peer connection. Keep the host online. Some restrictive networks prevent direct connections; no bulk media relay is included and universal connectivity is not promised. Advanced LAN mode retains unencrypted authenticated HTTP for trusted networks. Connections can be cancelled. Privacy, limits, caches and conflicts are documented in docs/COLLABORATION.md. Native export, the RGBA pipe, audio artwork classification and shortcut repair remain available. Use Setup to update an installed desktop shortcut; Portable does not change shortcuts.
+Python and sherpa runtimes, generated audio, and SenseVoice/Whisper caption models remain in their original locations. This setting does not relocate all application data or change any model license. Existing continuous preview, invite-code collaboration, native FFmpeg export, the RGBA pipe, audio artwork handling and shortcut repairs remain available; no other editing feature is added in this release.
 
 The first launch still defaults to Simplified Chinese: choose English in Home → Settings → Language, or the editor's language selector. The choice persists, and your project text is never translated automatically. Context menus, dual layouts, Easy keyframes, preview transforms, masks, color presets, sound effects, stereo routing, captions and local voice tools remain available.
 
@@ -82,7 +80,7 @@ Download one app package below. Windows: Setup for installation, Portable for a 
 | 你的电脑 / 使用方式 | 推荐下载 | 说明 |
 | --- | --- | --- |
 | Windows 10/11，日常使用 | FreeCut-${version}-win-x64-Setup.exe | 独立安装页面，选择 C/D 或自定义目录，创建快捷方式。 |
-| Windows 10/11，希望免安装或随盘携带 | FreeCut-${version}-win-x64-Portable.exe | 便携版，放到可写文件夹后直接运行。设置、最近列表与模型保存在旁边的 FreeCutData，移动时一起保留。 |
+| Windows 10/11，希望免安装或随盘携带 | FreeCut-${version}-win-x64-Portable.exe | 便携版，放到可写文件夹后直接运行。设置、最近列表与默认模型保存在旁边的 FreeCutData，移动时一起保留；另选的朗读模型目录也需保留。 |
 | Mac，Apple 芯片（M 系列） | FreeCut-${version}-mac-arm64.dmg | 打开 DMG，把 FreeCut 拖到 Applications。 |
 | Mac，Intel 处理器 | FreeCut-${version}-mac-x64.dmg | 适用于 Intel Mac，安装方式同上。 |
 | Mac，需要压缩包形式 | 对应芯片的 mac-arm64.zip 或 mac-x64.zip | 解压得到同一版本的 FreeCut.app；DMG 和 ZIP 任选其一。 |
@@ -95,13 +93,13 @@ FreeCut-project-source-*.tar.gz 是本次应用源码，FreeCut-ffmpeg-source-*.
 
 ## 发布验证与说明
 
-Windows x64、Mac arm64、Mac x64 的构建均通过核心/宿主测试、实际桌面回归及打包应用的导入、保存重开和 MP4 导出。详见[本次构建记录](https://github.com/${repo}/actions/runs/${runId})与随附源码的 docs/VERIFICATION-041.md；记录区分本机双应用、隔离 DHT 和真实公网测试，不将单个网络结果扩大到所有路由器或大型素材库。预览测量仅适用于测试样本，不作为固定帧率承诺。源码提交：${build.head_sha}。
+Windows x64、Mac arm64、Mac x64 的构建均通过核心/宿主测试、实际桌面回归及打包应用的导入、保存重开和 MP4 导出。详见[本次构建记录](https://github.com/${repo}/actions/runs/${runId})与随附源码的 docs/VERIFICATION-042.md；模型目录复制、校验、失败回滚和界面的实际验证范围在其中单独记录。历史异地协作结果仍见 docs/VERIFICATION-041.md，不冒充本版本重新完成的公网测试。源码提交：${build.head_sha}。
 
 Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按各自许可另行下载，ChatTTS 官方模型为 CC BY-NC 4.0，仅限非商业用途；Mac 的可选模型推理仍需设备验收。本项目为持续开发的预览版，功能范围与尚未完成能力见 docs/FEATURE-MATRIX.md。
 
 来源、依赖许可、品牌及专利边界排查见 docs/RELEASE-REVIEW-030.md；工程核查不等于商标核准、专利自由实施意见或零诉讼风险承诺。免费剪辑不改变第三方模型的用途限制。
 
-新增 P2P 依赖的原始声明与原生子库来源随安装包提供，见[本次依赖清单](https://github.com/${repo}/blob/main/docs/third-party/p2p/README.md)。其中 noise-curve-ed 2.1.0 的上游只提供 ISC 元数据，完整版权人及许可原文仍待补充；清单如实保留该未解项，不宣称许可或专利风险为零。
+既有 P2P 依赖的原始声明与原生子库来源随安装包提供，见[依赖清单](https://github.com/${repo}/blob/main/docs/third-party/p2p/README.md)。其中 noise-curve-ed 2.1.0 的上游只提供 ISC 元数据，完整版权人及许可原文仍待补充；清单如实保留该未解项，不宣称许可或专利风险为零。
 
 欢迎下载体验和支持开源：[B站 @我叫水管同学](https://space.bilibili.com/390310418)。[爱发电自愿支持](https://afdian.com/a/watertube)不影响任何功能使用。
 `;

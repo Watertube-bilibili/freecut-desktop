@@ -1,4 +1,4 @@
-# 水管剪辑 0.4.1 使用说明
+# 水管剪辑 0.4.2 使用说明
 
 [简体中文](QUICKSTART.md) · [English](QUICKSTART.en.md)
 
@@ -10,11 +10,11 @@
 
 | 电脑或用途 | 下载文件 | 使用方式 |
 | --- | --- | --- |
-| Windows 10/11 x64，日常使用 | `FreeCut-0.4.1-win-x64-Setup.exe` | 自定义安装页面选择 C 盘、D 盘或自定义目录，安装后通过快捷方式打开。 |
-| Windows 10/11 x64，免安装 | `FreeCut-0.4.1-win-x64-Portable.exe` | 放到可写文件夹直接运行。旁边的 `FreeCutData` 保存设置、最近项目列表和模型，移动时一起保留。 |
-| Mac Apple 芯片（M 系列） | `FreeCut-0.4.1-mac-arm64.dmg` | 打开后把 FreeCut 拖入 Applications。 |
-| Mac Intel 处理器 | `FreeCut-0.4.1-mac-x64.dmg` | 安装方法同上。 |
-| Mac 压缩包 | `FreeCut-0.4.1-mac-arm64.zip` 或 `FreeCut-0.4.1-mac-x64.zip` | 解压得到对应芯片的 FreeCut.app；与 DMG 任选一种。 |
+| Windows 10/11 x64，日常使用 | `FreeCut-0.4.2-win-x64-Setup.exe` | 自定义安装页面选择 C 盘、D 盘或自定义目录，安装后通过快捷方式打开。 |
+| Windows 10/11 x64，免安装 | `FreeCut-0.4.2-win-x64-Portable.exe` | 放到可写文件夹直接运行。旁边的 `FreeCutData` 保存设置、最近项目列表和默认模型，移动时一起保留；另选的朗读模型目录也需保留。 |
+| Mac Apple 芯片（M 系列） | `FreeCut-0.4.2-mac-arm64.dmg` | 打开后把 FreeCut 拖入 Applications。 |
+| Mac Intel 处理器 | `FreeCut-0.4.2-mac-x64.dmg` | 安装方法同上。 |
+| Mac 压缩包 | `FreeCut-0.4.2-mac-arm64.zip` 或 `FreeCut-0.4.2-mac-x64.zip` | 解压得到对应芯片的 FreeCut.app；与 DMG 任选一种。 |
 
 Mac 的「 → 关于本机」可查看芯片。普通用户只需下载一份应用包，不需要下载 `source` 源码归档。`SHA256SUMS.txt` 提供各文件校验值。
 
@@ -95,10 +95,13 @@ SenseVoice 下载改为分段续传并做完整散列校验。下载后立即报
 
 ## 语音朗读和 ChatTTS
 
-1. 打开“AI 语音 → 语音朗读”，选择语音引擎。
-2. AISHELL-3 提供较轻的中文朗读；ChatTTS 用于自然对话配音。
-3. 首次点击对应的一键下载按钮。ChatTTS 会自动准备独立 Python、依赖和模型，并做真实语音自检；首次下载可能超过 2 GB，预留至少 6 GB 空间。
-4. 输入文本、选择音色/语速，点击生成，先试听，再加入时间线。ChatTTS 每段最多 300 字，CPU 生成较慢，建议分段。
+1. 打开“AI 语音 → 语音朗读”，选择语音引擎。AISHELL-3 提供较轻的中文朗读；ChatTTS 用于自然对话配音。
+2. 可以先在该页选择模型下载父目录。软件自动创建 `FreeCut-VoiceModels` 子目录，例如选 `D:\Models` 后使用 `D:\Models\FreeCut-VoiceModels`。两种朗读模型及其模型缓存共用该设置，也可恢复默认。
+3. 已完整安装的模型会先复制并校验，成功后才切换目录，源文件保留；失败则保持原配置。旧下载缓存和未完成文件保留原位，后续模型下载缓存使用新位置。下载或生成期间不能切换，选择会在下次启动时保留。
+4. 首次点击对应的一键下载按钮。ChatTTS 会自动准备独立 Python、依赖和模型，并做真实语音自检；首次下载可能超过 2 GB，合计预留至少 6 GB 空间。Python、sherpa 运行环境仍使用原数据目录，所选模型盘和原数据盘都需有空间。
+5. 输入文本、选择音色/语速，点击生成，先试听，再加入时间线。ChatTTS 每段最多 300 字，CPU 生成较慢，建议分段。
+
+目录设置只影响朗读模型和模型缓存，不移动 SenseVoice / Whisper 字幕模型、运行环境或已生成音频。复制后不会自动清理原模型文件，因此不会立刻腾空旧目录；已被工程引用的音频请保留原位。详细说明见[语音模型](AI-MODELS.md#自定义朗读模型目录)。
 
 模型不随安装包分发。下载可以取消并重试，生成在本机执行，不上传音视频或文本。ChatTTS 官方模型采用 CC BY-NC 4.0，仅限非商业用途；其他模型也有自己的许可，请看下载面板和模型文档。Mac 的可选语音模型尚待对应设备验收。
 

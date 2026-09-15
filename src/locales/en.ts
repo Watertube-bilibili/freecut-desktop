@@ -661,5 +661,49 @@ export const en: Record<string, string> = {
   '端口请输入 1024 至 65535 之间的整数。': 'Enter a whole-number port between 1024 and 65535.',
   '暂时无法复制，请选中文本后手动复制。':
     'Copy is unavailable. Select the text and copy it manually.',
+  朗读模型下载位置: 'Voice model download location',
+  自定义位置: 'Custom location',
+  默认位置: 'Default location',
+  复制下载位置: 'Copy download location',
+  选择文件夹: 'Choose folder',
+  恢复默认位置: 'Restore default location',
+  '选择父文件夹后，会自动创建 FreeCut-VoiceModels。仅调整 ChatTTS 和轻量中文朗读的模型及模型缓存，已有文件复制并校验后启用，旧文件保留。':
+    'Choose a parent folder to create FreeCut-VoiceModels automatically. Only ChatTTS and lightweight Chinese voice models and their model caches change location. Existing files are copied and verified before switching; original files are retained.',
+  'Python、运行环境和生成音频的位置不变。下载或生成期间不能切换位置。':
+    'Python, runtime environments, and generated audio keep their current locations. You cannot switch during a download or voice generation.',
+  '正在复制并校验已有模型…': 'Copying and verifying existing models…',
+  '已启用新的下载位置，原位置的文件已保留。':
+    'The new download location is active. Files at the previous location have been retained.',
+  '已复制下载位置。': 'Download location copied.',
+  '语音模型正在下载、生成或切换目录，请完成或取消当前任务后重试。':
+    'Voice models are downloading, generating audio, or changing location. Finish or cancel the current task before retrying.',
+  '所选目录没有写入权限，请选择其他文件夹。': 'This folder is not writable. Choose another folder.',
+  '所选磁盘空间不足，请释放空间或选择其他磁盘。':
+    'The selected drive is full. Free up space or choose another drive.',
+  '所选目录或磁盘不可用，请重新选择模型位置。':
+    'The selected folder or drive is unavailable. Choose a different model location.',
+  '语音模型配置目录无效。': 'The voice model settings folder is invalid.',
+  '未知语音模型。': 'Unknown voice model.',
+  '语音模型路径超出专用目录。': 'The voice model path is outside its dedicated folder.',
+  '语音模型目录不能是符号链接、快捷方式或文件。':
+    'The voice model folder must be a real directory, not a symbolic link, shortcut, or file.',
+  '语音模型文件清单无效。': 'The voice model file list is invalid.',
+  '语音模型文件清单包含不安全路径。': 'The voice model file list contains an unsafe path.',
+  '语音模型文件包含不安全链接。': 'Voice model files contain an unsafe link.',
+  '语音模型文件超出预期大小。': 'The voice model files exceed the expected size.',
+  '语音模型配置文件不是普通文件。': 'The voice model settings path is not a regular file.',
+  '请选择有效的绝对目录。': 'Choose a valid absolute folder path.',
+  '目标位置已有不完整或未知模型文件，请选择空文件夹后重试。':
+    'The destination contains incomplete or unknown model files. Choose an empty folder and retry.',
+  '所选磁盘空间不足，复制模型还需要额外预留 128 MB。':
+    'There is not enough space on the selected drive. Model copying also requires 128 MB of free space.',
+  '复制后的语音模型校验失败，原目录和设置已保留。':
+    'The copied voice models failed verification. The original folder and settings have been retained.',
+  '准备 ChatTTS 还需要约 {size} GB 可用空间。':
+    'Preparing ChatTTS requires approximately {size} GB of additional free space.',
+  'ChatTTS 运行环境所在磁盘还需要约 {size} GB 可用空间。':
+    'The ChatTTS runtime drive needs approximately {size} GB of additional free space.',
+  'ChatTTS 模型所在磁盘还需要约 {size} GB 可用空间。':
+    'The ChatTTS model drive needs approximately {size} GB of additional free space.',
   ...enApp,
 };

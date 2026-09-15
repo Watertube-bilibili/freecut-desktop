@@ -56,9 +56,25 @@ print('FREECUT_RESULT ' + json.dumps({'duration':audio.size / 24000,'sampleRate'
 `;
 const RUNNER_HASH = crypto.createHash('sha256').update(PYTHON_RUNNER).digest('hex');
 
-function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
+async function verifyModels(directory) {
+  try {
+    for (const [name, size, expected] of MODELS) {
+      const file = path.join(directory, name), info = await fsp.lstat(file);
+      if (!info.isFile() || info.isSymbolicLink() || info.size !== size) return false;
+      const hash = crypto.createHash('sha256');
+      for await (const chunk of fs.createReadStream(file)) hash.update(chunk);
+      if (hash.digest('hex') !== expected) return false;
+    }
+    return true;
+  } catch { return false; }
+}
+
+function createChatTTS({ userData, importPath, emitProgress = () => {}, voiceStorage }) {
   if (typeof userData !== 'string' || !path.isAbsolute(userData)) throw new Error('ChatTTS 数据目录无效。');
   const root = path.resolve(userData, 'ai', VERSION);
+  const modelRoot = () => voiceStorage ? voiceStorage.modelPath('chattts') : path.join(root, 'models');
+  const within = (base, target) => { const relative = path.relative(base, target); return relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative); };
+  const modelInside = (...parts) => { const result = path.resolve(modelRoot(), ...parts); if (!within(modelRoot(), result)) throw Error('ChatTTS 模型路径超出独立目录。'); return result; };
   let task = null;
   let state = { ready: false, busy: false, phase: '尚未下载 ChatTTS', progress: 0 };
   const inside = (...parts) => {
@@ -71,6 +87,7 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
   const publish = (update) => { state = { ...state, ...update }; emitProgress({ ...state }); };
   const assertRunning = () => { if (!task || task.abort.signal.aborted) throw new Error('操作已取消。'); };
   async function safeDir(target) {
+    if (voiceStorage && within(modelRoot(), target)) return voiceStorage.ensureDirectory(target);
     inside(path.relative(root, target));
     await fsp.mkdir(root, { recursive: true });
     if ((await fsp.lstat(root)).isSymbolicLink()) throw new Error('ChatTTS 数据目录不能是符号链接。');
@@ -80,8 +97,9 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
   }
   async function regular(file) {
     try {
-      if ((await fsp.lstat(root)).isSymbolicLink()) return false;
-      const resolved = await fsp.realpath(file), realRoot = await fsp.realpath(root), relative = path.relative(realRoot,resolved);
+      const anchor = within(modelRoot(), file) ? modelRoot() : root;
+      if (!within(anchor, file) || (await fsp.lstat(anchor)).isSymbolicLink()) return false;
+      const resolved = await fsp.realpath(file), realRoot = await fsp.realpath(anchor), relative = path.relative(realRoot,resolved);
       if (relative.startsWith('..') || path.isAbsolute(relative)) return false;
       return (await fsp.stat(resolved)).isFile();
     } catch { return false; }
@@ -92,7 +110,7 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
     try {
       const marker = JSON.parse(await fsp.readFile(inside('ready.json'), 'utf8'));
       ready = marker.version === VERSION && marker.revision === REVISION && marker.runnerHash === RUNNER_HASH && sameLocation(marker.root) && await regular(python()) && await regular(inside('runner.py'));
-      if (ready) ready = (await Promise.all(MODELS.map(async([name,size]) => await regular(inside('models',name)) && (await fsp.stat(inside('models',name))).size === size))).every(Boolean);
+      if (ready) ready = (await Promise.all(MODELS.map(async([name,size]) => await regular(modelInside(name)) && (await fsp.stat(modelInside(name))).size === size))).every(Boolean);
     } catch {}
     state.ready = ready;
     if (!state.busy && ready && !state.error) state.phase = 'ChatTTS 已就绪，可离线使用';
@@ -197,7 +215,8 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
   }
   async function atomic(file, value) { const temp = `${file}.${crypto.randomUUID()}.tmp`; await fsp.writeFile(temp, value, { flag:'wx' }); await fsp.rename(temp, file); }
   async function doGenerate(request, output, smoke = false) {
-    const result = await run(python(), ['-I', '-X', 'utf8', inside('runner.py'), inside('models'), output], { input:JSON.stringify(request), timeout:20 * 60 * 1000, onLine:line => {
+    await safeDir(modelRoot());
+    const result = await run(python(), ['-I', '-X', 'utf8', inside('runner.py'), modelRoot(), output], { input:JSON.stringify(request), timeout:20 * 60 * 1000, onLine:line => {
       if (line.startsWith('FREECUT ')) { try { const data = JSON.parse(line.slice(8)); publish({ phase:smoke ? `正在验证模型：${data.phase}` : data.phase, progress:smoke ? .95 + data.progress * .04 : data.progress }); } catch {} }
     } });
     const line = result.split(/\r?\n/).find(line => line.startsWith('FREECUT_RESULT '));
@@ -208,9 +227,10 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
   }
   async function withTask(operation) {
     if (task) throw new Error('ChatTTS 正在处理另一项任务，请等待或取消。');
+    const release = voiceStorage?.beginTask();
     const current = { abort:new AbortController(), networkAbort:new AbortController(), child:null, finished:null }; task = current;
     publish({ busy:true, error:undefined, progress:0 });
-    const finished = (async() => { try { return await operation(); } catch (error) { publish({ error:current.abort.signal.aborted ? '操作已取消，可稍后重试。' : error.message, phase:current.abort.signal.aborted ? '已取消' : '处理失败' }); throw error; } finally { task = null; publish({ busy:false }); } })();
+    const finished = (async() => { try { return await operation(); } catch (error) { publish({ error:current.abort.signal.aborted ? '操作已取消，可稍后重试。' : error.message, phase:current.abort.signal.aborted ? '已取消' : '处理失败' }); throw error; } finally { task = null; release?.(); publish({ busy:false }); } })();
     current.finished = finished; return finished;
   }
   async function install() {
@@ -218,14 +238,24 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
     return withTask(async() => {
       const platform = `${process.platform}-${process.arch}`, runtime = RUNTIMES[platform];
       if (!runtime) throw new Error('当前架构暂不支持 ChatTTS 自动安装；支持 Windows x64、Mac Intel/Apple Silicon。');
-      await safeDir(root); for (const directory of ['tmp','downloads','runtime','cache','models','outputs']) await safeDir(inside(directory));
+      await voiceStorage?.assertModelWritable('chattts');
+      await voiceStorage?.markModel('chattts');
+      await safeDir(root); for (const directory of ['tmp','downloads','runtime','cache','outputs']) await safeDir(inside(directory));
+      await safeDir(modelRoot());
       if (typeof fsp.statfs === 'function') {
         const sitePackages = process.platform === 'win32' ? inside('venv','Lib','site-packages') : inside('venv','lib','python3.11','site-packages');
-        const dependenciesReady = await regular(path.join(sitePackages,'ChatTTS','__init__.py'));
-        let required = 6 * 1024 ** 3;
-        if (dependenciesReady) { required = 512 * 1024 ** 2; for (const [name,size] of MODELS) if (!(await regular(inside('models',name)))) required += size; }
-        const disk = await fsp.statfs(root);
-        if (disk.bavail * disk.bsize < required) throw new Error(dependenciesReady ? `完成 ChatTTS 准备还需要约 ${(required / 1024 ** 3).toFixed(1)} GB 可用空间。` : '首次准备 ChatTTS 至少需要 6 GB 可用磁盘空间。');
+        const dependenciesReady = await regular(python()) && await regular(path.join(sitePackages,'ChatTTS','__init__.py'));
+        const runtimeRequired = dependenciesReady ? 256 * 1024 ** 2 : 4.5 * 1024 ** 3;
+        const missing = [];
+        for (const [name,size] of MODELS) if (!(await regular(modelInside(name))) || (await fsp.stat(modelInside(name))).size !== size) missing.push(size);
+        const modelRequired = missing.reduce((sum, size) => sum + size, 0) + Math.max(0, ...missing.filter(size => size >= 256 * 1024 ** 2)) + 128 * 1024 ** 2;
+        const [runtimeDisk, modelDisk, runtimeInfo, modelInfo] = await Promise.all([fsp.statfs(root), fsp.statfs(modelRoot()), fsp.stat(root), fsp.stat(modelRoot())]);
+        if (runtimeInfo.dev === modelInfo.dev) {
+          if (runtimeDisk.bavail * runtimeDisk.bsize < runtimeRequired + modelRequired) throw Error(`准备 ChatTTS 还需要约 ${((runtimeRequired + modelRequired) / 1024 ** 3).toFixed(1)} GB 可用空间。`);
+        } else {
+          if (runtimeDisk.bavail * runtimeDisk.bsize < runtimeRequired) throw Error(`ChatTTS 运行环境所在磁盘还需要约 ${(runtimeRequired / 1024 ** 3).toFixed(1)} GB 可用空间。`);
+          if (modelDisk.bavail * modelDisk.bsize < modelRequired) throw Error(`ChatTTS 模型所在磁盘还需要约 ${(modelRequired / 1024 ** 3).toFixed(1)} GB 可用空间。`);
+        }
       }
       publish({ phase:'下载经过校验的独立运行环境', progress:.01 });
       const archive = inside('downloads',runtime[0]); await download(`https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${runtime[0]}`, archive, runtime[1], 0, fraction => publish({progress:.01 + fraction * .04}));
@@ -257,7 +287,7 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
         while (next < MODELS.length && !failure && !task.abort.signal.aborted) {
           const index = next++, [name,size,hash] = MODELS[index];
           try {
-            await download(`https://huggingface.co/2Noise/ChatTTS/resolve/${REVISION}/${name}`,inside('models',name),hash,size,fraction => { loaded[index] = fraction * size; publish({progress:.32 + loaded.reduce((sum,bytes) => sum + bytes,0) / total * .62}); });
+            await download(`https://huggingface.co/2Noise/ChatTTS/resolve/${REVISION}/${name}`,modelInside(name),hash,size,fraction => { loaded[index] = fraction * size; publish({progress:.32 + loaded.reduce((sum,bytes) => sum + bytes,0) / total * .62}); });
             completed++; publish({phase:`并行下载与校验语音模型 ${completed}/${MODELS.length}`});
           } catch (error) { if (!failure) failure = error; task.networkAbort.abort(); }
         }
@@ -289,10 +319,10 @@ function createChatTTS({ userData, importPath, emitProgress = () => {} }) {
   return { status, install, generate, cancel, dispose:cancel, root };
 }
 
-function registerChatTTS({ipcMain,app,importPath,validateSender}) {
+function registerChatTTS({ipcMain,app,importPath,validateSender,voiceStorage}) {
   let sender = null;
-  const engine = createChatTTS({userData:app.getPath('userData'),importPath,emitProgress:data => { if(sender && !sender.isDestroyed())sender.send('freecut:chattts-progress',data); }});
+  const engine = createChatTTS({userData:app.getPath('userData'),importPath,voiceStorage,emitProgress:data => { if(sender && !sender.isDestroyed())sender.send('freecut:chattts-progress',data); }});
   for (const [channel,callback] of [['status',() => engine.status()],['install',() => engine.install()],['generate',request => engine.generate(request)],['cancel',() => engine.cancel()]]) ipcMain.handle(`freecut:chattts-${channel}`,async(event,...args) => { validateSender(event); sender = event.sender; return callback(...args); });
   return engine;
 }
-module.exports = {registerChatTTS,createChatTTS,VERSION,REVISION,MODELS};
+module.exports = {registerChatTTS,createChatTTS,VERSION,REVISION,MODELS,verifyModels};

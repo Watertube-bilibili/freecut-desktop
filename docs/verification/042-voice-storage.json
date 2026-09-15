@@ -1,0 +1,24 @@
+{
+  "version": "0.4.2",
+  "testedAt": "2026-09-15T14:05:47.220Z",
+  "platform": "win32",
+  "electron": "44.2.0",
+  "networkAllowed": false,
+  "checks": [
+    "Existing model files copied and verified into a Unicode/space path",
+    "A new storage instance restores the selected path from disk",
+    "Real ChatTTS synthesis and FFmpeg import succeed while the former model path is unavailable",
+    "Existing runtime marker and previously generated audio are unchanged",
+    "Default location restored, original models retained"
+  ],
+  "passed": true,
+  "migrationMs": 5848,
+  "inferenceMs": 52595,
+  "audio": {
+    "duration": 1.86,
+    "bytes": 89234,
+    "peak": 0.878570556640625,
+    "sha256": "86fd55c0aa6bf03cc830329c98da72cfafa592cb0f2782669c027897bd7af64b"
+  },
+  "speechContentVerified": false
+}
