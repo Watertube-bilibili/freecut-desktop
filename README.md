@@ -14,7 +14,7 @@
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-当前版本为 **0.4.2 预览版**，新增自定义朗读模型下载目录。在“AI 语音 → 语音朗读”选择父目录后，软件自动创建 `FreeCut-VoiceModels` 子目录，用于 ChatTTS、轻量 AISHELL 中文朗读模型及其模型缓存。发布和安装包状态见 [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1)，本次验证单独记录在 [0.4.2 验证记录](docs/VERIFICATION-042.md)。软件并未完整覆盖剪映。无账户要求；单人媒体处理在本地，开启协作后工程和素材会传给房间成员。
+当前已发布 **0.4.2 预览版**，新增自定义朗读模型下载目录。在“AI 语音 → 语音朗读”选择父目录后，软件自动创建 `FreeCut-VoiceModels` 子目录，用于 ChatTTS、轻量 AISHELL 中文朗读模型及其模型缓存。发布和安装包状态见 [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1)，本次验证单独记录在 [0.4.2 验证记录](docs/VERIFICATION-042.md)。软件并未完整覆盖剪映。无账户要求；单人媒体处理在本地，开启协作后工程和素材会传给房间成员。
 
 历史 0.4.1 已通过本机双桌面应用协作、Windows 与异地 Linux 机器之间的真实加密工程/素材传输，以及 Windows 打包程序中的原生传输检查；窄窗口工具栏自动收紧文字。具体样本、时间、发行状态和适用范围见 [0.4.1 验证记录](docs/VERIFICATION-041.md)及[跨网测试摘要](docs/verification/041-internet.json)，这些结果不等同于 0.4.2 已重新完成跨网测试。旧版安装图标与导出改造记录保留在 [0.3.2 验证记录](docs/VERIFICATION-032.md)。
 
@@ -70,7 +70,7 @@
 
 ## 下载和运行
 
-[查看 0.4.2 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1)：下表为本次安装包文件名，正式下载以该 Release 的已发布附件为准，另附匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
+[下载 0.4.2 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1)：下表中的安装包均已发布，另附匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 

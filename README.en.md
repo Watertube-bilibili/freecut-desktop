@@ -12,7 +12,7 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
-The current version is the **0.4.2 preview**, adding a custom download location for speech models. In **AI Voice → Text to speech**, choose a parent folder; FreeCut creates a `FreeCut-VoiceModels` subfolder for ChatTTS, lightweight AISHELL Chinese speech models, and their model caches. Check the [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1) for publication and downloads, and the [0.4.2 verification record](docs/VERIFICATION-042.md) for this version's checks. It does not cover every Jianying or CapCut feature. No account is required. Solo media processing is local; starting collaboration shares the project and its media with room members.
+The **0.4.2 preview is released**, adding a custom download location for speech models. In **AI Voice → Text to speech**, choose a parent folder; FreeCut creates a `FreeCut-VoiceModels` subfolder for ChatTTS, lightweight AISHELL Chinese speech models, and their model caches. Check the [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1) for publication and downloads, and the [0.4.2 verification record](docs/VERIFICATION-042.md) for this version's checks. It does not cover every Jianying or CapCut feature. No account is required. Solo media processing is local; starting collaboration shares the project and its media with room members.
 
 The previous 0.4.1 release passed two local desktop instances collaborating, real encrypted project/media transfers between Windows and a remote Linux machine, and native transport checks inside the Windows package. Narrow windows use compact toolbar buttons. See the historical [0.4.1 verification record](docs/VERIFICATION-041.md) and [Internet test summary](docs/verification/041-internet.json) for samples, timing, release status and scope; these do not establish a new Internet test for 0.4.2. Earlier installer and export work remains documented in the [0.3.2 verification record](docs/VERIFICATION-032.md).
 
@@ -64,7 +64,7 @@ The second layout runs in the same desktop application. It is not an Android or 
 
 ## Download and install
 
-[Check the 0.4.2 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1). The table lists this version's package names; use the published assets on that Release for downloads, along with matching source, both guides and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
+[Download the 0.4.2 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1). The table lists this published version's package names; use the published assets on that Release for downloads, along with matching source, both guides and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
 
 | Computer or use | Download | How to use it |
 | --- | --- | --- |

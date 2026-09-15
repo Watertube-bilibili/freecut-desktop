@@ -1,6 +1,6 @@
 # 0.4.2 验证记录
 
-日期：2026-09-15。状态：本地真实 ChatTTS 迁移及合成、模型目录后端回归、8 组真实桌面目录回归、三个平台构建及打包应用检查均已通过；公开发行上传与下载核验随后补充。已有 0.4.1 或更早版本的测试和安装包结果不计作 0.4.2 已通过。
+日期：2026-09-15。状态：**0.4.2 已公开发布，15 个附件上传完成**。本地真实 ChatTTS 迁移及合成、模型目录后端回归、8 组真实桌面目录回归、三个平台构建及打包应用检查均已通过；公开 Windows 安装版、便携版和教程下载散列核验通过。已有 0.4.1 或更早版本的测试和安装包结果不计作 0.4.2 已通过。
 
 ## 本次范围
 
@@ -23,9 +23,9 @@ Python、sherpa 运行环境、已生成音频与 SenseVoice / Whisper 自动字
 | 模型运行 | 区分受控测试数据、已有真实模型的状态检查及实际生成；注明有无新下载 | Windows 真实 ChatTTS 迁移和离线生成通过，见下文；本次没有重新下载大模型 |
 | 原有功能回归 | 核心/宿主测试、媒体导入、工程保存重开及 MP4 导出 | 三平台 CI 通过，含实际打包应用的媒体导入、工程保存重开、MP4 导出和原生加密协作组件检查 |
 | 三平台构建 | Windows x64、Mac Intel、Apple Silicon 的对应提交与 CI 链接 | 全部通过，链接及 Intel 首次波动见下文 |
-| 安装与发布 | Setup / Portable / DMG / ZIP、匹配源码、教程与 SHA-256 清单 | 安装包构建通过：Windows 实际 Setup 安装、启动编辑器和卸载保留个人文件；Mac 实际更新 ZIP 验证通过。公开上传核验待补充 |
+| 安装与发布 | Setup / Portable / DMG / ZIP、匹配源码、教程与 SHA-256 清单 | 15 个附件已公开发布。Windows 实际 Setup 安装、启动编辑器和卸载保留个人文件；Mac 实际更新 ZIP 验证通过。公开 Windows 包与两份教程下载散列核验通过 |
 
-本地 `npm test` 在新增目录测试落盘前通过：前端 131 项、Electron 宿主 107 项（2 项按平台跳过）、安装器 23 项。随后 `node --test electron/voice-storage.test.cjs electron/ai.test.cjs electron/close-guard.test.cjs` 32 项通过，其中目录功能新增 9 项。完整发行 CI 会对同一提交再次执行全部测试。
+本地 `npm test` 在新增目录测试落盘前通过：前端 131 项、Electron 宿主 107 项（2 项按平台跳过）、安装器 23 项。随后 `node --test electron/voice-storage.test.cjs electron/ai.test.cjs electron/close-guard.test.cjs` 32 项通过，其中目录功能新增 9 项。完整发行 CI 已对同一提交再次执行全部测试。
 
 最终 Windows CI 的 `npm test` 结果为前端 131 项、Electron 宿主 116 项通过（2 项按平台跳过）、安装器 23 项通过，共 270 项通过；后续实际桌面、安装器和打包程序回归另行执行，全部通过。
 
@@ -33,11 +33,12 @@ Python、sherpa 运行环境、已生成音频与 SenseVoice / Whisper 自动字
 
 ## 发行记录
 
-- 目标版本：`0.4.2`，目标标签：`v0.4.2-preview.1`。
+- 已发布版本：`0.4.2`，标签：`v0.4.2-preview.1`。
 - 源码提交：`d5a677c91042fd579b178f68eaef6554be922255`。
 - 三平台构建：[34980525690](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34980525690)。Windows x64、Mac Apple Silicon、Intel Mac 均通过，应用源码和测试阈值保持同一提交。
-- 发布工作流与公开附件：待填写。
-- 公开下载散列核对及实际安装验收：待填写。
+- 发布工作流：[34982496001](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34982496001)，公开 [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1)。15 个附件包含六份应用包、匹配的应用/视频引擎源码、双语教程、许可与校验清单。
+- 已实际下载 Windows Setup、Portable、两份教程和 SHA-256 清单，文件长度、GitHub 散列与清单一致。另从公开 Portable 解包核对语音目录模块、两个语音引擎、主进程和 preload 与构建源码逐字节一致。实际安装验收由上述 Windows CI 对同一 Setup 完成，本次没有在用户安装目录重新安装。
+- 生产更新选择器读取公开 Release 元数据，验证从 `0.4.1` 能分别选出 Windows Setup / Portable 与 Mac arm64 / x64 ZIP；四个资产均有有效 GitHub SHA-256。详情及全部附件散列见 [发行验证摘要](verification/042-release.json)。
 
 Intel Mac 第一次在原有播放回归的瞬时偏差检查触及阈值：70 个不同画面，95% 偏差约 0.1 秒，最大值 0.4 秒，后者未满足严格小于 0.4 秒。预览代码、该回归及相关依赖本次均未修改。保留 Windows / Apple Silicon 成功结果后，仅对失败的 Intel 平台以相同提交、相同阈值重跑一次，该播放检查通过。此记录不把一次重跑通过解释为所有机器和工程的固定帧率保证。
 

@@ -1,0 +1,149 @@
+{
+  "release": "https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1",
+  "tag": "v0.4.2-preview.1",
+  "commit": "d5a677c91042fd579b178f68eaef6554be922255",
+  "publishedAt": "2026-09-15T14:35:24Z",
+  "buildRun": 34980525690,
+  "publishRun": 34982496001,
+  "assets": [
+    {
+      "name": "FreeCut-0.4.2-mac-arm64.dmg",
+      "bytes": 152803413,
+      "digest": "sha256:f063aa861a3560341bc218080a8cdee5d223923b1a26946e5ee6e6c2d2663766"
+    },
+    {
+      "name": "FreeCut-0.4.2-mac-arm64.zip",
+      "bytes": 148671497,
+      "digest": "sha256:5c5ed3c4b9a2e707c2ef5b1bc0e87e28459ba926c03d6bcc24a875b729648494"
+    },
+    {
+      "name": "FreeCut-0.4.2-mac-x64.dmg",
+      "bytes": 159556033,
+      "digest": "sha256:d744d1057516bbc9f766dc25ea285bd0cd1598aca934d07d81c669d5d0402ba0"
+    },
+    {
+      "name": "FreeCut-0.4.2-mac-x64.zip",
+      "bytes": 155431010,
+      "digest": "sha256:0d8ff8a82391b642ed40915b75f0306d11cb38df6d11ae59d016153121e9f41c"
+    },
+    {
+      "name": "FreeCut-0.4.2-win-x64-Portable.exe",
+      "bytes": 109803845,
+      "digest": "sha256:115b0fdc8c23c251e60b6fd3cf5ed88a76c9aa0a5447265078ef1555b5fcb201"
+    },
+    {
+      "name": "FreeCut-0.4.2-win-x64-Setup.exe",
+      "bytes": 126734181,
+      "digest": "sha256:5a82a58dee0f7100d748a01ff390c7916f8f8936872e618974d93376c15553b9"
+    },
+    {
+      "name": "FreeCut-ffmpeg-source-darwin-arm64.tar.gz",
+      "bytes": 14727854,
+      "digest": "sha256:9ae8a59bf7b6ebc9991381d5c331bd89a35cdb587b1fb1f191f31744ba6ec14a"
+    },
+    {
+      "name": "FreeCut-ffmpeg-source-darwin-x64.tar.gz",
+      "bytes": 14727883,
+      "digest": "sha256:8bc07f41a25b19feddd837ea3c8ed6aadbd76b5b7c999503abd1dd50fd937809"
+    },
+    {
+      "name": "FreeCut-ffmpeg-source-win32-x64.tar.gz",
+      "bytes": 14725206,
+      "digest": "sha256:bd55753358b93e85dfc19ba7fff14c91cc56c160fe2be33c5da10fa98906c159"
+    },
+    {
+      "name": "FreeCut-project-source-d5a677c91042fd579b178f68eaef6554be922255.tar.gz",
+      "bytes": 76440086,
+      "digest": "sha256:3ef79919f36fa4b1af6d6017cb3aba6cf5e72b578fd6a72492448a241157a7c1"
+    },
+    {
+      "name": "FreeCut-Quickstart-en.md",
+      "bytes": 10148,
+      "digest": "sha256:e50ff4995dab0e5f03e4983b974b0ad3cbae70cb7900e0abac9054e22a26408e"
+    },
+    {
+      "name": "FreeCut-Quickstart-zh.md",
+      "bytes": 14228,
+      "digest": "sha256:eacd9630e8f3275ca23489d33f4909dc1a97af8c1539ddd1728514685d83b974"
+    },
+    {
+      "name": "LICENSE",
+      "bytes": 35149,
+      "digest": "sha256:3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 1372,
+      "digest": "sha256:1dad0317e47c0518e8c47b7850dbb38841a3460e2111e7902e42550f0f364209"
+    },
+    {
+      "name": "THIRD_PARTY_NOTICES.md",
+      "bytes": 94090,
+      "digest": "sha256:1e1bb67eecfa6d76139742d92a5d6c8351b183ff7e3167c737257c4ad39035c9"
+    }
+  ],
+  "verifiedDownloads": [
+    {
+      "name": "SHA256SUMS.txt",
+      "sha256": "1dad0317e47c0518e8c47b7850dbb38841a3460e2111e7902e42550f0f364209",
+      "size": 1372
+    },
+    {
+      "name": "FreeCut-Quickstart-en.md",
+      "sha256": "e50ff4995dab0e5f03e4983b974b0ad3cbae70cb7900e0abac9054e22a26408e",
+      "size": 10148
+    },
+    {
+      "name": "FreeCut-Quickstart-zh.md",
+      "sha256": "eacd9630e8f3275ca23489d33f4909dc1a97af8c1539ddd1728514685d83b974",
+      "size": 14228
+    },
+    {
+      "name": "FreeCut-0.4.2-win-x64-Portable.exe",
+      "sha256": "115b0fdc8c23c251e60b6fd3cf5ed88a76c9aa0a5447265078ef1555b5fcb201",
+      "size": 109803845
+    },
+    {
+      "name": "FreeCut-0.4.2-win-x64-Setup.exe",
+      "sha256": "5a82a58dee0f7100d748a01ff390c7916f8f8936872e618974d93376c15553b9",
+      "size": 126734181
+    }
+  ],
+  "packagedVoiceSourcesMatch": [
+    "electron/voice-storage.cjs",
+    "electron/ai.cjs",
+    "electron/chattts.cjs",
+    "electron/main.cjs",
+    "electron/preload.cjs"
+  ],
+  "updater": [
+    {
+      "platform": "win32",
+      "arch": "x64",
+      "portable": false,
+      "asset": "FreeCut-0.4.2-win-x64-Setup.exe",
+      "sha256": "5a82a58dee0f7100d748a01ff390c7916f8f8936872e618974d93376c15553b9"
+    },
+    {
+      "platform": "win32",
+      "arch": "x64",
+      "portable": true,
+      "asset": "FreeCut-0.4.2-win-x64-Portable.exe",
+      "sha256": "115b0fdc8c23c251e60b6fd3cf5ed88a76c9aa0a5447265078ef1555b5fcb201"
+    },
+    {
+      "platform": "darwin",
+      "arch": "arm64",
+      "portable": false,
+      "asset": "FreeCut-0.4.2-mac-arm64.zip",
+      "sha256": "5c5ed3c4b9a2e707c2ef5b1bc0e87e28459ba926c03d6bcc24a875b729648494"
+    },
+    {
+      "platform": "darwin",
+      "arch": "x64",
+      "portable": false,
+      "asset": "FreeCut-0.4.2-mac-x64.zip",
+      "sha256": "0d8ff8a82391b642ed40915b75f0306d11cb38df6d11ae59d016153121e9f41c"
+    }
+  ]
+}
