@@ -33,7 +33,7 @@ async function main() {
     executablePath = path.join(application, path.basename(originalExe));
   } else {
     await fs.mkdir(application);
-    for (const item of ['electron', 'dist', 'package.json'])
+    for (const item of ['electron', 'shared', 'dist', 'package.json'])
       await fs.cp(path.join(root, item), path.join(application, item), { recursive: true });
   }
   const env = { ...process.env, FREECUT_DISABLE_UPDATES: '1' };
