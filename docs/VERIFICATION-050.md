@@ -1,6 +1,6 @@
 # FreeCut 0.5.0 验证记录
 
-日期：2026-09-19。源码版本 `0.5.0`，预定标签 `v0.5.0-preview.1`。本文记录本次工作台与导出重构的实际验证范围；发布状态和平台构建记录在发布完成后补齐。
+日期：2026-09-19。已发布版本 `0.5.0`，标签 `v0.5.0-preview.1`。本文记录工作台与导出重构的实际验证范围及发布结果。
 
 ## 改动与来源
 
@@ -41,4 +41,11 @@ Windows x64，真实 Electron 44 桌面应用，隔离临时配置和自产测�
 
 ## 发布状态
 
-本地功能与桌面回归已完成，Windows/macOS 发布构建及最终上传校验尚待本次 CI 结果。未发布前，README 的下载入口保持 0.4.2，不将源码功能冒充已经上线的安装包。
+[v0.5.0-preview.1 Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.5.0-preview.1) 已于 2026-09-19T08:06:38Z 发布。程序和源码对应提交 `ba10234fbf108f5f1ca0ba7e71c1e619eda82f8e`。
+
+- [三平台构建](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/35430332374)成功：Windows x64、Mac arm64、Mac x64。CI 完成完整测试、真实编辑器回归、打包应用启动/媒体导出与协作组件检查；Windows 另完成实际 Setup 安装、已安装应用和卸载验证，Mac 两种芯片均检查真实更新 ZIP。
+- [发布流程](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/35431042517)核对匹配源码、三平台产物与每项 SHA-256 后公开 15 个文件：六个应用包、对应应用与 FFmpeg 源码、许可说明、双语教程和校验清单。
+- Windows Setup、Portable、双语教程和 SHA256SUMS 已从公开 Release 回下载，文件大小与 GitHub digest、清单散列一致。解开回下载的 Portable 后，实际算法模块与对应 Git 提交逐字节匹配；resources/licenses/concat 下四份上游许可/来源文件也逐字节一致。证据见 [发布和下载核对](verification/050-release.json)。
+- 本机源码打包应用和回下载的正式 Windows 包均使用隔离配置运行真实桌面媒体导入、保存工程及 MP4 导出，无渲染器错误。没有覆盖用户现有安装或工程。
+
+构建过程保留两项说明：初轮特殊路径测试复制程序时漏带新增 shared 目录，已补齐复制清单，最终构建包含该修复。第二轮 Windows 英文退出测试曾在保存 IPC 返回前请求关闭，被应用正常的保存中保护取消；同提交重跑 Windows 后全部通过，Mac 两个平台首轮通过。测试脚本随后补上正确的英文提示文案及保存完成/未保存状态等待，本机 10/10 通过；该测试同步改进随发布说明提交，不改变上述发行包的生产代码。没有删除断言、放宽画面容差或跳过失败用例。

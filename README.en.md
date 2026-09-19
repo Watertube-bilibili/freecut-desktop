@@ -12,11 +12,11 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
-**The current source is 0.5.0 and is being verified; its installers are not released yet. Downloads still point to the published 0.4.2 preview.** This update adopts selected algorithms and editing interactions from [Concat, formerly WolfCut](https://github.com/jub0t/Concat): resizable panels, media categories, fit-to-timeline and frame stepping, cubic-bezier keyframes, and an expanded FFmpeg path for eligible layered compositions. Suitable text and shape layers are rendered to transparent images once before export. FreeCut retains its two layouts, Easy/Pro modes, speech tools, custom model storage, Internet collaboration and existing project compatibility. See the [integration and provenance record](docs/WOLFCUT-INTEGRATION.md). This is not a complete Rust-engine replacement or a new GPU encoder; verification of this version is still in progress.
+**The 0.5.0 preview is released.** This update adopts selected algorithms and editing interactions from [Concat, formerly WolfCut](https://github.com/jub0t/Concat): resizable panels, media categories, fit-to-timeline and frame stepping, cubic-bezier keyframes, and an expanded FFmpeg path for eligible layered compositions. Suitable text and shape layers are rendered to transparent images once before export. FreeCut retains its two layouts, Easy/Pro modes, speech tools, custom model storage, Internet collaboration and existing project compatibility. See the [integration and provenance record](docs/WOLFCUT-INTEGRATION.md). This is not a complete Rust-engine replacement or a new GPU encoder. See the [0.5.0 verification record](docs/VERIFICATION-050.md) for the actual test scope.
 
-The **0.4.2 preview is released**, adding a custom download location for speech models. In **AI Voice → Text to speech**, choose a parent folder; FreeCut creates a `FreeCut-VoiceModels` subfolder for ChatTTS, lightweight AISHELL Chinese speech models, and their model caches. Check the [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1) for publication and downloads, and the [0.4.2 verification record](docs/VERIFICATION-042.md) for this version's checks. It does not cover every Jianying or CapCut feature. No account is required. Solo media processing is local; starting collaboration shares the project and its media with room members.
+Custom speech-model storage remains available. In **AI Voice → Text to speech**, choose a parent folder; FreeCut creates a `FreeCut-VoiceModels` subfolder for ChatTTS, lightweight AISHELL Chinese speech models, and their model caches. This feature was introduced in 0.4.2; its original checks remain in the [0.4.2 verification record](docs/VERIFICATION-042.md). FreeCut does not cover every Jianying or CapCut feature. No account is required. Solo media processing is local; starting collaboration shares the project and its media with room members.
 
-The previous 0.4.1 release passed two local desktop instances collaborating, real encrypted project/media transfers between Windows and a remote Linux machine, and native transport checks inside the Windows package. Narrow windows use compact toolbar buttons. See the historical [0.4.1 verification record](docs/VERIFICATION-041.md) and [Internet test summary](docs/verification/041-internet.json) for samples, timing, release status and scope; these do not establish a new Internet test for 0.4.2. Earlier installer and export work remains documented in the [0.3.2 verification record](docs/VERIFICATION-032.md).
+The previous 0.4.1 release passed two local desktop instances collaborating, real encrypted project/media transfers between Windows and a remote Linux machine, and native transport checks inside the Windows package. Narrow windows use compact toolbar buttons. See the historical [0.4.1 verification record](docs/VERIFICATION-041.md) and [Internet test summary](docs/verification/041-internet.json) for samples, timing, release status and scope; these do not establish a new Internet test for 0.5.0. The [0.5.0 verification record](docs/VERIFICATION-050.md) states this version’s actual scope. Earlier installer and export work remains documented in the [0.3.2 verification record](docs/VERIFICATION-032.md).
 
 Changing the speech-model folder copies and verifies fully installed models before activating the new location, while keeping the original files. Existing download caches and incomplete files remain where they are; subsequent speech-model downloads use the new cache location. A failed change leaves the previous location active. Downloads or generation block folder changes; you can restore the default location, and your choice persists across restarts. Python and sherpa runtimes, generated audio, and SenseVoice/Whisper caption models stay in their original locations. This setting relocates installed speech models and selects the location for subsequent model caches, not all application data.
 
@@ -26,7 +26,7 @@ The 0.3.2 installer updates verified old FreeCut desktop and Start menu shortcut
 
 Automatic updates are enabled by default. Each launch checks this repository's Releases after about 12 seconds, downloads and verifies a newer matching package, then checks again every four hours. When idle, a countdown starts installation while unsaved projects retain their save prompt. If the Internet collaboration component is missing, the app explains how to reinstall; solo editing can still start.
 
-Export automatically chooses the appropriate path. The released 0.4.2 supports direct FFmpeg export for eligible cuts, joins, still images and constant-speed edits. The 0.5.0 source extends that path to eligible layered compositions, static transforms, position animation and pre-rasterized titles/shapes. Unsupported effects, animated scale or rotation and other complex visuals retain the preview's compositor and send RGBA frames straight to the encoder. Effects are not silently dropped, and a temporary PNG is not generated for every frame. Results depend on the project and computer; historical measurements in the [0.3.2 verification record](docs/VERIFICATION-032.md) are not performance results for 0.5.0.
+Export automatically chooses the appropriate path. Version 0.5.0 supports direct FFmpeg export for eligible cuts, joins, still images and constant-speed edits, and extends that path to eligible layered compositions, static transforms, position animation and pre-rasterized titles/shapes. Unsupported effects, animated scale or rotation and other complex visuals retain the preview's compositor and send RGBA frames straight to the encoder. Effects are not silently dropped, and a temporary PNG is not generated for every frame. Results depend on the project and computer; historical measurements in the [0.3.2 verification record](docs/VERIFICATION-032.md) are not performance results for 0.5.0.
 
 FLAC and other audio files with embedded album artwork are recognized as audio instead of treating the cover as video. Reopening an older project rereads available affected media and repairs the mistaken type while preserving clip position, timing, and volume animation.
 
@@ -38,7 +38,7 @@ FLAC and other audio files with embedded album artwork are recognized as audio i
 
 The second layout runs in the same desktop application. It is not an Android or iOS app.
 
-These screenshots show the actual 0.5.0 source running on 2026-09-19: English desktop at 1440×900 and the mobile-style layout in Simplified Chinese at 1100×620. All seven workbench checks passed; see the [workbench evidence](docs/verification/050-workbench.json) and [0.5.0 verification record](docs/VERIFICATION-050.md). Installers are still pending publication, so downloads remain on 0.4.2.
+These screenshots show the actual 0.5.0 source running on 2026-09-19: English desktop at 1440×900 and the mobile-style layout in Simplified Chinese at 1100×620. All seven workbench checks passed; see the [workbench evidence](docs/verification/050-workbench.json) and [0.5.0 verification record](docs/VERIFICATION-050.md). Installers and matching source are available in the download section below.
 
 [Watch or download the English promo](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4): 55 seconds, 1080p, exported through the actual FreeCut application and verified completely silent. It credits `@我叫水管同学` and asks viewers to download and Star the repository. Add your own music if you wish. See the [actual product export and silence verification](videos/freecut-launch-en-edit/QA.md), separate from the [English visual source](videos/freecut-launch-en).
 
@@ -46,7 +46,7 @@ These screenshots show the actual 0.5.0 source running on 2026-09-19: English de
 
 ## Editing features
 
-This section describes the current 0.5.0 source. Its new workbench, bezier controls and expanded native composition are not included in the 0.4.2 downloads below.
+This section describes the 0.5.0 preview, including its new workbench, bezier controls and expanded native composition.
 
 - Resize workbench panels and filter media by type. Fit the timeline to all clips, use grouped editing tools and step through individual frames.
 - Import local video, images, and audio. Arrange multiple tracks, layer picture-in-picture content, snap clips, trim, split, duplicate, and undo or redo edits.
@@ -71,17 +71,15 @@ This section describes the current 0.5.0 source. Its new workbench, bezier contr
 
 ## Download and install
 
-[Download the 0.4.2 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1). The table lists this published version's package names; use the published assets on that Release for downloads, along with matching source, both guides and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
-
-Version 0.5.0 is still being verified from source. Its download links will be added only after the installers have been uploaded and checked.
+[Download the 0.5.0 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.5.0-preview.1). The table lists this published version's package names; use the published assets on that Release for downloads, along with matching source, both guides and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
 
 | Computer or use | Download | How to use it |
 | --- | --- | --- |
-| Windows 10/11 x64, regular installation | `FreeCut-0.4.2-win-x64-Setup.exe` | Choose your drive or folder; C: is not preselected. Upgrades repair eligible old shortcuts and their icons. |
-| Windows 10/11 x64, no installation | `FreeCut-0.4.2-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder for settings, recent projects, and default models. Also retain any separately selected speech-model folder. |
-| Mac with Apple Silicon | `FreeCut-0.4.2-mac-arm64.dmg` | Open the DMG and drag FreeCut into Applications. |
-| Mac with an Intel processor | `FreeCut-0.4.2-mac-x64.dmg` | Install the same way. |
-| Mac, ZIP format preferred | `FreeCut-0.4.2-mac-arm64.zip` or `FreeCut-0.4.2-mac-x64.zip` | Extract the app for your processor. DMG and ZIP contain the same application; choose one. |
+| Windows 10/11 x64, regular installation | `FreeCut-0.5.0-win-x64-Setup.exe` | Choose your drive or folder; C: is not preselected. Upgrades repair eligible old shortcuts and their icons. |
+| Windows 10/11 x64, no installation | `FreeCut-0.5.0-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder for settings, recent projects, and default models. Also retain any separately selected speech-model folder. |
+| Mac with Apple Silicon | `FreeCut-0.5.0-mac-arm64.dmg` | Open the DMG and drag FreeCut into Applications. |
+| Mac with an Intel processor | `FreeCut-0.5.0-mac-x64.dmg` | Install the same way. |
+| Mac, ZIP format preferred | `FreeCut-0.5.0-mac-arm64.zip` or `FreeCut-0.5.0-mac-x64.zip` | Extract the app for your processor. DMG and ZIP contain the same application; choose one. |
 
 You need only one application download for normal use; the source archives are for developers and license compliance. On macOS, **Apple menu → About This Mac** identifies your processor.
 

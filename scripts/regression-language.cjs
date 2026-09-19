@@ -565,10 +565,16 @@ async function main() {
         const saved = path.join(directory, 'saved-english-showcase.freecut');
         await app.evaluate((_, saved) => globalThis.__languageDialogs.save.push(saved), saved);
         await page.getByTitle('Save project Ctrl+S', { exact: true }).click();
-        await expect(page.getByText('Processing project file…', { exact: true })).toBeHidden();
+        await expect(page.getByText('Processing the project file…', { exact: true })).toBeHidden();
         await expect
           .poll(() => fs.readFile(saved, 'utf8').catch(() => ''), { timeout: 15000 })
           .not.toBe('');
+        // File existence precedes the host's recent-project update and IPC reply.
+        // Wait for renderer acknowledgement of this save before requesting close.
+        // "Saved" alone is insufficient after the earlier drag has been undone.
+        await expect(page.locator('.toast')).toContainText('Project saved.');
+        await expect(page.getByText('Processing the project file…', { exact: true })).toBeHidden();
+        await expect(page.locator('.local-badge')).toHaveText('Saved');
         const actual = JSON.parse(await fs.readFile(saved, 'utf8'));
         assert.equal(actual.name, project.name);
         assert.equal(
@@ -584,6 +590,7 @@ async function main() {
       'Native quit guard asks to save in English; Cancel keeps the project open',
       async () => {
         await page.getByLabel('Project name', { exact: true }).fill('Unsaved English QA');
+        await expect(page.locator('.local-badge')).toHaveText('Unsaved');
         await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].close());
         await expect
           .poll(() => app.evaluate(() => globalThis.__languageDialogs.messages.length))

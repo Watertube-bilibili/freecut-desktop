@@ -1,0 +1,150 @@
+{
+  "release": "https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.5.0-preview.1",
+  "tag": "v0.5.0-preview.1",
+  "commit": "ba10234fbf108f5f1ca0ba7e71c1e619eda82f8e",
+  "publishedAt": "2026-09-19T08:06:38Z",
+  "buildRun": 35430332374,
+  "buildAttempt": 2,
+  "publishRun": 35431042517,
+  "assets": [
+    {
+      "name": "FreeCut-0.5.0-mac-arm64.dmg",
+      "bytes": 152841253,
+      "digest": "sha256:cfdf2e33cdac0c3ecaaac22135a353420c3161e4fe1c6905342a0d3b83da3ad7"
+    },
+    {
+      "name": "FreeCut-0.5.0-mac-arm64.zip",
+      "bytes": 148724985,
+      "digest": "sha256:70404fcbbf7fcf0941c4db6f36f8624bcfc32deb62eee68c0bebf5702ede1c46"
+    },
+    {
+      "name": "FreeCut-0.5.0-mac-x64.dmg",
+      "bytes": 159584083,
+      "digest": "sha256:bc367b40298f056a5c974211d3b14e90b02e7ede1f3240cbb572173bd58ba34d"
+    },
+    {
+      "name": "FreeCut-0.5.0-mac-x64.zip",
+      "bytes": 155484503,
+      "digest": "sha256:d16949df91e0ca26384f9900d34d9bf32fd25eaaa464794efa68cf17732501d6"
+    },
+    {
+      "name": "FreeCut-0.5.0-win-x64-Portable.exe",
+      "bytes": 109824868,
+      "digest": "sha256:4a5a24796fe6d626b7ab1253b1688fb702eefeaebd71f712ca753e438c8d6f01"
+    },
+    {
+      "name": "FreeCut-0.5.0-win-x64-Setup.exe",
+      "bytes": 126786859,
+      "digest": "sha256:a4857e16af42bd34b6a936dbad6e11a0f8a29a64996f673ac7f348ed436d314d"
+    },
+    {
+      "name": "FreeCut-ffmpeg-source-darwin-arm64.tar.gz",
+      "bytes": 14727854,
+      "digest": "sha256:9ae8a59bf7b6ebc9991381d5c331bd89a35cdb587b1fb1f191f31744ba6ec14a"
+    },
+    {
+      "name": "FreeCut-ffmpeg-source-darwin-x64.tar.gz",
+      "bytes": 14727883,
+      "digest": "sha256:8bc07f41a25b19feddd837ea3c8ed6aadbd76b5b7c999503abd1dd50fd937809"
+    },
+    {
+      "name": "FreeCut-ffmpeg-source-win32-x64.tar.gz",
+      "bytes": 14725206,
+      "digest": "sha256:bd55753358b93e85dfc19ba7fff14c91cc56c160fe2be33c5da10fa98906c159"
+    },
+    {
+      "name": "FreeCut-project-source-ba10234fbf108f5f1ca0ba7e71c1e619eda82f8e.tar.gz",
+      "bytes": 76784058,
+      "digest": "sha256:f9822a085d6ff7ab565b68d942e41ffaa76d9479843ddffb66e9686fecea0e49"
+    },
+    {
+      "name": "FreeCut-Quickstart-en.md",
+      "bytes": 13247,
+      "digest": "sha256:1261e0cd4f848e3c120c174bb94ca34b246c4cf59c7cc15fa8cf7858a251fe4c"
+    },
+    {
+      "name": "FreeCut-Quickstart-zh.md",
+      "bytes": 17281,
+      "digest": "sha256:5dc94a11b94fcb10fcda307b482e8547ab0c5f543d85e46cc1c9cb2cfde99fe9"
+    },
+    {
+      "name": "LICENSE",
+      "bytes": 35149,
+      "digest": "sha256:3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 1372,
+      "digest": "sha256:ba14cae1c9f5a4c20ae637e3f4cf18916394f34fb8025cc8890f65ec5d9fe7e3"
+    },
+    {
+      "name": "THIRD_PARTY_NOTICES.md",
+      "bytes": 96292,
+      "digest": "sha256:ecdd43628f29be72fc993d0aca8f0efc229ff1a40a15fa29318a0e882e9efa1a"
+    }
+  ],
+  "verifiedDownloads": [
+    {
+      "name": "SHA256SUMS.txt",
+      "sha256": "ba14cae1c9f5a4c20ae637e3f4cf18916394f34fb8025cc8890f65ec5d9fe7e3",
+      "size": 1372
+    },
+    {
+      "name": "FreeCut-Quickstart-en.md",
+      "sha256": "1261e0cd4f848e3c120c174bb94ca34b246c4cf59c7cc15fa8cf7858a251fe4c",
+      "size": 13247
+    },
+    {
+      "name": "FreeCut-Quickstart-zh.md",
+      "sha256": "5dc94a11b94fcb10fcda307b482e8547ab0c5f543d85e46cc1c9cb2cfde99fe9",
+      "size": 17281
+    },
+    {
+      "name": "FreeCut-0.5.0-win-x64-Portable.exe",
+      "sha256": "4a5a24796fe6d626b7ab1253b1688fb702eefeaebd71f712ca753e438c8d6f01",
+      "size": 109824868
+    },
+    {
+      "name": "FreeCut-0.5.0-win-x64-Setup.exe",
+      "sha256": "a4857e16af42bd34b6a936dbad6e11a0f8a29a64996f673ac7f348ed436d314d",
+      "size": 126786859
+    }
+  ],
+  "packagedSourceAndLicenses": {
+    "tag": "v0.5.0-preview.1",
+    "version": "0.5.0",
+    "sourceCommit": "ba10234fbf108f5f1ca0ba7e71c1e619eda82f8e",
+    "checked": [
+      {
+        "file": "shared/concat-bezier.mjs",
+        "sha256": "2eea72b4fdfe0a03715f32c3fa9d3b7c984629e739a5a7580a6c5a42ab2e466c"
+      },
+      {
+        "file": "electron/concat-placement.cjs",
+        "sha256": "12626c577b660bfb6b95bac6d0a451dffcd1ee7baf0236ea21994e57c16aa658"
+      },
+      {
+        "file": "electron/native-export-raster.cjs",
+        "sha256": "1db3642fb78ab0677f61d14045b959f1d0dbe766d73b07919ad63fe3d06d68cc"
+      },
+      {
+        "file": "resources/licenses/concat/AGPL-3.0.txt",
+        "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+      },
+      {
+        "file": "resources/licenses/concat/LICENSE-EXCEPTIONS.md",
+        "sha256": "ed4be935e6103c65f5c968352ec689637736703720a2ce4c15bef1bf9b8debdc"
+      },
+      {
+        "file": "resources/licenses/concat/TRADEMARK.md",
+        "sha256": "b71b927fee5368095b60d1a865d35ca26011d42ea3204eb3caf06e825a8b469b"
+      },
+      {
+        "file": "resources/licenses/concat/provenance.json",
+        "sha256": "2307157aea36a05fc0d818c288e3c143576307718a7e630f4c988a48c1bf3739"
+      }
+    ],
+    "externalLicenseVerified": true,
+    "verifiedAt": "2026-09-19T08:09:41.924Z"
+  }
+}
