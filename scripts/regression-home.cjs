@@ -228,7 +228,7 @@ async function main() {
         .click();
       await expect(page.getByRole('heading', { name: '关于', exact: true })).toBeVisible();
       await page.getByRole('button', { name: '我的 B站主页', exact: true }).click();
-      await page.getByRole('button', { name: 'GitHub · 源码与下载', exact: true }).click();
+      await page.getByRole('button', { name: '源码与开源许可', exact: true }).click();
       await expect
         .poll(async () => (await state()).external)
         .toEqual([

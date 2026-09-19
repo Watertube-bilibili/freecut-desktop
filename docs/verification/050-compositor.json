@@ -1,0 +1,46 @@
+{
+  "platform": "win32",
+  "startedAt": "2026-09-19T07:24:38.085Z",
+  "checks": [
+    "auto: actual host export completed",
+    "frames: actual host export completed",
+    "native title, shape, position curve, fade and stacking match Canvas pixels",
+    "overlapping styled-text alpha stays on the exact path; raster preparation obeys cancellation",
+    "unknown raster clip rejected by the host"
+  ],
+  "passed": true,
+  "auto": {
+    "pipeline": "native",
+    "textures": 2,
+    "elapsedMs": 878,
+    "bytes": 545312
+  },
+  "frames": {
+    "pipeline": "frames",
+    "textures": 0,
+    "elapsedMs": 4095,
+    "bytes": 530962
+  },
+  "pixels": [
+    {
+      "frame": 6,
+      "mae": 2.1325766782407407,
+      "largeFraction": 0.00980613425925926
+    },
+    {
+      "frame": 39,
+      "mae": 2.177149884259259,
+      "largeFraction": 0.010355902777777778
+    },
+    {
+      "frame": 87,
+      "mae": 2.3367158564814816,
+      "largeFraction": 0.012508680555555556
+    },
+    {
+      "frame": 113,
+      "mae": 2.4409331597222224,
+      "largeFraction": 0.012893518518518518
+    }
+  ]
+}

@@ -1,5 +1,15 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import { Check, Copy, Link2, LoaderCircle, Monitor, Network, Users, X } from 'lucide-react';
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  Link2,
+  LoaderCircle,
+  Monitor,
+  Network,
+  Users,
+  X,
+} from 'lucide-react';
 import type { CollaborationJoinOptions, CollaborationState } from '../collaboration-types';
 import { statusText, useI18n } from '../i18n';
 import './collaboration-panel.css';
@@ -189,6 +199,20 @@ export default function CollaborationPanel({
         setLocalError(caught instanceof Error ? caught.message : String(caught));
     } finally {
       setPending(false);
+    }
+  }
+
+  async function openSource() {
+    try {
+      if (window.freecut) await window.freecut.openExternal('github');
+      else
+        window.open(
+          'https://github.com/Watertube-bilibili/freecut-desktop',
+          '_blank',
+          'noopener,noreferrer',
+        );
+    } catch (caught) {
+      setLocalError(caught instanceof Error ? caught.message : String(caught));
     }
   }
 
@@ -680,6 +704,13 @@ export default function CollaborationPanel({
               ? t('关闭面板后，协作连接仍会保留。')
               : t('协作房间由你的电脑承载 · 无需注册账号')}
           </span>
+          <button
+            type="button"
+            onClick={() => void openSource()}
+            title={t('查看本软件的源码、GPL / AGPL 许可与修改说明')}
+          >
+            <ExternalLink size={15} /> {t('源码与开源许可')}
+          </button>
           {connected && (
             <button
               type="button"

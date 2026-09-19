@@ -18,6 +18,8 @@ import { canRecordFrame, frameNavigation, recordFrame, removeFrame } from '../co
 import './inspector-easy.css';
 import AudioControls from './AudioControls';
 import MaskControls from './MaskControls';
+import BezierEditor from './BezierEditor';
+import { DEFAULT_BEZIER } from '../../shared/concat-bezier.mjs';
 
 const properties: {
   key: AnimProperty;
@@ -745,7 +747,24 @@ export default function Inspector({
                               keyframes: {
                                 ...c.keyframes,
                                 [prop.key]: c.keyframes[prop.key]!.map((f) =>
-                                  f.id === k.id ? { ...f, easing: e.target.value as Easing } : f,
+                                  f.id === k.id
+                                    ? {
+                                        ...f,
+                                        easing: e.target.value as Easing,
+                                        ...(e.target.value === 'bezier'
+                                          ? {
+                                              curve:
+                                                f.curve ??
+                                                ([...DEFAULT_BEZIER] as [
+                                                  number,
+                                                  number,
+                                                  number,
+                                                  number,
+                                                ]),
+                                            }
+                                          : {}),
+                                      }
+                                    : f,
                                 ),
                               },
                             }))
@@ -756,6 +775,7 @@ export default function Inspector({
                           <option value="ease-out">{t('缓出')}</option>
                           <option value="ease-in-out">{t('缓入缓出')}</option>
                           <option value="hold">{t('保持')}</option>
+                          <option value="bezier">{t('贝塞尔曲线')}</option>
                         </select>
                         <button
                           className="icon-button"
@@ -772,6 +792,22 @@ export default function Inspector({
                         >
                           <Trash2 size={12} />
                         </button>
+                        {k.easing === 'bezier' && (
+                          <BezierEditor
+                            curve={k.curve}
+                            change={(curve) =>
+                              change((c) => ({
+                                ...c,
+                                keyframes: {
+                                  ...c.keyframes,
+                                  [prop.key]: c.keyframes[prop.key]!.map((frame) =>
+                                    frame.id === k.id ? { ...frame, curve } : frame,
+                                  ),
+                                },
+                              }))
+                            }
+                          />
+                        )}
                       </div>
                     ))
                   )}

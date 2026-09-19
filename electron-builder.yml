@@ -9,6 +9,7 @@ files:
   - dist/**/*
   - electron/**/*.cjs
   - electron/**/*.mjs
+  - shared/**/*.mjs
   - electron/*.ps1
   - electron/*.sh
   - '!electron/**/*.test.cjs'
@@ -16,7 +17,17 @@ files:
   - LICENSE
   - THIRD_PARTY_NOTICES.md
   - docs/third-party/p2p/**/*
+  - docs/third-party/concat/**/*
+  - docs/WOLFCUT-INTEGRATION.md
 extraResources:
+  - from: docs/third-party/concat
+    to: licenses/concat
+  - from: THIRD_PARTY_NOTICES.md
+    to: licenses/THIRD_PARTY_NOTICES.md
+  - from: LICENSE
+    to: licenses/GPL-3.0.txt
+  - from: docs/WOLFCUT-INTEGRATION.md
+    to: licenses/WOLFCUT-INTEGRATION.md
   - from: resources/ffmpeg
     to: ffmpeg
   - from: installer

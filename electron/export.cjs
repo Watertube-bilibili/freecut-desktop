@@ -4,7 +4,9 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { INPUT_SECURITY } = require('./media.cjs');
-const { planNativeVideo } = require('./native-export.cjs');
+const { inspectNativeVideo } = require('./native-export.cjs');
+const { validateRasterLayers, prepareRasterLayers } = require('./native-export-raster.cjs');
+const { isBezierCurve, linearizeBezierKeyframes } = require('../shared/concat-bezier.mjs');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -118,7 +120,8 @@ function validateProject(project) {
           frame &&
             finite(frame.time, 0, 14400) &&
             finite(frame.value, key === 'volume' ? 0 : -100000, key === 'volume' ? 10 : 100000) &&
-            ['linear', 'ease-in', 'ease-out', 'ease-in-out', 'hold'].includes(frame.easing),
+            ['linear', 'ease-in', 'ease-out', 'ease-in-out', 'hold', 'bezier'].includes(frame.easing) &&
+            (frame.easing !== 'bezier' || isBezierCurve(frame.curve)),
           '关键帧数据无效。',
         );
     }
@@ -154,6 +157,7 @@ function validateOptions(options) {
     options.pipeline === undefined || ['auto', 'frames'].includes(options.pipeline),
     '导出模式无效。',
   );
+  validateRasterLayers(options);
   return options;
 }
 function numeric(value) {
@@ -161,6 +165,7 @@ function numeric(value) {
 }
 function volumeExpression(frames, fallback) {
   if (!frames?.length) return numeric(fallback);
+  frames = linearizeBezierKeyframes(frames);
   const sorted = [...frames].sort((a, b) => a.time - b.time);
   const points = sorted.filter(
     (frame, index) => index === sorted.length - 1 || frame.time !== sorted[index + 1].time,
@@ -288,6 +293,8 @@ function validFrame(bytes, width, height) {
 }
 function createExporter({ ffmpegPath, resolveAsset, emitProgress, temporaryRoot }) {
   const jobs = new Map();
+  const preparations = new Set();
+  let disposed = false;
   let filterOptionPromise;
   const progress = (job, phase, value) => {
     const now = Date.now();
@@ -334,17 +341,38 @@ function createExporter({ ffmpegPath, resolveAsset, emitProgress, temporaryRoot 
     return filterOptionPromise;
   }
   async function begin(options, outputPath) {
+    assert(!disposed, '导出服务已关闭。');
+    assert(jobs.size + preparations.size < 2, '请先完成或取消当前导出。');
+    const preparing = beginJob(options, outputPath);
+    preparations.add(preparing);
+    try { return await preparing; }
+    finally { preparations.delete(preparing); }
+  }
+  async function beginJob(options, outputPath) {
     validateOptions(options);
-    assert(jobs.size < 2, '请先完成或取消当前导出。');
-    const native = options.pipeline === 'auto' ? planNativeVideo(options, resolveAsset) : null;
-    const audio = planAudio(
+    const directory = await fs.mkdtemp(path.join(temporaryRoot, 'freecut-export-'));
+    let inspection;
+    try {
+      const prepared = options.pipeline === 'auto' ? await prepareRasterLayers(options, directory, resolveAsset) : { options, resolveAsset };
+      inspection = options.pipeline === 'auto' ? inspectNativeVideo(prepared.options, prepared.resolveAsset) : { plan: null, reason: 'requested-frames' };
+    } catch (error) {
+      await fs.rm(directory, { recursive: true, force: true });
+      throw error;
+    }
+    const native = inspection.plan;
+    let audio;
+    try {
+    audio = planAudio(
       options.project,
       options.duration,
       resolveAsset,
       native ? native.inputs.length : 1,
     );
+    } catch (error) {
+      await fs.rm(directory, { recursive: true, force: true });
+      throw error;
+    }
     const id = crypto.randomUUID();
-    const directory = await fs.mkdtemp(path.join(temporaryRoot, 'freecut-export-'));
     const staging = path.join(path.dirname(outputPath), `.freecut-${id}.mp4`);
     const job = {
       id,
@@ -371,6 +399,7 @@ function createExporter({ ffmpegPath, resolveAsset, emitProgress, temporaryRoot 
       jobId: id,
       path: outputPath,
       pipeline: native ? 'native' : 'frames',
+      fallbackReason: inspection.reason,
       frameFormat: job.frameFormat,
     };
   }
@@ -425,12 +454,15 @@ function createExporter({ ffmpegPath, resolveAsset, emitProgress, temporaryRoot 
       const filterFile = path.join(job.directory, 'filters.txt');
       await fs.writeFile(filterFile, graph, 'utf8');
       assert(job.state !== 'cancelled', '导出已取消。');
-      const args = ['-hide_banner', '-nostdin', '-y', '-filter_complex_threads', '2'];
+      // A looping corrupt PNG must terminate, not retry the broken packet for
+      // ever while the caller waits for a first frame or cancellation.
+      const args = ['-hide_banner', '-nostdin', '-y', '-xerror', '-filter_complex_threads', '2'];
       if (job.native) {
         for (const input of job.native.inputs) {
           args.push(...INPUT_SECURITY);
           if (input.kind === 'image')
             args.push('-loop', '1', '-framerate', numeric(job.options.fps));
+          else if (input.seek > 0) args.push('-ss', numeric(input.seek));
           args.push('-threads', '2', '-i', input.path);
         }
       } else {
@@ -565,6 +597,8 @@ function createExporter({ ffmpegPath, resolveAsset, emitProgress, temporaryRoot 
     progress(job, 'cancelled', 0);
   }
   async function dispose() {
+    disposed = true;
+    await Promise.allSettled([...preparations]);
     await Promise.allSettled([...jobs.keys()].map(cancel));
   }
   return { begin, writeFrame, finish, cancel, dispose };

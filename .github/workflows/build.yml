@@ -90,6 +90,10 @@ jobs:
       - name: Verify bundled P2P notices
         run: node docs/third-party/p2p/generate-notices.cjs --check
       - run: npm run build
+      - name: Verify the resizable workbench and persisted Bezier editing
+        run: node scripts/regression-workbench.cjs
+      - name: Compare native layered exports with the shared Canvas renderer
+        run: node scripts/regression-compositor.cjs
       - name: Verify album artwork stays audio in import and old projects
         run: node scripts/regression-media-kind.cjs
       - name: Verify AI Skill through the real editor and MP4 export
@@ -183,6 +187,8 @@ jobs:
             artifacts/skill-smoke/report.json
             artifacts/skill-smoke/preview.png
             artifacts/skill-smoke/render.mp4
+            artifacts/workbench/*
+            artifacts/compositor/verification.json
             resources/ffmpeg/*.txt
             resources/ffmpeg/*.json
           if-no-files-found: error

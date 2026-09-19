@@ -405,6 +405,7 @@
 }
 .collab-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -413,8 +414,12 @@
   background: #171a1c;
 }
 .collab-footer > span {
+  flex: 1 1 220px;
   color: var(--muted);
   line-height: 1.6;
+}
+.collab-footer > button {
+  flex-shrink: 0;
 }
 .collab-leave {
   color: #f0b8ac;

@@ -3,4 +3,7 @@
 *.ico binary
 # Preserve verbatim upstream license/readme copies, including original spacing.
 docs/third-party/windows-launcher/*.txt -text -whitespace
+docs/third-party/concat/AGPL-3.0.txt -text -whitespace
+docs/third-party/concat/LICENSE-EXCEPTIONS.md -text -whitespace
+docs/third-party/concat/TRADEMARK.md -text -whitespace
 videos/shuiguan-launch/assets/vendor/* -text -whitespace

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "name": "Concat",
+  "formerName": "WolfCut",
+  "repository": "https://github.com/jub0t/Concat",
+  "commit": "e5c8662daf6d721de2fd6c4e78cb671cd6d98393",
+  "inspectedOn": "2026-09-19",
+  "copyright": "2026 Jareer and Concat contributors",
+  "license": "AGPL-3.0-or-later",
+  "integration": "Selected algorithm ports plus independently implemented interaction references; not a Rust engine or Slint application integration.",
+  "pluginExceptionUsed": false,
+  "hashBasis": "SHA-256 of raw Git blob bytes at the pinned commit, before checkout newline conversion. Destination files are adaptations and intentionally have different hashes.",
+  "licenseFiles": [
+    {
+      "source": "LICENSE",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "copy": "docs/third-party/concat/AGPL-3.0.txt"
+    },
+    {
+      "source": "LICENSE-EXCEPTIONS.md",
+      "sha256": "ed4be935e6103c65f5c968352ec689637736703720a2ce4c15bef1bf9b8debdc",
+      "bytes": 3516,
+      "copy": "docs/third-party/concat/LICENSE-EXCEPTIONS.md"
+    },
+    {
+      "source": "TRADEMARK.md",
+      "sha256": "b71b927fee5368095b60d1a865d35ca26011d42ea3204eb3caf06e825a8b469b",
+      "bytes": 2665,
+      "copy": "docs/third-party/concat/TRADEMARK.md"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "source": "src/crates/concat-core/src/animate.rs",
+      "sha256": "a9d406237ad208d93fe3bff0291125a05eb6c77e25d33900cba5e9a336a16ad6",
+      "bytes": 14436,
+      "kind": "adapted-code",
+      "destination": [
+        "shared/concat-bezier.mjs",
+        "shared/concat-bezier.d.mts"
+      ],
+      "portions": [
+        "bezier_axis",
+        "bezier_axis_slope",
+        "bezier_y_at_x"
+      ],
+      "changes": "Modified 2026-09-19: Rust-to-JavaScript adaptation of cubic-bezier evaluation, Newton iteration and bisection fallback, shared by preview and export. Tightens root tolerance to 1e-12 with up to 48 bisection iterations for near-flat curves. Adds FreeCut validation and outgoing-key easing adapters; declarations are provided for TypeScript callers."
+    },
+    {
+      "source": "src/crates/concat-export/src/lib.rs",
+      "sha256": "7f23bfb3ec7b691efc237155c7cb6097147e781950d8add795383897bbc3531b",
+      "bytes": 79982,
+      "kind": "adapted-code",
+      "destination": [
+        "electron/concat-placement.cjs"
+      ],
+      "portions": [
+        "place_layer"
+      ],
+      "changes": "Rust-to-JavaScript adaptation of centered placement and normalized offsets for FreeCut native FFmpeg composition."
+    },
+    {
+      "source": "src/crates/concat-render/src/compositor.rs",
+      "sha256": "07f417baae5d66fc62dfc378ca5a7fe69da2d2fa1fb8bbfc7edaeca37453ca86",
+      "bytes": 20379,
+      "kind": "adapted-code",
+      "destination": [
+        "electron/concat-placement.cjs"
+      ],
+      "portions": [
+        "blend_transformed: reach_x / reach_y rotated rectangle bounds"
+      ],
+      "changes": "Rust-to-JavaScript adaptation of rotated bounds for sizing transformed FFmpeg layers."
+    },
+    {
+      "source": "src/crates/concat/ui/workspace/workspace.slint",
+      "sha256": "12cd1a1ee33bc5a8020b7d2ebfe42014d3d692ffeaabf3241b60b4f84323b2de",
+      "bytes": 3288,
+      "kind": "interaction-reference-only",
+      "changes": "Reference for resizable panels, media categories, grouped timeline controls, fit-to-timeline, frame stepping or export sections. FreeCut React implementation; no Slint code, fonts, icons or preview assets copied."
+    },
+    {
+      "source": "src/crates/concat/ui/workspace/splitter.slint",
+      "sha256": "285b028390a593320fecd78f2e4c41f6c21119aefd98cb945f8783bed5f9412a",
+      "bytes": 4936,
+      "kind": "interaction-reference-only",
+      "changes": "Reference for resizable panels, media categories, grouped timeline controls, fit-to-timeline, frame stepping or export sections. FreeCut React implementation; no Slint code, fonts, icons or preview assets copied."
+    },
+    {
+      "source": "src/crates/concat/ui/workspace/seat.slint",
+      "sha256": "45bc94be4e74e31109d4b66457aea07da9ac5aeacf409e7e1a09436af673894c",
+      "bytes": 18194,
+      "kind": "interaction-reference-only",
+      "changes": "Reference for resizable panels, media categories, grouped timeline controls, fit-to-timeline, frame stepping or export sections. FreeCut React implementation; no Slint code, fonts, icons or preview assets copied."
+    },
+    {
+      "source": "src/crates/concat/ui/workspace/media-pane.slint",
+      "sha256": "769bf693c40caa5a2f0a98c696fe16ddfe257ee6d1d52629393fc4aa4ab348f7",
+      "bytes": 90482,
+      "kind": "interaction-reference-only",
+      "changes": "Reference for resizable panels, media categories, grouped timeline controls, fit-to-timeline, frame stepping or export sections. FreeCut React implementation; no Slint code, fonts, icons or preview assets copied."
+    },
+    {
+      "source": "src/crates/concat/ui/timeline/tray.slint",
+      "sha256": "96be98176cf58ef6f7c015711db202a3501e9b6802518dd9e5c4a0c849077dbd",
+      "bytes": 7598,
+      "kind": "interaction-reference-only",
+      "changes": "Reference for resizable panels, media categories, grouped timeline controls, fit-to-timeline, frame stepping or export sections. FreeCut React implementation; no Slint code, fonts, icons or preview assets copied."
+    },
+    {
+      "source": "src/crates/concat/ui/workspace/preview-pane.slint",
+      "sha256": "6cd588c75b82f81e86450c05006029b0fa67c78ac93c529965b5a56c099f62de",
+      "bytes": 45030,
+      "kind": "interaction-reference-only",
+      "changes": "Reference for resizable panels, media categories, grouped timeline controls, fit-to-timeline, frame stepping or export sections. FreeCut React implementation; no Slint code, fonts, icons or preview assets copied."
+    },
+    {
+      "source": "src/crates/concat/ui/dialogs/export.slint",
+      "sha256": "e2a9fbbd48a8e86b7702adaaf959e4a0b5d1aa03daf69964f6322efdea34dfeb",
+      "bytes": 14265,
+      "kind": "interaction-reference-only",
+      "changes": "Reference for resizable panels, media categories, grouped timeline controls, fit-to-timeline, frame stepping or export sections. FreeCut React implementation; no Slint code, fonts, icons or preview assets copied."
+    }
+  ]
+}

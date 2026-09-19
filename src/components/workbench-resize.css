@@ -1,0 +1,40 @@
+.workbench-resize-handle {
+  position: relative;
+  touch-action: none;
+  z-index: 5;
+  flex-shrink: 0;
+  background: var(--bg);
+}
+.workbench-resize-handle.vertical {
+  width: 6px;
+  cursor: col-resize;
+}
+.workbench-resize-handle.horizontal {
+  height: 6px;
+  width: 100%;
+  cursor: row-resize;
+}
+.workbench-resize-handle::after {
+  content: '';
+  position: absolute;
+  background: #46534e;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.workbench-resize-handle.vertical::after {
+  inset: 12px 2px;
+}
+.workbench-resize-handle.horizontal::after {
+  inset: 2px 12px;
+}
+.workbench-resize-handle:hover::after,
+.workbench-resize-handle:focus-visible::after {
+  opacity: 1;
+  background: var(--accent);
+}
+.workbench-resize-handle:focus-visible {
+  outline-offset: -2px;
+}
+.mobile-mode .workbench-resize-handle {
+  display: none;
+}

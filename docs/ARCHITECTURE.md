@@ -1,6 +1,8 @@
 # FreeCut 架构与可追溯构建
 
-FreeCut 0.4.1 是 React/TypeScript 编辑界面、Electron 桌面宿主和独立 FFmpeg 子进程组成的本地视频编辑器。核心工程是版本化 JSON；原始媒体保留在用户选择的位置。连续预览与精确导出使用独立解码状态。简单工程直接由 FFmpeg 处理，复杂画面由 Canvas 合成后通过 RGBA 管道编码；音频由浏览器试听、FFmpeg 混音。可选协作房间由用户自己的电脑承载。具体功能完成度见 [功能矩阵](FEATURE-MATRIX.md)。
+当前 FreeCut 0.5.0 源码仍由 React/TypeScript 编辑界面、Electron 桌面宿主和独立 FFmpeg 子进程组成；安装包最新已发布版本仍为 0.4.2，0.5.0 正在验证。核心工程是版本化 JSON；原始媒体保留在用户选择的位置。连续预览与精确导出使用独立解码状态。符合条件的多层画面直接由 FFmpeg 合成，复杂画面由 Canvas 合成后通过 RGBA 管道编码；音频由浏览器试听、FFmpeg 混音。可选协作房间由用户自己的电脑承载。
+
+0.5.0 从 Concat（原 WolfCut）的固定提交移植贝塞尔求值与画面放置 / 旋转边界计算，并参考其工作台交互重构 React 面板；没有引入完整 Rust、Slint、上游字体或新的 GPU 引擎。原 GPL 代码与新增 AGPL 派生模块保留各自许可证，按两协议第 13 条组合。来源、hash、修改与再分发说明见 [WOLFCUT-INTEGRATION.md](WOLFCUT-INTEGRATION.md)。
 
 ## 模块与数据流
 
@@ -10,7 +12,9 @@ flowchart LR
   B --> C[freecut-media 协议与 Range]
   C --> D[React 时间轴与连续 Canvas 预览]
   D --> E[版本化工程 JSON]
-  E --> N[简单工程原生 FFmpeg 计划]
+  E --> N[符合条件的多层原生 FFmpeg 计划]
+  E --> T[静态文字与图形一次性栅格化]
+  T --> N
   E --> F[复杂工程独立精确 Canvas 渲染]
   F --> G[有背压的 RGBA 帧管道]
   E --> H[音频时间映射和混音计划]
@@ -33,6 +37,8 @@ flowchart LR
 | --- | --- |
 | `src/types.ts` | 工程、片段、轨道、效果、关键帧与桌面桥接口 |
 | `src/core/project.ts` | 默认数据、关键帧求值、裁剪/分割、SRT、前端工程验证 |
+| `shared/concat-bezier.mjs` | 源自 Concat 的贝塞尔求值；预览、分割与宿主导出共享，保留旧缓动规则 |
+| `src/core/export-preparation.ts` | 文字 / 图形透明 PNG 的一次性准备；无法安全烘焙时保留 Canvas 路径 |
 | `src/core/renderer.ts` | 连续预览、拖动寻帧调度、独立精确导出、Canvas 合成、播放音频与音量自动化 |
 | `src/core/effects.ts` | 原创参数预设；没有下载第三方 shader 包 |
 | `src/App.tsx`、`src/components` | 素材库、时间轴、属性、布局、新手引导和导出调度 |
@@ -42,7 +48,10 @@ flowchart LR
 | `electron/export.cjs` | IPC 参数验证、RGBA／兼容 PNG 管道、音频规划、编码、取消和清理 |
 | `electron/ai.cjs` | 可选固定版 sherpa-onnx、ASR/TTS 模型安装和本地推理 |
 | `electron/chattts.cjs` | 可选独立 Python/ChatTTS 安装与推理控制器 |
-| `electron/native-export.cjs` | 简单工程的原生 FFmpeg 计划；不符合条件时回退 Canvas |
+| `electron/native-export.cjs` | 多层、静态变换与位置动画的原生 FFmpeg 计划；不符合条件时回退 Canvas |
+| `electron/concat-placement.cjs` | 源自 Concat 的居中放置和旋转边界计算，用于原生图层尺寸规划 |
+| `electron/native-export-raster.cjs` | 栅格图片尺寸 / 格式 / 数量校验、任务临时文件与仅本任务可用的授权 |
+| `electron/voice-storage.cjs` | 0.4.2 起的朗读模型目录选择、复制校验、任务互斥与持久化 |
 | `src/core/collaboration-session.ts` | 协作版本、草稿三方合并、手势期间延后应用远端内容与冲突处理 |
 | `src/collaboration-types.ts`、`src/components/CollaborationPanel.tsx` | 协作桥契约、IP／邀请码连接、成员和冲突处理界面 |
 | `electron/collaboration.cjs` | 本机 HTTP 房间、成员与密钥、工程事件、素材流式传输及缓存 |
@@ -54,7 +63,9 @@ flowchart LR
 
 工程 `version: 1`，包含 `assets`、`tracks` 和 `clips`。时间以秒保存，帧率存于工程。`clip.start` 是时间轴位置，`clip.duration` 是当前时间轴时长，`clip.inPoint` 是源文件入点。正向恒速的源位置为 `inPoint + localTime * speed`。
 
-关键帧时间相对于片段起点；移动片段不改变局部动画。支持 `x/y/scale/rotation/opacity/volume`。位置使用工程像素，缩放与透明度使用倍率，音量 `1` 表示 100%。淡入淡出以秒保存。一个关键帧上的 `easing` 控制该点到下一点的区间；支持线性、二次缓入、二次缓出、分段二次缓入缓出和保持。首点前、末点后保持端点值；同一时刻重复点按最后写入值消歧。
+关键帧时间相对于片段起点；移动片段不改变局部动画。支持 `x/y/scale/rotation/opacity/volume`。位置使用工程像素，缩放与透明度使用倍率，音量 `1` 表示 100%。淡入淡出以秒保存。一个关键帧上的 `easing` 控制该点到下一点的区间；支持线性、二次缓入、二次缓出、分段二次缓入缓出和保持，0.5.0 另增 `bezier` 与四个 `curve` 控制点。控制点限制在 0–1，前后端均验证；旧工程原有 easing 的数值语义不变。首点前、末点后保持端点值；同一时刻重复点按最后写入值消歧。
+
+贝塞尔求值由共享 `.mjs` 模块提供，浏览器打包和 Electron 宿主使用同一实现；Newton 求根不收敛时二分，适配版采用 `1e-12` 根容差和最多 48 次二分。原生音量 / 位置表达式在导出准备阶段将贝塞尔区间自适应采样为有数量上限的线性分段，保留秒数和出点控制语义；没有用曲线关键帧冒充变速曲线。
 
 前端的变换计算由纯函数驱动，预览和 Canvas 导出共享。裁剪和分割通过 `sliceAnimation` 补足边界并对截开的缓动区间自适应采样；数值测试覆盖这条路径。音频导出把同一组插值规则转换为 FFmpeg `volume` 表达式，相关回归测试检查关键时刻的结果。曲线变速需要独立时间映射模型，当前不能用常量 `speed` 字段表示。
 
@@ -64,7 +75,9 @@ flowchart LR
 
 播放预览让视频解码器连续播放，按时间轴采样已解码画面并完成 Canvas 合成，避免每帧反复寻帧。拖动时间条时保留正在解码的一帧，并合并等待中的请求，防止连续取消导致画面始终无法提交；完成后继续追赶最新位置。预览降低画布尺寸并复用合成画布。暂停、跳转与片段切换仍需寻帧，复杂效果仍会消耗 CPU。文字使用当前系统字体，跨系统不保证相同字形。Chromium 不能解码的容器还没有代理回退，FFmpeg 探测成功不能等同所有素材都支持预览。
 
-导出首先复制工程快照并调用 `beginExport` 选择目标。宿主校验尺寸、时长、帧率、ID、引用及数值范围，创建随机临时目录和任务 ID。符合条件的普通视频／图片剪辑使用原生 FFmpeg 计划，跳过浏览器逐帧绘制。文字、视觉关键帧、复杂效果或重叠画面等不符合条件时，使用独立解码状态精确合成每一帧；预览播放不会改变导出寻帧结果。
+导出首先复制工程快照。0.5.0 对符合条件的文字 / 图形先以透明背景生成一次 PNG，随后调用 `beginExport` 选择目标。宿主校验尺寸、时长、帧率、ID、引用及数值范围，创建随机临时目录和任务 ID；图片必须匹配本工程片段、导出尺寸与 PNG 结构，最多 64 张，每张最多 32 MiB、总计最多 128 MiB。临时路径由宿主创建，前端不能借此指定任意文件路径，保存工程不写入这些临时图片。
+
+原生计划按与预览一致的轨道顺序处理符合条件的视频 / 图片叠层，支持静态缩放、旋转、位置、不透明度、翻转、非重叠淡入淡出，以及 X/Y 位置关键帧；保持独立音频规划。文字 / 图形替换为任务授权的透明图片后也按同样规则检查。动态缩放、旋转或不透明度，原生未支持的媒体效果、不对齐的剪切时刻、超出尺寸 / 图层限制等会选择 Canvas 路径。文字过长、模糊 / 羽化 / 暗角等不能无损预先烘焙的情况不生成替代图片。回退时按原工程独立解码并精确合成每一帧；不能用缺失效果换取原生路径，预览播放也不会改变导出寻帧结果。
 
 复杂导出通过 `writeFrame` 将 RGBA 像素流送入已经启动的 FFmpeg stdin，校验连续索引和帧字节数；兼容 PNG 调用也使用管道而非逐帧磁盘文件。每次写入等待背压完成，避免把整部视频缓存到内存，也无需先写完所有帧再开始编码。
 
@@ -168,7 +181,7 @@ Actions cache 仅保存最终引擎、原始源归档/lock 和对应源包，不
 
 源码固定，且设置 `SOURCE_DATE_EPOCH`、`ZERO_AR_DATE` 并记录工具链，但 runner 的编译器、系统 SDK 和构建工具未全部永久镜像锁定；因此不声称跨工具链位级相同。Mac 签名可能修改二进制，manifest 中明确记录签名前散列。
 
-Actions artifact 保留 14 天。若将安装包复制到 GitHub Release 或其他下载站，应将对应的两份源归档和声明一起长期保存、提供同等访问，不能让公开二进制仍存在而对应源码过期。完整应用 GPL 文本在 `LICENSE`；依赖声明与源码分发说明在 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)。
+Actions artifact 保留 14 天。若将安装包复制到 GitHub Release 或其他下载站，应将对应的两份源归档和声明一起长期保存、提供同等访问，不能让公开二进制仍存在而对应源码过期。原创部分的 GPL 文本在 `LICENSE`；Concat 派生部分的 AGPL、原文政策与来源记录在 `docs/third-party/concat/`，同时随应用包携带。关于与协作页面提供公开源码 / 许可入口；有远程交互的修改版应向用户显著提供所运行版本的完整对应源码。其余依赖与源码分发说明在 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)。
 
 ## 验证层次
 

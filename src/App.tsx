@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   Film,
   FolderOpen,
@@ -43,6 +43,12 @@ import {
   PanelRightOpen,
   House,
   Users,
+  PanelLeftClose,
+  PanelLeftOpen,
+  StepBack,
+  StepForward,
+  ScanLine,
+  MousePointer2,
 } from 'lucide-react';
 import type { AnimProperty, Clip, MediaAsset, Project, ProjectSummary, Transform } from './types';
 import {
@@ -72,6 +78,8 @@ import ContextMenu, { type ContextMenuItem } from './components/ContextMenu';
 import CollaborationPanel from './components/CollaborationPanel';
 import { CollaborationSession, disconnectedCollaboration } from './core/collaboration-session';
 import type { CollaborationJoinOptions } from './collaboration-types';
+import WorkbenchResizeHandle, { useWorkbenchLayout } from './components/WorkbenchResizeHandle';
+import { prepareExportRasterLayers } from './core/export-preparation';
 import { t, useI18n, type Language } from './i18n';
 import { version as appVersion } from '../package.json';
 
@@ -197,6 +205,12 @@ function demoProject() {
 
 export default function App() {
   const { language, setLanguage } = useI18n();
+  const workbench = useWorkbenchLayout();
+  const [libraryOpen, setLibraryOpen] = useState(true);
+  const [mediaFilter, setMediaFilter] = useState<'all' | MediaAsset['kind']>('all');
+  const [mediaSort, setMediaSort] = useState<'imported' | 'name' | 'duration'>('imported');
+  const [timelineFit, setTimelineFit] = useState(0);
+  const [timelineTool, setTimelineTool] = useState<'select' | 'razor'>('select');
   const [contextMenu, setContextMenu] = useState<EditorMenu>();
   const [collaborationOpen, setCollaborationOpen] = useState(false);
   const [collaborationState, setCollaborationState] = useState(disconnectedCollaboration);
@@ -285,6 +299,31 @@ export default function App() {
   }, []);
   const clip = project.clips.find((c) => c.id === selected),
     duration = durationOf(project);
+  const libraryWidth = Math.min(
+    workbench.libraryWidth,
+    Math.max(200, workbench.viewport.width * 0.3),
+  );
+  const inspectorWidth = Math.min(
+    workbench.inspectorWidth,
+    Math.max(240, workbench.viewport.width * 0.29),
+  );
+  const timelineHeight = Math.min(
+    workbench.timelineHeight,
+    Math.max(150, workbench.viewport.height - 350),
+  );
+  const visibleAssets = project.assets
+    .filter(
+      (asset) =>
+        (mediaFilter === 'all' || asset.kind === mediaFilter) &&
+        asset.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
+    )
+    .sort((a, b) =>
+      mediaSort === 'name'
+        ? a.name.localeCompare(b.name, language)
+        : mediaSort === 'duration'
+          ? b.duration - a.duration
+          : 0,
+    );
   const notify = useCallback((message: string) => {
     setToast(t(message));
     clearTimeout(toastTimer.current);
@@ -299,22 +338,29 @@ export default function App() {
     if (!api) return;
     const session = new CollaborationSession(api, {
       read: () => projectRef.current,
-      canApply: () => !fileOperation.current && !closingRef.current &&
-        !previewGesture.current && !timelineGesture.current && !job.current,
+      canApply: () =>
+        !fileOperation.current &&
+        !closingRef.current &&
+        !previewGesture.current &&
+        !timelineGesture.current &&
+        !job.current,
       apply: (next, initial) => {
         const p = validateProject(next);
-        if (initial) { replaceProject(p, false); return; }
+        if (initial) {
+          replaceProject(p, false);
+          return;
+        }
         closeContextMenu();
         projectRef.current = p;
         setProject(p);
-        setSelected(id => p.clips.some(clip => clip.id === id) ? id : undefined);
+        setSelected((id) => (p.clips.some((clip) => clip.id === id) ? id : undefined));
         history.current = [];
         future.current = [];
-        setHistoryVersion(value => value + 1);
+        setHistoryVersion((value) => value + 1);
         if (timeRef.current > durationOf(p)) setTime(durationOf(p));
       },
       state: setCollaborationState,
-      conflict: fields => {
+      conflict: (fields) => {
         setCollaborationConflicts(fields);
         if (fields.length) setCollaborationOpen(true);
       },
@@ -322,9 +368,14 @@ export default function App() {
     });
     collaborationSession.current = session;
     session.start();
-    return () => { session.dispose(); collaborationSession.current = null; };
+    return () => {
+      session.dispose();
+      collaborationSession.current = null;
+    };
   }, []);
-  useEffect(() => { collaborationSession.current?.projectChanged(); }, [project]);
+  useEffect(() => {
+    collaborationSession.current?.projectChanged();
+  }, [project]);
   function showCollaboration() {
     finishPreviewGesture(false);
     playingRef.current = false;
@@ -332,12 +383,20 @@ export default function App() {
     closeContextMenu();
     setCollaborationOpen(true);
   }
-  async function hostCollaboration(port: number, name: string, transport: 'remote' | 'lan' = 'remote') {
+  async function hostCollaboration(
+    port: number,
+    name: string,
+    transport: 'remote' | 'lan' = 'remote',
+  ) {
     const session = collaborationSession.current;
     if (!session) throw Error(t('远程协作需要桌面版。'));
     setCollaborationBusy(true);
-    try { await session.host(port, name, transport); enterEditor(); }
-    finally { setCollaborationBusy(false); }
+    try {
+      await session.host(port, name, transport);
+      enterEditor();
+    } finally {
+      setCollaborationBusy(false);
+    }
   }
   async function joinCollaboration(options: CollaborationJoinOptions) {
     const session = collaborationSession.current;
@@ -346,17 +405,26 @@ export default function App() {
     try {
       if (JSON.stringify(projectRef.current) !== savedRef.current && !(await save())) return;
       await session.join(options);
-    } finally { setCollaborationBusy(false); }
+    } finally {
+      setCollaborationBusy(false);
+    }
   }
   async function leaveCollaboration() {
     setCollaborationBusy(true);
-    try { await collaborationSession.current?.leave(); setCollaborationError(''); }
-    finally { setCollaborationBusy(false); }
+    try {
+      await collaborationSession.current?.leave();
+      setCollaborationError('');
+    } finally {
+      setCollaborationBusy(false);
+    }
   }
   async function adoptRoomProject() {
     setCollaborationBusy(true);
-    try { if (await save()) collaborationSession.current?.adoptRemote(); }
-    finally { setCollaborationBusy(false); }
+    try {
+      if (await save()) collaborationSession.current?.adoptRemote();
+    } finally {
+      setCollaborationBusy(false);
+    }
   }
   useEffect(() => {
     void window.freecut?.setLanguage?.(language).catch(() => {
@@ -448,7 +516,10 @@ export default function App() {
   }
   function navigate(action: () => void | Promise<void>) {
     if (fileOperation.current || closingRef.current) return;
-    if (collaborationSession.current?.state.mode !== 'disconnected' && collaborationSession.current) {
+    if (
+      collaborationSession.current?.state.mode !== 'disconnected' &&
+      collaborationSession.current
+    ) {
       notify(t('请先退出协作，再打开或新建其他工程。'));
       showCollaboration();
       return;
@@ -818,8 +889,14 @@ export default function App() {
       }
       if (
         canvas.current &&
-        (lastProject !== p || lastTime !== t || lastPlaying !== isPlaying || lastCanvas !== canvas.current) &&
-        (!isPlaying || lastProject !== p || lastPlaying !== isPlaying || lastCanvas !== canvas.current ||
+        (lastProject !== p ||
+          lastTime !== t ||
+          lastPlaying !== isPlaying ||
+          lastCanvas !== canvas.current) &&
+        (!isPlaying ||
+          lastProject !== p ||
+          lastPlaying !== isPlaying ||
+          lastCanvas !== canvas.current ||
           now - lastRequest >= 1000 / Math.min(30, p.fps) - 1)
       ) {
         lastProject = p;
@@ -1366,6 +1443,13 @@ export default function App() {
         factor = short / Math.min(p.width, p.height),
         width = Math.round((p.width * factor) / 2) * 2,
         height = Math.round((p.height * factor) / 2) * 2;
+      const rasterLayers = await prepareExportRasterLayers(
+        p,
+        width,
+        height,
+        () => cancelled.current,
+      );
+      if (cancelled.current) return;
       const out = await api.beginExport({
         project: p,
         width,
@@ -1376,9 +1460,14 @@ export default function App() {
         format: 'mp4',
         frameFormat: 'rgba',
         pipeline: 'auto',
+        rasterLayers,
       });
       if (!out) {
         setBusy(false);
+        return;
+      }
+      if (cancelled.current) {
+        await api.cancelExport(out.jobId);
         return;
       }
       job.current = out.jobId;
@@ -1520,11 +1609,13 @@ export default function App() {
     split,
     seek,
   ]);
-  const assets = project.assets.filter(
-    (a) =>
-      (tab !== 'audio' || a.kind === 'audio') &&
-      a.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const assets =
+    tab === 'media'
+      ? visibleAssets
+      : project.assets.filter(
+          (a) =>
+            a.kind === 'audio' && a.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
+        );
   const toolButtons = [
     {
       label: t('关键帧'),
@@ -1848,9 +1939,78 @@ export default function App() {
     };
   }
   const menuContent = contextContent();
+  const mediaBinControls = tab === 'media' && (
+    <div className="media-bin-controls">
+      <div className="media-kind-tabs" role="group" aria-label={t('素材类型')}>
+        {(['all', 'video', 'audio', 'image'] as const).map((kind) => (
+          <button
+            key={kind}
+            aria-pressed={mediaFilter === kind}
+            onClick={() => setMediaFilter(kind)}
+          >
+            {t({ all: '全部', video: '视频', audio: '音频', image: '图片' }[kind])}
+            <span>
+              {kind === 'all'
+                ? project.assets.length
+                : project.assets.filter((asset) => asset.kind === kind).length}
+            </span>
+          </button>
+        ))}
+      </div>
+      <label className="media-sort-label">
+        <span>{t('排序')}</span>
+        <select
+          aria-label={t('素材排序')}
+          value={mediaSort}
+          onChange={(event) => setMediaSort(event.target.value as typeof mediaSort)}
+        >
+          <option value="imported">{t('导入顺序')}</option>
+          <option value="name">{t('名称')}</option>
+          <option value="duration">{t('时长优先')}</option>
+        </select>
+      </label>
+    </div>
+  );
+  const toolNavigation = (
+    <nav className="tool-nav" aria-label={t('创作工具')}>
+      {nav.map(({ id, label, icon: Icon }) => (
+        <button
+          key={id}
+          className={tab === id ? 'active' : ''}
+          onClick={() => {
+            setTab(id);
+            setLibraryOpen(true);
+            setSearch('');
+            if (mobile) setMobileShelf(id === tab ? !mobileShelf : true);
+          }}
+        >
+          <Icon size={21} />
+          <span>{t(label)}</span>
+        </button>
+      ))}
+      <div className="nav-spacer" />
+      <button
+        className="ai-nav"
+        onClick={() => {
+          setAITab('asr');
+          setAIOpen(true);
+        }}
+      >
+        <Captions size={21} />
+        <span>{t('AI 语音')}</span>
+      </button>
+    </nav>
+  );
   return (
     <div
-      className={`app ${home ? 'home-view' : ''} ${mobile ? 'mobile-mode' : ''} ${mobileShelf ? 'shelf-open' : ''} ${!inspectorOpen ? 'inspector-collapsed' : ''}`}
+      className={`app workbench ${home ? 'home-view' : ''} ${mobile ? 'mobile-mode' : ''} ${mobileShelf ? 'shelf-open' : ''} ${!inspectorOpen ? 'inspector-collapsed' : ''} ${!libraryOpen ? 'library-collapsed' : ''}`}
+      style={
+        {
+          '--workbench-library': `${libraryWidth}px`,
+          '--workbench-inspector': `${inspectorWidth}px`,
+          '--workbench-timeline': `${timelineHeight}px`,
+        } as CSSProperties
+      }
     >
       {contextMenu && menuContent && (
         <ContextMenu
@@ -1868,7 +2028,8 @@ export default function App() {
           fileBusy ||
           busy ||
           playing ||
-          collaborationOpen || collaborationState.mode !== 'disconnected' ||
+          collaborationOpen ||
+          collaborationState.mode !== 'disconnected' ||
           (!home && (exportOpen || aiOpen || onboarding || helpOpen)) ||
           !!pendingNavigation
         }
@@ -1883,8 +2044,10 @@ export default function App() {
           onJoin={joinCollaboration}
           onLeave={leaveCollaboration}
           onClose={() => setCollaborationOpen(false)}
-          onKeepLocal={() => void leaveCollaboration().catch(e => setCollaborationError(e.message))}
-          onUseRemote={() => void adoptRoomProject().catch(e => setCollaborationError(e.message))}
+          onKeepLocal={() =>
+            void leaveCollaboration().catch((e) => setCollaborationError(e.message))
+          }
+          onUseRemote={() => void adoptRoomProject().catch((e) => setCollaborationError(e.message))}
         />
       )}
       {home ? (
@@ -1896,10 +2059,12 @@ export default function App() {
           setMode={changeKeyframeMode}
           create={() => navigate(() => replaceProject(createLocalizedProject()))}
           open={() => void open()}
-          demo={() => navigate(() => {
-            replaceProject(demoProject(), false);
-            setTime(2);
-          })}
+          demo={() =>
+            navigate(() => {
+              replaceProject(demoProject(), false);
+              setTime(2);
+            })
+          }
           resume={enterEditor}
           hasSession={hasSession}
           openRecent={(id) => void openRecent(id)}
@@ -1911,7 +2076,9 @@ export default function App() {
           }}
           notify={notify}
           collaborate={showCollaboration}
-          collaborating={collaborationState.mode === 'hosting' || collaborationState.mode === 'joined'}
+          collaborating={
+            collaborationState.mode === 'hosting' || collaborationState.mode === 'joined'
+          }
         />
       ) : (
         <>
@@ -1982,11 +2149,21 @@ export default function App() {
               </button>
               <button
                 title={t('远程协作')}
-                className={collaborationState.mode === 'hosting' || collaborationState.mode === 'joined' ? 'collaboration-connected' : ''}
+                className={
+                  collaborationState.mode === 'hosting' || collaborationState.mode === 'joined'
+                    ? 'collaboration-connected'
+                    : ''
+                }
                 onClick={showCollaboration}
               >
                 <Users size={17} />
-                <span>{t(collaborationState.mode === 'hosting' || collaborationState.mode === 'joined' ? '协作中' : '远程协作')}</span>
+                <span>
+                  {t(
+                    collaborationState.mode === 'hosting' || collaborationState.mode === 'joined'
+                      ? '协作中'
+                      : '远程协作',
+                  )}
+                </span>
               </button>
               <button
                 className="icon-button"
@@ -2011,40 +2188,24 @@ export default function App() {
             </div>
           </header>
           <div className="workspace">
-            <nav className="tool-nav" aria-label={t('创作工具')}>
-              {nav.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  className={tab === id ? 'active' : ''}
-                  onClick={() => {
-                    setTab(id);
-                    setSearch('');
-                    if (mobile) setMobileShelf(id === tab ? !mobileShelf : true);
-                  }}
-                >
-                  <Icon size={21} />
-                  <span>{t(label)}</span>
-                </button>
-              ))}
-              <div className="nav-spacer" />
-              <button
-                className="ai-nav"
-                onClick={() => {
-                  setAITab('asr');
-                  setAIOpen(true);
-                }}
-              >
-                <Captions size={21} />
-                <span>{t('AI 语音')}</span>
-              </button>
-            </nav>
+            {mobile && toolNavigation}
             <aside className="library">
+              {!mobile && toolNavigation}
               <div className="panel-heading">
                 <span>
                   {t('{name}工作区', { name: t(nav.find((n) => n.id === tab)?.label ?? '') })}
                 </span>
-                <span className="small muted">
+                <span className="library-heading-actions small muted">
                   {tab === 'media' ? t('{v0} 项', { v0: project.assets.length }) : ''}
+                  {!mobile && (
+                    <button
+                      className="icon-button"
+                      title={t('收起素材库')}
+                      onClick={() => setLibraryOpen(false)}
+                    >
+                      <PanelLeftClose size={15} />
+                    </button>
+                  )}
                 </span>
               </div>
               <div className="library-search">
@@ -2061,6 +2222,7 @@ export default function App() {
                   </button>
                 )}
               </div>
+              {mobile && mediaBinControls}
               <div
                 className="library-body"
                 onContextMenu={(event) => {
@@ -2068,6 +2230,7 @@ export default function App() {
                     openContextMenu(event, { kind: 'library' });
                 }}
               >
+                {!mobile && mediaBinControls}
                 {(tab === 'media' || tab === 'audio') && (
                   <>
                     <button
@@ -2345,9 +2508,32 @@ export default function App() {
                 {t('离线创作 · 无水印')}
               </div>
             </aside>
+            {!mobile && libraryOpen && (
+              <WorkbenchResizeHandle
+                orientation="vertical"
+                label={t('调整素材面板宽度')}
+                value={libraryWidth}
+                min={200}
+                max={Math.max(200, Math.min(480, workbench.viewport.width * 0.3))}
+                onChange={(value) => workbench.change('libraryWidth', value)}
+                onReset={() => workbench.change('libraryWidth', 300)}
+              />
+            )}
             <main className="preview-panel">
               <div className="preview-header">
-                <span>{t('播放器')}</span>
+                <span className="preview-pane-title">
+                  {!mobile && (
+                    <button
+                      className="icon-button"
+                      title={t('显示或隐藏素材库')}
+                      aria-pressed={libraryOpen}
+                      onClick={() => setLibraryOpen(!libraryOpen)}
+                    >
+                      <PanelLeftOpen size={16} />
+                    </button>
+                  )}
+                  {t('播放器')}
+                </span>
                 <div>
                   <select
                     aria-label={t('画布比例')}
@@ -2382,10 +2568,24 @@ export default function App() {
                   >
                     <Maximize2 size={15} />
                   </button>
+                  {!mobile && (
+                    <button
+                      className="icon-button"
+                      title={t('重置工作台布局')}
+                      onClick={() => {
+                        workbench.reset();
+                        setLibraryOpen(true);
+                        setInspectorOpen(true);
+                      }}
+                    >
+                      <RotateCcw size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
               <div
                 className="stage"
+                style={{ '--preview-ratio': project.width / project.height } as CSSProperties}
                 tabIndex={0}
                 aria-label={t('预览画布区域')}
                 onContextMenu={(event) => openContextMenu(event, { kind: 'preview' })}
@@ -2465,10 +2665,22 @@ export default function App() {
                 <div className="time-readout">
                   <b>{timecode(time, project.fps)}</b>
                   <span>/ {timecode(duration, project.fps)}</span>
+                  <small className="frame-readout" title={t('当前帧')}>
+                    {Math.round(time * project.fps)} f
+                  </small>
                 </div>
                 <div className="transport">
                   <button title={t('回到起点')} onClick={() => seek(0)}>
                     <SkipBack size={17} />
+                  </button>
+                  <button
+                    title={t('上一帧')}
+                    disabled={time <= 0}
+                    onClick={() =>
+                      seek(Math.max(0, (Math.round(time * project.fps) - 1) / project.fps))
+                    }
+                  >
+                    <StepBack size={16} />
                   </button>
                   <button
                     className="play-button"
@@ -2484,6 +2696,15 @@ export default function App() {
                     ) : (
                       <Play size={21} fill="currentColor" />
                     )}
+                  </button>
+                  <button
+                    title={t('下一帧')}
+                    disabled={time >= duration}
+                    onClick={() =>
+                      seek(Math.min(duration, (Math.round(time * project.fps) + 1) / project.fps))
+                    }
+                  >
+                    <StepForward size={16} />
                   </button>
                   <button title={t('跳到结尾')} onClick={() => seek(duration)}>
                     <SkipForward size={17} />
@@ -2533,6 +2754,18 @@ export default function App() {
                 </button>
               </div>
             </main>
+            {!mobile && inspectorOpen && (
+              <WorkbenchResizeHandle
+                orientation="vertical"
+                label={t('调整属性面板宽度')}
+                value={inspectorWidth}
+                min={240}
+                max={Math.max(240, Math.min(480, workbench.viewport.width * 0.29))}
+                reversed
+                onChange={(value) => workbench.change('inspectorWidth', value)}
+                onReset={() => workbench.change('inspectorWidth', 300)}
+              />
+            )}
             <Inspector
               mode={keyframeMode}
               setMode={changeKeyframeMode}
@@ -2550,8 +2783,37 @@ export default function App() {
             />
           </div>
           <section className="timeline-panel" aria-label={t('多轨时间线')}>
+            {!mobile && (
+              <WorkbenchResizeHandle
+                orientation="horizontal"
+                label={t('调整时间线高度')}
+                value={timelineHeight}
+                min={150}
+                max={Math.max(150, Math.min(620, workbench.viewport.height - 350))}
+                reversed
+                onChange={(value) => workbench.change('timelineHeight', value)}
+                onReset={() => workbench.change('timelineHeight', 250)}
+              />
+            )}
             <div className="timeline-toolbar">
               <div className="edit-actions">
+                <button
+                  className={`icon-button ${timelineTool === 'select' ? 'active' : ''}`}
+                  title={t('选择工具')}
+                  aria-pressed={timelineTool === 'select'}
+                  onClick={() => setTimelineTool('select')}
+                >
+                  <MousePointer2 size={16} />
+                </button>
+                <button
+                  className={`icon-button ${timelineTool === 'razor' ? 'active' : ''}`}
+                  title={t('刀片工具：点击片段分割')}
+                  aria-pressed={timelineTool === 'razor'}
+                  onClick={() => setTimelineTool('razor')}
+                >
+                  <Scissors size={16} />
+                </button>
+                <i />
                 <button
                   className="icon-button"
                   title={t('撤销 Ctrl+Z')}
@@ -2606,28 +2868,43 @@ export default function App() {
               </div>
               <div className="timeline-zoom">
                 <button
+                  title={t('时间线适合全片')}
+                  onClick={() => setTimelineFit((value) => value + 1)}
+                >
+                  <ScanLine size={16} />
+                  <span>{t('适合全片')}</span>
+                </button>
+                <button
                   title={t('缩小时间线')}
-                  onClick={() => setZoom((v) => Math.max(12, v - 15))}
+                  onClick={() => setZoom((v) => Math.max(0.02, v / 1.4))}
                 >
                   <Minus size={14} />
                 </button>
                 <input
                   aria-label={t('时间线缩放')}
                   type="range"
-                  min={12}
-                  max={180}
+                  min={Math.min(1, zoom)}
+                  max={260}
+                  step="any"
                   value={zoom}
                   onChange={(e) => setZoom(+e.target.value)}
                 />
                 <button
                   title={t('放大时间线')}
-                  onClick={() => setZoom((v) => Math.min(180, v + 15))}
+                  onClick={() => setZoom((v) => Math.min(260, v * 1.4))}
                 >
                   <Plus size={14} />
                 </button>
               </div>
             </div>
             <Timeline
+              fitRequest={timelineFit}
+              onZoomChange={setZoom}
+              tool={timelineTool}
+              onRazor={(id, at) => {
+                seek(at);
+                splitClipById(id);
+              }}
               project={project}
               selected={selected}
               time={time}
@@ -2790,47 +3067,54 @@ export default function App() {
                     </small>
                   </span>
                 </div>
-                <label className="inline-field">
-                  {t('分辨率')}
-                  <select
-                    disabled={busy}
-                    value={exportSize}
-                    onChange={(e) => setExportSize(e.target.value)}
-                  >
-                    <option value="720">720p</option>
-                    <option value="1080">1080p</option>
-                    <option value="2160">4K / 2160p</option>
-                  </select>
-                </label>
-                <label className="inline-field">
-                  {t('帧率')}
-                  <select
-                    disabled={busy}
-                    value={exportFps}
-                    onChange={(e) => setExportFps(+e.target.value)}
-                  >
-                    {[24, 25, 30, 50, 60].map((f) => (
-                      <option key={f} value={f}>
-                        {f} fps
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="inline-field">
-                  {t('编码质量')}
-                  <select
-                    disabled={busy}
-                    value={quality}
-                    onChange={(e) => setQuality(e.target.value as 'high')}
-                  >
-                    <option value="high">{t('高质量 · 较大文件')}</option>
-                    <option value="medium">{t('标准 · 较小文件')}</option>
-                  </select>
-                </label>
-                <label className="inline-field">
-                  {t('格式')}
-                  <span>MP4 · H.264 + AAC</span>
-                </label>
+                <section className="export-settings-group" aria-labelledby="export-output-settings">
+                  <h3 id="export-output-settings">{t('输出设置')}</h3>
+                  <label className="inline-field">
+                    {t('分辨率')}
+                    <select
+                      disabled={busy}
+                      value={exportSize}
+                      onChange={(e) => setExportSize(e.target.value)}
+                    >
+                      <option value="720">720p</option>
+                      <option value="1080">1080p</option>
+                      <option value="1440">2K / 1440p</option>
+                      <option value="2160">4K / 2160p</option>
+                    </select>
+                  </label>
+                  <label className="inline-field">
+                    {t('帧率')}
+                    <select
+                      disabled={busy}
+                      value={exportFps}
+                      onChange={(e) => setExportFps(+e.target.value)}
+                    >
+                      {[24, 25, 30, 50, 60].map((f) => (
+                        <option key={f} value={f}>
+                          {f} fps
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="inline-field">
+                    {t('编码质量')}
+                    <select
+                      disabled={busy}
+                      value={quality}
+                      onChange={(e) => setQuality(e.target.value as 'high')}
+                    >
+                      <option value="high">{t('高质量 · 较大文件')}</option>
+                      <option value="medium">{t('标准 · 较小文件')}</option>
+                    </select>
+                  </label>
+                  <label className="inline-field">
+                    {t('格式')}
+                    <span>MP4 · H.264 + AAC</span>
+                  </label>
+                  <p className="export-output-note">
+                    {t('低配电脑建议选择 720p、30 fps。输出设置不会改变工程画布和原素材。')}
+                  </p>
+                </section>
                 {(busy || progress > 0) && (
                   <div className="export-progress">
                     <div>

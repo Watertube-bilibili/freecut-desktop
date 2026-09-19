@@ -47,27 +47,31 @@ if(mode==='verify'){
     assert.equal(assets.length,14);
     const sums=assets.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(asset=>`${asset.sha256}  ${asset.name}`).join('\n')+'\n';
     await fs.writeFile(path.join(out,'SHA256SUMS.txt'),sums);assets.push({name:'SHA256SUMS.txt',size:Buffer.byteLength(sums),sha256:await digest(path.join(out,'SHA256SUMS.txt'))});
-    const notes=`水管剪辑 / FreeCut ${version} 预览版，我叫水管同学出品。
+    const notes=`水管剪辑 / FreeCut ${version} 预览版 · 工作台与导出升级，我叫水管同学出品。
 
 ## 本次更新
 
-- 新增自定义朗读模型目录：在“AI 语音 → 语音朗读”选择父目录，软件自动创建 FreeCut-VoiceModels 子目录，存放 ChatTTS、轻量 AISHELL 中文朗读模型及其模型缓存。
-- 已完整安装的模型先复制并校验，成功后才启用新位置，源文件保留；复制、校验或配置保存失败时继续使用原目录。旧下载缓存和未完成文件不复制，后续模型下载缓存使用新位置。不会在切换时自动删除原模型或旧缓存，因此需为新旧两份模型预留空间。
-- 下载或生成期间禁止切换；支持恢复默认，并跨次启动记住配置。中英文界面都能设置模型目录。
-- Python、sherpa 运行环境、生成音频和 SenseVoice / Whisper 自动字幕模型保留原位置。本次只调整朗读模型及其模型缓存，不迁移整个应用数据目录，也不改变模型许可。
-- 同步中英文 README、模型说明和使用教程。保留连续预览、异地邀请码协作、FFmpeg 原生导出、复杂画面 RGBA 管道、带封面音频识别与旧快捷方式修复；本次未新增其他编辑功能。
-- 保留中英文界面、右键剪辑、双布局、直接拖动/缩放/旋转、易用关键帧、蒙版、原创滤镜与音效、左右声道、自动字幕和语音朗读。首次启动默认简体中文，可切换并记住 English。
+- 重构桌面工作台：素材和属性面板可调宽度，时间线可调高度；素材按类型筛选和排序，时间线可“适合全片”，预览可逐帧查看，并支持重置工作台布局。
+- 新增贝塞尔关键帧：切到“专业模式 → 关键帧”，在一个关键帧的缓动方式中选择“贝塞尔曲线”，使用预设或编辑四个控制点。该点控制到下一关键帧的变化；旧工程的原有缓动规则保持不变。
+- 扩展 FFmpeg 原生导出：符合条件的多轨叠加、静态缩放/旋转/透明度、位置关键帧与淡入淡出可直接合成。合适的文字和图形只准备一次透明 PNG，再由原生路径合成，减少浏览器逐帧绘制。
+- 动态缩放、旋转或不透明度、未支持的复杂效果、不对齐的剪切时刻等仍自动使用 Canvas 与 RGBA 管道，保留画面语义。图片准备受尺寸、数量和总字节数限制；复杂工程与低配电脑仍可能耗时，不承诺统一加速倍数。
+- 实际采用 Concat（原 WolfCut）固定提交的贝塞尔、放置及旋转边界算法，并参考其工作台交互；保留 FreeCut 的 Electron/React 架构与原有 FFmpeg 构建。这不是完整 Rust/Slint 重写，也没有新增 GPU 编码。
+- 保留双布局、普通关键帧、右键剪辑、预览拖动/缩放/旋转、蒙版、原创滤镜与音效、左右声道、自动字幕、ChatTTS、朗读模型自定义目录及异地邀请码协作。首次启动默认简体中文，可切换并记住 English；英文功能说明和教程同步更新。
 - 全部功能永久免费，不设会员、不设付费解锁，导出无水印。
 
 ## English
 
 FreeCut is a free, open-source desktop video editor created by a junior high school student using GPT-6 and Codex. All features are free forever, with no membership, paid unlocks or export watermark.
 
-This release adds a custom speech-model download location. Open AI Voice → Text to speech and choose a parent folder. FreeCut automatically creates a FreeCut-VoiceModels subfolder for ChatTTS, lightweight AISHELL Chinese speech models, and their model caches.
+The rebuilt workbench adds resizable media and inspector panels, adjustable timeline height, media type filters and sorting, fit-to-timeline, frame stepping, and a workspace reset. Desktop/mobile layouts still edit the same project.
 
-Fully installed models are copied and verified before the new location becomes active. Original files remain; failed copying, verification or configuration changes keep the previous location. Existing download caches and incomplete files are not copied; subsequent model downloads use the new cache location. Downloads and generation block folder changes. You can restore the default location, and the setting persists across restarts in both interface languages. Copying needs space for both model copies and does not automatically remove original files or old caches.
+New cubic-bezier keyframes are available in Pro mode → Keyframes. Select Cubic-bezier in a keyframe's Easing menu, then choose a preset or edit its four control points. The curve controls the interval to the next keyframe; old easing behavior is preserved.
 
-Python and sherpa runtimes, generated audio, and SenseVoice/Whisper caption models remain in their original locations. This setting does not relocate all application data or change any model license. Existing continuous preview, invite-code collaboration, native FFmpeg export, the RGBA pipe, audio artwork handling and shortcut repairs remain available; no other editing feature is added in this release.
+Eligible layered compositions, static transforms, position animation and fades can use native FFmpeg export. Suitable title/shape layers are prepared as transparent PNGs once. Unsupported effects, animated scale/rotation/opacity and other ineligible cases retain Canvas and the RGBA pipe; effects are not silently dropped. Complex projects can still take time, and a speedup is not guaranteed for every project or computer.
+
+This uses selected algorithms from a pinned Concat (formerly WolfCut) revision and independently implemented workbench interactions. FreeCut still uses Electron/React and its existing FFmpeg build: this is not a complete Rust/Slint replacement or a new GPU encoder. Existing speech tools, custom voice-model storage, Internet invitations and legacy project support remain available.
+
+Original FreeCut code remains GPL-3.0-or-later; Concat-derived modules remain AGPL-3.0-or-later, copyright Jareer and Concat contributors. Their combination follows section 13 of both licenses, including the network-source requirement. Corresponding source, full licenses and modification notices accompany this release; the internal-code adaptations do not use Concat's plugin exception.
 
 The first launch still defaults to Simplified Chinese: choose English in Home → Settings → Language, or the editor's language selector. The choice persists, and your project text is never translated automatically. Context menus, dual layouts, Easy keyframes, preview transforms, masks, color presets, sound effects, stereo routing, captions and local voice tools remain available.
 
@@ -89,15 +93,15 @@ Mac 可在「 → 关于本机」查看芯片。Windows 当前提供 x64 构�
 
 从可验证的旧 0.2.0 FreeCut 安装版迁移时，可以选择原目录覆盖升级，无需先卸载。新版检查旧程序的真实包身份，再仅替换新包对应程序路径；保留个人工程、模型、未知文件和旧卸载器。升级后请使用新版卸载入口，勿对新目录运行残留旧卸载器。Mac 自动更新需先把应用移出只读 DMG。
 
-FreeCut-project-source-*.tar.gz 是本次应用源码，FreeCut-ffmpeg-source-*.tar.gz 是视频引擎对应源码；普通使用无需下载它们。FreeCut-Quickstart-zh.md / FreeCut-Quickstart-en.md 为中英文教程，SHA256SUMS.txt 用于校验下载完整性。
+FreeCut-project-source-*.tar.gz 是本次应用完整对应源码，包含 GPL 原创部分、AGPL 派生模块、修改记录与构建脚本；FreeCut-ffmpeg-source-*.tar.gz 是各平台视频引擎的对应源码。普通使用无需下载源码，分发安装包时应同时保留并提供这些匹配源码和许可。FreeCut-Quickstart-zh.md / FreeCut-Quickstart-en.md 为中英文教程，SHA256SUMS.txt 用于校验下载完整性。
 
 ## 发布验证与说明
 
-Windows x64、Mac arm64、Mac x64 的构建均通过核心/宿主测试、实际桌面回归及打包应用的导入、保存重开和 MP4 导出。详见[本次构建记录](https://github.com/${repo}/actions/runs/${runId})与随附源码的 docs/VERIFICATION-042.md；模型目录复制、校验、失败回滚和界面的实际验证范围在其中单独记录。历史异地协作结果仍见 docs/VERIFICATION-041.md，不冒充本版本重新完成的公网测试。源码提交：${build.head_sha}。
+发布流程要求 Windows x64、Mac arm64、Mac x64 对应构建全部成功，并核验安装包、对应源码与上传散列。实际核心/宿主测试、桌面回归和打包应用导出结果以[本次构建记录](https://github.com/${repo}/actions/runs/${runId})为准。算法来源、移植范围及原生合成边界见随附源码的 docs/WOLFCUT-INTEGRATION.md。历史异地协作结果仍见 docs/VERIFICATION-041.md，不冒充本版本重新完成的公网测试。源码提交：${build.head_sha}。
 
 Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按各自许可另行下载，ChatTTS 官方模型为 CC BY-NC 4.0，仅限非商业用途；Mac 的可选模型推理仍需设备验收。本项目为持续开发的预览版，功能范围与尚未完成能力见 docs/FEATURE-MATRIX.md。
 
-来源、依赖许可、品牌及专利边界排查见 docs/RELEASE-REVIEW-030.md；工程核查不等于商标核准、专利自由实施意见或零诉讼风险承诺。免费剪辑不改变第三方模型的用途限制。
+本次移植保留 Concat 的 AGPL-3.0-or-later、版权和修改说明，原 GPL 部分保留原许可，组合按两协议第 13 条分发；关于页和协作面板可打开源码与许可。精确来源、hash、原文许可及未引入的上游资产见 docs/third-party/concat/ 和 docs/WOLFCUT-INTEGRATION.md。此前品牌与专利边界排查见 docs/RELEASE-REVIEW-030.md；工程核查不等于商标核准、专利自由实施意见或零诉讼风险承诺。免费剪辑不改变第三方模型的用途限制。
 
 既有 P2P 依赖的原始声明与原生子库来源随安装包提供，见[依赖清单](https://github.com/${repo}/blob/main/docs/third-party/p2p/README.md)。其中 noise-curve-ed 2.1.0 的上游只提供 ISC 元数据，完整版权人及许可原文仍待补充；清单如实保留该未解项，不宣称许可或专利风险为零。
 
@@ -111,7 +115,7 @@ Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按�
     const refs=api('git/matching-refs/tags/'+encodeURIComponent(tag)).filter(ref=>ref.ref===`refs/tags/${tag}`);
     if(refs.length){let object=refs[0].object;for(let i=0;object.type==='tag'&&i<5;i++)object=api(`git/tags/${object.sha}`).object;assert.equal(object.sha,build.head_sha,'Existing git tag targets a different commit');}
     const releases=JSON.parse(command('gh',['api','--paginate','--slurp',`repos/${repo}/releases?per_page=100`])).flat();const matches=releases.filter(release=>release.tag_name===tag);assert(matches.length<=1);let release=matches[0];if(release)assert.equal(release.draft,true,'Published releases cannot be overwritten');
-    const body={tag_name:tag,target_commitish:build.head_sha,name:`水管剪辑 ${tag} · FreeCut`,body:await fs.readFile(path.join(out,'release-notes.md'),'utf8'),draft:true,prerelease:true};
+    const body={tag_name:tag,target_commitish:build.head_sha,name:`水管剪辑 ${tag} · FreeCut · 工作台与导出升级`,body:await fs.readFile(path.join(out,'release-notes.md'),'utf8'),draft:true,prerelease:true};
     release=release?api(`releases/${release.id}`,'PATCH',body):api('releases','POST',body);
     assert.equal(release.draft,true);assert.equal(release.target_commitish,build.head_sha);
     // --clobber replaces only the explicitly named assets; unrelated draft assets remain intact.

@@ -8,9 +8,10 @@ import type {
   TextStyle,
   Transform,
 } from '../types';
+import { bezierYAtX, DEFAULT_BEZIER, isBezierCurve } from '../../shared/concat-bezier.mjs';
 
 const properties: AnimProperty[] = ['x', 'y', 'scale', 'rotation', 'opacity', 'volume'];
-const easings: Easing[] = ['linear', 'ease-in', 'ease-out', 'ease-in-out', 'hold'];
+const easings: Easing[] = ['linear', 'ease-in', 'ease-out', 'ease-in-out', 'hold', 'bezier'];
 const MAX_TIME = 24 * 60 * 60;
 const EPS = 1e-8;
 const uid = () =>
@@ -112,8 +113,10 @@ export function createClip(kind: Clip['kind'], trackId: string, partial: ClipOve
   };
 }
 
-function eased(t: number, easing: Easing): number {
+function eased(t: number, easing: Easing, curve?: Keyframe['curve']): number {
   switch (easing) {
+    case 'bezier':
+      return bezierYAtX(...(curve ?? DEFAULT_BEZIER), t);
     case 'ease-in':
       return t * t;
     case 'ease-out':
@@ -147,7 +150,9 @@ function sample(points: Keyframe[], time: number, fallback: number): number {
   }
   const a = points[low],
     b = points[high];
-  return a.value + (b.value - a.value) * eased((time - a.time) / (b.time - a.time), a.easing);
+  return (
+    a.value + (b.value - a.value) * eased((time - a.time) / (b.time - a.time), a.easing, a.curve)
+  );
 }
 
 /** localTime is measured in project seconds from the clip's start, independent of source speed. */
@@ -185,10 +190,11 @@ function sliceAnimation(clip: Clip, begin: number, end: number): Clip['keyframes
     ];
     const result: Keyframe[] = [];
     const valueAt = (time: number) => sample(points, time, clip.transform[prop]);
-    const add = (time: number, easing: Easing) => {
+    const add = (time: number, easing: Easing, curve?: Keyframe['curve']) => {
       const previous = result[result.length - 1];
       if (previous && Math.abs(previous.time - (time - begin)) < EPS) {
         previous.easing = easing;
+        previous.curve = curve ? [...curve] : undefined;
         return;
       }
       result.push({
@@ -196,6 +202,7 @@ function sliceAnimation(clip: Clip, begin: number, end: number): Clip['keyframes
         time: Math.max(0, time - begin),
         value: valueAt(time),
         easing,
+        ...(curve ? { curve: [...curve] as Keyframe['curve'] } : {}),
       });
     };
     for (let i = 0; i < breaks.length - 1; i++) {
@@ -210,7 +217,7 @@ function sliceAnimation(clip: Clip, begin: number, end: number): Clip['keyframes
         source && Math.abs(a - source.time) < EPS && Math.abs(b - points[index + 1].time) < EPS;
       const easing = source?.easing ?? 'linear';
       if (whole || easing === 'linear' || easing === 'hold') {
-        add(a, easing);
+        add(a, easing, source?.curve);
         add(b, 'linear');
         continue;
       }
@@ -561,13 +568,22 @@ export function validateProject(input: unknown): Project {
       chromaThreshold: num(data.chromaThreshold, `${path}.chromaThreshold`, 0, 442),
       flipX: bool(data.flipX, `${path}.flipX`),
       flipY: bool(data.flipY, `${path}.flipY`),
-      mask: one(data.mask, ['none', 'circle', 'rectangle', 'ellipse', 'diamond', 'star', 'heart', 'band'], `${path}.mask`),
+      mask: one(
+        data.mask,
+        ['none', 'circle', 'rectangle', 'ellipse', 'diamond', 'star', 'heart', 'band'],
+        `${path}.mask`,
+      ),
       maskSize: num(data.maskSize, `${path}.maskSize`, 0.01, 2),
       maskX: data.maskX === undefined ? 0 : num(data.maskX, `${path}.maskX`, -1, 1),
       maskY: data.maskY === undefined ? 0 : num(data.maskY, `${path}.maskY`, -1, 1),
-      maskRotation: data.maskRotation === undefined ? 0 : num(data.maskRotation, `${path}.maskRotation`, -360, 360),
-      maskFeather: data.maskFeather === undefined ? 0 : num(data.maskFeather, `${path}.maskFeather`, 0, 0.25),
-      maskInvert: data.maskInvert === undefined ? false : bool(data.maskInvert, `${path}.maskInvert`),
+      maskRotation:
+        data.maskRotation === undefined
+          ? 0
+          : num(data.maskRotation, `${path}.maskRotation`, -360, 360),
+      maskFeather:
+        data.maskFeather === undefined ? 0 : num(data.maskFeather, `${path}.maskFeather`, 0, 0.25),
+      maskInvert:
+        data.maskInvert === undefined ? false : bool(data.maskInvert, `${path}.maskInvert`),
     };
   };
   const root = object(input, 'root');
@@ -659,11 +675,16 @@ export function validateProject(input: unknown): Project {
             if (ids.has(frameId) || times.has(time)) fail(`${p}.keyframe 重复`);
             ids.add(frameId);
             times.add(time);
+            const easing = one(frame.easing, easings, `${p}.keyframe.easing`);
+            if (easing === 'bezier' && !isBezierCurve(frame.curve)) fail(`${p}.keyframe.curve`);
             return {
               id: frameId,
               time: Math.min(duration, time),
               value: num(frame.value, `${p}.keyframe.value`, ...ranges[prop]),
-              easing: one(frame.easing, easings, `${p}.keyframe.easing`),
+              easing,
+              ...(easing === 'bezier'
+                ? { curve: [...(frame.curve as Keyframe['curve'])!] as Keyframe['curve'] }
+                : {}),
             };
           })
           .sort((a, b) => a.time - b.time);
@@ -699,15 +720,23 @@ export function validateProject(input: unknown): Project {
       keyframes,
       fadeIn: num(data.fadeIn, `${p}.fadeIn`, 0, duration),
       fadeOut: num(data.fadeOut, `${p}.fadeOut`, 0, duration),
-      ...(data.audio === undefined ? {} : (() => {
-        const audio = object(data.audio, `${p}.audio`);
-        return { audio: {
-          pan: num(audio.pan, `${p}.audio.pan`, -1, 1),
-          leftGain: num(audio.leftGain, `${p}.audio.leftGain`, 0, 2),
-          rightGain: num(audio.rightGain, `${p}.audio.rightGain`, 0, 2),
-          channelMode: one(audio.channelMode, ['stereo', 'left', 'right', 'mono', 'swap'], `${p}.audio.channelMode`),
-        } };
-      })()),
+      ...(data.audio === undefined
+        ? {}
+        : (() => {
+            const audio = object(data.audio, `${p}.audio`);
+            return {
+              audio: {
+                pan: num(audio.pan, `${p}.audio.pan`, -1, 1),
+                leftGain: num(audio.leftGain, `${p}.audio.leftGain`, 0, 2),
+                rightGain: num(audio.rightGain, `${p}.audio.rightGain`, 0, 2),
+                channelMode: one(
+                  audio.channelMode,
+                  ['stereo', 'left', 'right', 'mono', 'swap'],
+                  `${p}.audio.channelMode`,
+                ),
+              },
+            };
+          })()),
       ...(assetId ? { assetId } : {}),
       ...(text ? { text } : {}),
       ...(data.color === undefined ? {} : { color: color(data.color, `${p}.color`) }),

@@ -1,4 +1,7 @@
 import { enApp } from './en-app';
+import { enWorkbench } from './en-workbench';
+import { enBezier } from './en-bezier';
+import { enConcat } from './en-concat';
 
 /** UI copy only. Never use this dictionary to rewrite project or media data. */
 export const en: Record<string, string> = {
@@ -706,4 +709,7 @@ export const en: Record<string, string> = {
   'ChatTTS 模型所在磁盘还需要约 {size} GB 可用空间。':
     'The ChatTTS model drive needs approximately {size} GB of additional free space.',
   ...enApp,
+  ...enWorkbench,
+  ...enBezier,
+  ...enConcat,
 };

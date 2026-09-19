@@ -86,9 +86,11 @@ export default function Home(props: Props) {
           </div>
         </div>
         <nav aria-label={t('首页导航')}>
-          {props.collaborate && <button onClick={props.collaborate}>
-            <Users size={19} /> {t(props.collaborating ? '协作中' : '远程协作')}
-          </button>}
+          {props.collaborate && (
+            <button onClick={props.collaborate}>
+              <Users size={19} /> {t(props.collaborating ? '协作中' : '远程协作')}
+            </button>
+          )}
           <button
             className={page === 'projects' ? 'active' : ''}
             onClick={() => setPage('projects')}
@@ -396,7 +398,7 @@ export default function Home(props: Props) {
                 </button>
                 <button onClick={() => void external('github')}>
                   {' '}
-                  {t('GitHub · 源码与下载')} <ExternalLink size={16} />
+                  {t('源码与开源许可')} <ExternalLink size={16} />
                 </button>
               </div>
               <div className="home-about-address">
@@ -411,7 +413,7 @@ export default function Home(props: Props) {
               <p className="home-license">
                 {' '}
                 {t(
-                  'FreeCut 以 GPL-3.0 开源。第三方组件和可选 AI 模型遵循各自许可证，详见仓库的 THIRD_PARTY_NOTICES。当前为预览版本，持续完善中。',
+                  'FreeCut 原创代码遵循 GPL-3.0-or-later；基于 Concat（原 WolfCut）的算法遵循 AGPL-3.0-or-later，版权归 Jareer 及 Concat 贡献者所有。源码、完整许可与修改说明在仓库公开。软件按许可证不提供担保，第三方组件和模型保留各自许可。',
                 )}{' '}
               </p>
             </section>

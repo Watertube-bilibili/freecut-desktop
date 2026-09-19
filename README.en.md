@@ -12,6 +12,8 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
+**The current source is 0.5.0 and is being verified; its installers are not released yet. Downloads still point to the published 0.4.2 preview.** This update adopts selected algorithms and editing interactions from [Concat, formerly WolfCut](https://github.com/jub0t/Concat): resizable panels, media categories, fit-to-timeline and frame stepping, cubic-bezier keyframes, and an expanded FFmpeg path for eligible layered compositions. Suitable text and shape layers are rendered to transparent images once before export. FreeCut retains its two layouts, Easy/Pro modes, speech tools, custom model storage, Internet collaboration and existing project compatibility. See the [integration and provenance record](docs/WOLFCUT-INTEGRATION.md). This is not a complete Rust-engine replacement or a new GPU encoder; verification of this version is still in progress.
+
 The **0.4.2 preview is released**, adding a custom download location for speech models. In **AI Voice → Text to speech**, choose a parent folder; FreeCut creates a `FreeCut-VoiceModels` subfolder for ChatTTS, lightweight AISHELL Chinese speech models, and their model caches. Check the [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1) for publication and downloads, and the [0.4.2 verification record](docs/VERIFICATION-042.md) for this version's checks. It does not cover every Jianying or CapCut feature. No account is required. Solo media processing is local; starting collaboration shares the project and its media with room members.
 
 The previous 0.4.1 release passed two local desktop instances collaborating, real encrypted project/media transfers between Windows and a remote Linux machine, and native transport checks inside the Windows package. Narrow windows use compact toolbar buttons. See the historical [0.4.1 verification record](docs/VERIFICATION-041.md) and [Internet test summary](docs/verification/041-internet.json) for samples, timing, release status and scope; these do not establish a new Internet test for 0.4.2. Earlier installer and export work remains documented in the [0.3.2 verification record](docs/VERIFICATION-032.md).
@@ -24,17 +26,19 @@ The 0.3.2 installer updates verified old FreeCut desktop and Start menu shortcut
 
 Automatic updates are enabled by default. Each launch checks this repository's Releases after about 12 seconds, downloads and verifies a newer matching package, then checks again every four hours. When idle, a countdown starts installation while unsaved projects retain their save prompt. If the Internet collaboration component is missing, the app explains how to reinstall; solo editing can still start.
 
-Export automatically chooses the appropriate path. Eligible everyday cuts, joins, still images, and constant-speed edits run directly through FFmpeg. Complex visuals such as text, keyframes, and masks use the preview's compositor and send RGBA frames straight to the encoder, rendering and encoding together without creating a temporary PNG for every frame. There is no additional mode to select. Complex effects still require frame-by-frame decoding and composition; results depend on the project and computer. The [0.3.2 verification record](docs/VERIFICATION-032.md) distinguishes correctness checks from measurements of the same project before and after the change.
+Export automatically chooses the appropriate path. The released 0.4.2 supports direct FFmpeg export for eligible cuts, joins, still images and constant-speed edits. The 0.5.0 source extends that path to eligible layered compositions, static transforms, position animation and pre-rasterized titles/shapes. Unsupported effects, animated scale or rotation and other complex visuals retain the preview's compositor and send RGBA frames straight to the encoder. Effects are not silently dropped, and a temporary PNG is not generated for every frame. Results depend on the project and computer; historical measurements in the [0.3.2 verification record](docs/VERIFICATION-032.md) are not performance results for 0.5.0.
 
 FLAC and other audio files with embedded album artwork are recognized as audio instead of treating the cover as video. Reopening an older project rereads available affected media and repairs the mistaken type while preserving clip position, timing, and volume animation.
 
 ## Preview
 
-![FreeCut with the English desktop interface](videos/freecut-launch-en/assets/editor-en.png)
+![FreeCut 0.5.0 English desktop workbench](docs/screenshots/editor-en-050.png)
 
-![The English mobile-style layout inside the desktop app](videos/freecut-launch-en/assets/mobile-en.png)
+![FreeCut 0.5.0 mobile-style layout in Simplified Chinese](docs/screenshots/mobile-050.png)
 
 The second layout runs in the same desktop application. It is not an Android or iOS app.
+
+These screenshots show the actual 0.5.0 source running on 2026-09-19: English desktop at 1440×900 and the mobile-style layout in Simplified Chinese at 1100×620. All seven workbench checks passed; see the [workbench evidence](docs/verification/050-workbench.json) and [0.5.0 verification record](docs/VERIFICATION-050.md). Installers are still pending publication, so downloads remain on 0.4.2.
 
 [Watch or download the English promo](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4): 55 seconds, 1080p, exported through the actual FreeCut application and verified completely silent. It credits `@我叫水管同学` and asks viewers to download and Star the repository. Add your own music if you wish. See the [actual product export and silence verification](videos/freecut-launch-en-edit/QA.md), separate from the [English visual source](videos/freecut-launch-en).
 
@@ -42,17 +46,20 @@ The second layout runs in the same desktop application. It is not an Android or 
 
 ## Editing features
 
+This section describes the current 0.5.0 source. Its new workbench, bezier controls and expanded native composition are not included in the 0.4.2 downloads below.
+
+- Resize workbench panels and filter media by type. Fit the timeline to all clips, use grouped editing tools and step through individual frames.
 - Import local video, images, and audio. Arrange multiple tracks, layer picture-in-picture content, snap clips, trim, split, duplicate, and undo or redo edits.
 - Use context menus on timeline clips, tracks, empty timeline space, and the preview to find actions for the current selection.
-- Animate X/Y position, uniform scale, rotation, opacity, and volume. Keyframes use linear, ease-in, ease-out, ease-in-out, or hold interpolation. Splitting a clip preserves its animated motion.
+- Animate X/Y position, uniform scale, rotation, opacity, and volume. Keyframes use linear, ease-in, ease-out, ease-in-out, hold, or the new 0.5.0 cubic-bezier curves. Splitting preserves animation; existing projects keep their original easing behavior.
 - Select objects directly in the preview, drag them, resize with corner handles, and rotate. A complete drag gesture is one undo step.
 - Start in Easy mode to capture a group of visual keyframes with one action. Switch to Pro mode for exact values and easing controls.
 - Add editable text and captions, with font size, color, background, and outline controls. Import and export SRT files.
 - Apply 19 original color presets, blur, pixelation, vignette, mirroring, or green/blue chroma key. Seven geometric masks support position, rotation, feathering, and inversion.
 - Preview and add 16 original sound effects. Adjust stereo balance, independent channel gains, left-only/right-only routing, mono, and channel swapping. Preview and export use the same channel routing.
 - Set a constant playback speed, clip volume, and visual or audio fades. Animation presets create keyframes that remain editable.
-- Work in landscape, portrait, or square formats. Export H.264/AAC MP4 at the available 720p, 1080p, or 4K settings and 24–60 fps.
-- Eligible ordinary edits use native FFmpeg export automatically. Complex effects send frames through an RGBA pipe without writing individual temporary PNG files.
+- Work in landscape, portrait, or square formats. Export H.264/AAC MP4 at the available 720p, 1080p, 1440p, or 4K settings and 24–60 fps.
+- Eligible cuts, layered compositions and position animation use native FFmpeg export automatically. Suitable titles/shapes are prepared as transparent images once. Other complex visuals send frames through an RGBA pipe without writing individual temporary PNG files.
 - Save and reopen `.freecut` projects. Projects reference your original media files; they do not embed or duplicate those media files.
 - Find recent projects on the home screen, with search and sorting. Settings and recent-project records persist across launches.
 - Keep unsaved work protected when closing, going home, or opening another project. Cancelling a save or encountering a save error leaves the current project open.
@@ -65,6 +72,8 @@ The second layout runs in the same desktop application. It is not an Android or 
 ## Download and install
 
 [Download the 0.4.2 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.4.2-preview.1). The table lists this published version's package names; use the published assets on that Release for downloads, along with matching source, both guides and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
+
+Version 0.5.0 is still being verified from source. Its download links will be added only after the installers have been uploaded and checked.
 
 | Computer or use | Download | How to use it |
 | --- | --- | --- |
@@ -171,8 +180,8 @@ Distributing the video engine also requires its corresponding source. CI uses th
 
 ## Architecture and licenses
 
-FreeCut uses React, TypeScript, and Electron. Eligible ordinary edits use FFmpeg directly. Complex visuals share the preview's Canvas compositor and keyframe calculations, with export sending RGBA frames through a pipe to FFmpeg. The sender waits for the current frame to be accepted before continuing, preventing a queue of an entire video's frames. Progress updates are limited to roughly one per 100 ms. H.264 uses x264's veryfast preset with four encoding threads; audio is mixed from the same project model. Desktop IPC authenticates the application window and its main frame. Local media access is granted to files selected by the user or explicitly referenced by an opened project. See the [architecture document](docs/ARCHITECTURE.md) and [0.3.2 export verification](docs/VERIFICATION-032.md).
+FreeCut uses React, TypeScript and Electron. Version 0.5.0 adapts selected Concat algorithms and expands native FFmpeg composition while retaining Canvas and the RGBA pipe for unsupported complex visuals. Preview and host export share the bezier module. Title images are created only in a task-owned temporary directory, with count, byte-size and dimension checks. H.264 still uses x264's veryfast preset with four encoding threads; no Rust or GPU backend is claimed. Desktop IPC authenticates the application window and its main frame. Local media access is granted to files selected by the user or explicitly referenced by an opened project. See the [architecture document](docs/ARCHITECTURE.md).
 
-Project code is **GPL-3.0-or-later**; see [LICENSE](LICENSE). Third-party libraries, the video engine, fonts, and models retain their own licenses, listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The original icon and brand are documented in [BRAND.md](docs/BRAND.md).
+Original FreeCut code remains **GPL-3.0-or-later** under [LICENSE](LICENSE). Bezier, placement and rotated-bounds algorithms adapted from Concat remain **AGPL-3.0-or-later**, copyright Jareer and Concat contributors. The combination follows section 13 of both licenses, including the applicable network-source requirement; internal-source adaptations do not use Concat's plugin exception. Read the full [AGPL text](docs/third-party/concat/AGPL-3.0.txt), [provenance and modifications](docs/WOLFCUT-INTEGRATION.md), and [third-party notices](THIRD_PARTY_NOTICES.md). About and collaboration expose source and license links. Redistributed installers must be accompanied by their matching complete corresponding source. Other libraries, models and media retain their own terms; the original icon and brand are documented in [BRAND.md](docs/BRAND.md).
 
 Try the preview, report reproducible issues, and contribute improvements. **[Star FreeCut on GitHub](https://github.com/Watertube-bilibili/freecut-desktop)** to follow its progress.

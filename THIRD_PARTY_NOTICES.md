@@ -2,6 +2,16 @@
 
 FreeCut's original application code is licensed under **GPL-3.0-or-later**. The complete GPL version 3 text is in `LICENSE`, obtained unchanged from the [GNU license archive](https://ftp.gnu.org/gnu/Licenses/gpl-3.0.txt). Third-party components retain their own notices and licenses. This document does not relicense optional model weights or user-imported media.
 
+## Concat / WolfCut algorithm adaptations
+
+Selected algorithms are adapted from [Concat, formerly WolfCut](https://github.com/jub0t/Concat), commit `e5c8662daf6d721de2fd6c4e78cb671cd6d98393`, copyright **2026 Jareer and Concat contributors**, under **AGPL-3.0-or-later**. The cubic-bezier solver in `shared/concat-bezier.mjs` derives from `concat-core/src/animate.rs`; placement and rotated bounds in `electron/concat-placement.cjs` derive from selected calculations in `concat-export/src/lib.rs` and `concat-render/src/compositor.rs`. Adapted files preserve SPDX and copyright notices and identify FreeCut's modifications. Exact source paths, SHA-256 digests and adaptation boundaries are recorded in [`docs/third-party/concat/provenance.json`](docs/third-party/concat/provenance.json).
+
+The complete unchanged AGPL text is in [`docs/third-party/concat/AGPL-3.0.txt`](docs/third-party/concat/AGPL-3.0.txt), with upstream's unmodified `LICENSE-EXCEPTIONS.md` and `TRADEMARK.md` beside it. **The plugin exception does not apply to these internal-source adaptations.** The original FreeCut GPL portions retain GPL-3.0-or-later; the adapted Concat portions retain AGPL-3.0-or-later. Section 13 of the two licenses permits the combination, and the AGPL's network-source requirements apply to the combination. This is not a relicensing of Concat under the GPL alone.
+
+The React workbench also refers to upstream interaction patterns; it does not include upstream Slint code, fonts, icons or effect-preview photographs. These ports do not bring in a Concat Rust binary, Slint, ONNX, upstream models or upstream FFmpeg builds. See [`docs/WOLFCUT-INTEGRATION.md`](docs/WOLFCUT-INTEGRATION.md) for the precise scope and exclusions.
+
+Distribute the matching complete application source, including the adapted modules, build scripts and these notices, with the corresponding release. Preserve the existing FFmpeg corresponding-source bundles. The application exposes source and license links in About and collaboration; a modified version used over a network must prominently offer its own corresponding source to the users interacting with it remotely. The GNU licenses' warranty disclaimers remain applicable.
+
 ## FFmpeg distributed by the public build workflow
 
 Public Windows and macOS builds use `scripts/build-ffmpeg.sh`, not the executable supplied by npm. The only non-system external libraries enabled are x264 and zlib. Autodetection and network protocols are disabled. No source patches are applied.

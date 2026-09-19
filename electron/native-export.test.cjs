@@ -26,10 +26,10 @@ function options(clips = [clip('c')]) {
 }
 const resolve = asset => ({ kind: asset.kind, path: asset.path });
 
-test('native planner declines visual changes, overlap, fractional cuts and unsafe background without losing features', () => {
+test('native planner declines unsupported effects and fractional cuts without losing features', () => {
   for (const mutate of [
-    c => c.kind = 'text', c => c.kind = 'shape', c => c.fadeIn = 0.1,
-    c => c.transform.x = 1, c => c.transform.opacity = 0.9,
+    c => c.kind = 'text', c => c.kind = 'shape',
+    c => { c.fadeIn = 0.7; c.fadeOut = 0.7; },
     c => c.keyframes.rotation = [{ time: 0, value: 0 }],
     c => c.effects.mask = 'circle', c => c.effects.brightness = 1.1,
     c => c.effects.futureEffect = 1, c => c.start = 0.05,
@@ -38,7 +38,7 @@ test('native planner declines visual changes, overlap, fractional cuts and unsaf
     const value = options(); mutate(value.project.clips[0]);
     assert.equal(planNativeVideo(value, resolve), null);
   }
-  assert.equal(planNativeVideo(options([clip('a'), clip('b', { start: 0.5 })]), resolve), null);
+  assert.ok(planNativeVideo(options([clip('a'), clip('b', { start: 0.5 })]), resolve));
   const value = options(); value.project.background = 'red;movie=secret';
   assert.equal(planNativeVideo(value, resolve), null);
   value.project.background = '#102030';
@@ -58,7 +58,7 @@ test('volume automation remains for audio mixing and ordered native input indexe
   const result = planNativeVideo(value, resolve);
   assert.equal(result.inputCount, 2); assert.equal(result.videoLabel, 'nativevideo');
   assert.match(result.filterGraph, /\[0:v:0\]/); assert.match(result.filterGraph, /\[1:v:0\]/);
-  assert.match(result.filterGraph, /concat=n=2:v=1:a=0/);
+  assert.equal((result.filterGraph.match(/overlay=/g) || []).length, 2);
 });
 
 test('fractional total durations keep the final visible frame instead of inserting background', () => {
@@ -86,7 +86,7 @@ test('real native FFmpeg export preserves cuts, gaps, contain background, still 
     value.duration = 1.8; value.project.assets = [video, image];
     value.project.tracks.push({ id: 'hidden', kind: 'overlay', hidden: true });
     const plan = planNativeVideo(value, library.resolveAsset); assert.ok(plan);
-    const args = plan.inputs.flatMap(input => [...INPUT_SECURITY, ...(input.kind === 'image' ? ['-loop', '1'] : []), '-i', input.path]);
+    const args = plan.inputs.flatMap(input => [...INPUT_SECURITY, ...(input.kind === 'image' ? ['-loop', '1', '-framerate', String(value.fps)] : input.seek ? ['-ss', String(input.seek)] : []), '-i', input.path]);
     const output = path.join(directory, 'native.mp4'), start = performance.now();
     await command([...args, '-filter_complex', plan.filterGraph, '-map', `[${plan.videoLabel}]`, '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-pix_fmt', 'yuv420p', '-t', String(value.duration), output]);
     const ms = performance.now() - start;

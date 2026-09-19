@@ -66,7 +66,11 @@ function load(asset: MediaAsset, clipId: string): Promise<Source> {
 }
 async function seek(video: HTMLVideoElement, time: number, signal?: AbortSignal) {
   checkCancelled(signal);
-  const target = Math.min(Math.max(0, time), Math.max(0, video.duration - 0.001));
+  // Chromium stores media time in whole microseconds. A frame boundary such as
+  // 113/30 can otherwise truncate to the preceding frame even after seeked.
+  // Seek just inside the requested interval, never a whole frame ahead.
+  const microsecondTime = Math.ceil(Math.max(0, time) * 1_000_000) / 1_000_000 + 0.000001;
+  const target = Math.min(microsecondTime, Math.max(0, video.duration - 0.001));
   if (!video.seeking && Math.abs(video.currentTime - target) < 0.0005 && video.readyState >= 2)
     return;
   await new Promise<void>((resolve, reject) => {

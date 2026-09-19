@@ -1,0 +1,56 @@
+{
+  "startedAt": "2026-09-19T07:34:31.996Z",
+  "checks": [
+    {
+      "name": "Three real resizers, collapse and reset change only the workspace",
+      "passed": true
+    },
+    {
+      "name": "Media filters count real imported video, FLAC audio and image; sort by name",
+      "passed": true
+    },
+    {
+      "name": "Fit timeline reveals all content and razor creates one undoable split",
+      "passed": true
+    },
+    {
+      "name": "Frame buttons step exactly one project frame without black preview",
+      "passed": true
+    },
+    {
+      "name": "Cubic-bezier easing is selectable and preserved in the FreeCut project",
+      "passed": true
+    },
+    {
+      "name": "Short and mobile layouts keep the same live preview and accessible controls",
+      "passed": true
+    },
+    {
+      "name": "English export settings remain accessible in a short window",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    "artifacts/workbench/desktop-1440x900.png",
+    "artifacts/workbench/short-1100x620.png",
+    "artifacts/workbench/mobile-1100x620.png",
+    "artifacts/workbench/desktop-english-1440x900.png",
+    "artifacts/workbench/export-english-1440x900.png",
+    "artifacts/workbench/export-english-short-1100x620.png"
+  ],
+  "rendererErrors": [],
+  "passed": true,
+  "shortLibrary": {
+    "height": 167.6666717529297,
+    "firstRowVisible": true,
+    "importVisible": true
+  },
+  "finishedAt": "2026-09-19T07:34:51.264Z",
+  "sourceReport": "artifacts/workbench/report.json",
+  "publishedScreenshots": [
+    "docs/screenshots/editor-050.png",
+    "docs/screenshots/mobile-050.png",
+    "docs/screenshots/editor-en-050.png"
+  ],
+  "privacyNote": "Machine-specific temporary profile directory removed; screenshot paths made repository-relative. Check results and timings are unchanged."
+}

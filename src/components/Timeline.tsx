@@ -16,6 +16,11 @@ import {
 import type { Project, Clip, Track } from '../types';
 import { durationOf, trimClip } from '../core/project';
 interface Props {
+  /** Workbench interactions inspired by Concat timeline/tray.slint; project model stays FreeCut v1. */
+  fitRequest?: number;
+  onZoomChange?: (zoom: number) => void;
+  tool?: 'select' | 'razor';
+  onRazor?: (id: string, time: number) => void;
   project: Project;
   selected?: string;
   time: number;
@@ -35,9 +40,18 @@ interface Props {
 }
 export function timecode(time: number, fps = 30) {
   const t = Math.max(0, time);
-  return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(Math.floor(t % 60)).padStart(2, '0')}:${String(Math.floor((t % 1) * fps)).padStart(2, '0')}`;
+  // Avoid 35/30 being displayed as frame 04 after binary floating-point
+  // subtraction. Integer-rate timelines use the same frame index as stepping.
+  const frame = Math.floor(t * fps + 1e-7);
+  const seconds = Number.isInteger(fps) ? Math.floor(frame / fps) : Math.floor(t);
+  const within = Number.isInteger(fps) ? frame % fps : Math.floor((t % 1) * fps + 1e-7);
+  return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}:${String(within).padStart(2, '0')}`;
 }
 export default function Timeline({
+  fitRequest = 0,
+  onZoomChange,
+  tool = 'select',
+  onRazor,
   project,
   selected,
   time,
@@ -62,6 +76,18 @@ export default function Timeline({
   const gestureChange = useRef(onGestureChange);
   gestureChange.current = onGestureChange;
   useEffect(() => () => dragCleanup.current?.(), []);
+  useEffect(() => {
+    if (!fitRequest || !scroller.current || !onZoomChange) return;
+    const duration = durationOf(project);
+    const available = Math.max(100, scroller.current.clientWidth - 30);
+    onZoomChange(
+      Math.max(
+        0.02,
+        Math.min(260, available / Math.max(2, duration + Math.min(2, duration * 0.04))),
+      ),
+    );
+    scroller.current.scrollLeft = 0;
+  }, [fitRequest]);
   const layouts = new Map(
     project.tracks.map((track) => {
       const ends: number[] = [],
@@ -79,7 +105,10 @@ export default function Timeline({
   );
   const total = Math.max(30, durationOf(project) + 8);
   const width = total * zoom;
-  const step = zoom < 30 ? 5 : zoom < 80 ? 2 : 1;
+  const step =
+    [1 / project.fps, 0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 1800, 3600].find(
+      (value) => value * zoom >= 68,
+    ) ?? 3600;
   const contextTime = (event: React.MouseEvent) =>
     Math.max(
       0,
@@ -111,6 +140,7 @@ export default function Timeline({
   function startDrag(e: React.PointerEvent, clip: Clip, mode: 'move' | 'left' | 'right') {
     if (
       e.button !== 0 ||
+      tool === 'razor' ||
       dragCleanup.current ||
       project.tracks.find((t) => t.id === clip.trackId)?.locked
     )
@@ -217,7 +247,7 @@ export default function Timeline({
     element.addEventListener('pointerup', end);
   };
   return (
-    <div className="timeline-content">
+    <div className={`timeline-content ${tool === 'razor' ? 'razor-mode' : ''}`}>
       <div className="track-headers" ref={headerScroller}>
         <div className="track-header-top">
           <span>{t('轨道')}</span>
@@ -356,7 +386,12 @@ export default function Timeline({
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      select(clip.id);
+                      if (tool === 'razor' && onRazor && !track.locked) {
+                        const at =
+                          clip.start +
+                          (e.clientX - e.currentTarget.getBoundingClientRect().left) / zoom;
+                        onRazor(clip.id, Math.round(at * project.fps) / project.fps);
+                      } else select(clip.id);
                     }}
                     onPointerDown={(e) => startDrag(e, clip, 'move')}
                   >

@@ -12,12 +12,14 @@ export interface MediaAsset {
   missing?: boolean;
 }
 export type AnimProperty = 'x' | 'y' | 'scale' | 'rotation' | 'opacity' | 'volume';
-export type Easing = 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'hold';
+export type Easing = 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'hold' | 'bezier';
 export interface Keyframe {
   id: string;
   time: number;
   value: number;
   easing: Easing;
+  /** Cubic-bezier for the outgoing interval. Optional on all pre-0.5 projects. */
+  curve?: [number, number, number, number];
 }
 export interface Transform {
   x: number;
@@ -124,6 +126,8 @@ export interface ExportOptions {
   format: 'mp4';
   frameFormat?: 'png' | 'rgba';
   pipeline?: 'auto' | 'frames';
+  /** One-time transparent textures for text/shape layers, validated by the host. */
+  rasterLayers?: { clipId: string; bytes: Uint8Array }[];
 }
 export interface ExportProgress {
   jobId: string;
@@ -161,12 +165,11 @@ export interface DesktopAPI {
   importMedia: () => Promise<MediaAsset[]>;
   saveProject: (project: Project) => Promise<string | null>;
   openProject: () => Promise<Project | null>;
-  beginExport: (
-    options: ExportOptions,
-  ) => Promise<{
+  beginExport: (options: ExportOptions) => Promise<{
     jobId: string;
     path: string;
     pipeline?: 'native' | 'frames';
+    fallbackReason?: string | null;
     frameFormat?: 'png' | 'rgba';
   } | null>;
   writeFrame: (data: { jobId: string; index: number; bytes: Uint8Array }) => Promise<void>;
