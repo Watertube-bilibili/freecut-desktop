@@ -7,6 +7,9 @@ const os = require('node:os');
 const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
 const { _electron, expect } = require('@playwright/test');
+// macOS reserves Control-click for the context menu; Command is its editor modifier.
+const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
+const modifierLabel = process.platform === 'darwin' ? 'Cmd' : 'Ctrl';
 
 main().catch((error) => {
   console.error(error);
@@ -208,7 +211,14 @@ async function main() {
   const env = { ...process.env, FREECUT_DISABLE_UPDATES: '1' };
   delete env.ELECTRON_RUN_AS_NODE;
   delete env.PORTABLE_EXECUTABLE_DIR;
-  const report = { directory, checks: [], rendererErrors: [], passed: false };
+  const report = {
+    directory,
+    platform: process.platform,
+    modifier,
+    checks: [],
+    rendererErrors: [],
+    passed: false,
+  };
   let app,
     page,
     saved = 0;
@@ -221,10 +231,12 @@ async function main() {
   const save = async () => {
     const file = path.join(directory, `saved-${++saved}.freecut`);
     await app.evaluate((_, file) => globalThis.__selectionDialogs.save.push(file), file);
-    await page.getByTitle('保存工程 Ctrl+S', { exact: true }).click();
+    await page.keyboard.press(`${modifier}+s`);
     await expect
       .poll(async () => fs.readFile(file, 'utf8').catch(() => ''), { timeout: 15000 })
       .not.toBe('');
+    // File creation precedes the renderer's completed-save acknowledgement; wait for its busy gate.
+    await expect(page.locator('.close-backdrop')).toHaveCount(0);
     return JSON.parse(await fs.readFile(file, 'utf8'));
   };
   const clip = (id) => page.locator(`.timeline-clip[data-clip-id="${id}"]`);
@@ -240,10 +252,10 @@ async function main() {
     await expect.poll(selected).toEqual(['one', 'two']);
   };
   const undo = async () => {
-    await page.getByTitle('撤销 Ctrl+Z', { exact: true }).click();
+    await page.keyboard.press(`${modifier}+z`);
   };
   const redo = async () => {
-    await page.getByTitle('重做 Ctrl+Shift+Z', { exact: true }).click();
+    await page.keyboard.press(`${modifier}+Shift+z`);
   };
   const trackBox = (id) => page.locator(`.track-lane[data-track-id="${id}"]`).boundingBox();
   const drag = async (id, dx, targetTrack, finish = 'release') => {
@@ -306,15 +318,18 @@ async function main() {
     const initialBox = await clip('one').boundingBox();
     const zoom = initialBox.width / fixture.clips[0].duration;
     if (!screenshotsOnly) {
-      await check('Shift and Ctrl toggle multiple clips without changing the project', async () => {
-        await selectPair();
-        await clip('one').click({ modifiers: ['Control'], position: { x: 25, y: 20 } });
-        await expect.poll(selected).toEqual(['two']);
-        await clip('one').click({ modifiers: ['Control'], position: { x: 25, y: 20 } });
-        await expect.poll(selected).toEqual(['one', 'two']);
-        assert.deepEqual(await save(), baseline);
-        await expect(page.getByTitle('撤销 Ctrl+Z', { exact: true })).toBeDisabled();
-      });
+      await check(
+        `Shift and ${modifierLabel} toggle multiple clips without changing the project`,
+        async () => {
+          await selectPair();
+          await clip('one').click({ modifiers: [modifier], position: { x: 25, y: 20 } });
+          await expect.poll(selected).toEqual(['two']);
+          await clip('one').click({ modifiers: [modifier], position: { x: 25, y: 20 } });
+          await expect.poll(selected).toEqual(['one', 'two']);
+          assert.deepEqual(await save(), baseline);
+          await expect(page.getByTitle('撤销 Ctrl+Z', { exact: true })).toBeDisabled();
+        },
+      );
       await check(
         'Focused Space selects clips without playing; editor Space still plays',
         async () => {
@@ -419,10 +434,10 @@ async function main() {
       );
       await check('Group copy and paste keep animation and create independent IDs', async () => {
         await selectPair();
-        await page.keyboard.press('Control+c');
+        await page.keyboard.press(`${modifier}+c`);
         const ruler = await page.locator('.ruler').boundingBox();
         await page.mouse.click(ruler.x + zoom * 8, ruler.y + 12);
-        await page.keyboard.press('Control+v');
+        await page.keyboard.press(`${modifier}+v`);
         await expect(page.locator('.timeline-clip')).toHaveCount(6);
         const pasted = await save();
         const clones = pasted.clips.filter((c) => !baseline.clips.some((b) => b.id === c.id));
@@ -444,7 +459,7 @@ async function main() {
       });
       await check('Group duplication and ripple deletion each use one undo step', async () => {
         await selectPair();
-        await page.keyboard.press('Control+d');
+        await page.keyboard.press(`${modifier}+d`);
         await expect(page.locator('.timeline-clip')).toHaveCount(6);
         const duplicated = await save();
         assert.deepEqual(
@@ -470,7 +485,7 @@ async function main() {
       });
       await check('Select-all and batch delete preserve locked clips', async () => {
         await clip('protected').click({ position: { x: 25, y: 20 } });
-        await page.keyboard.press('Control+a');
+        await page.keyboard.press(`${modifier}+a`);
         await expect(page.locator('.timeline-clip.selected')).toHaveCount(4);
         await page.keyboard.press('Delete');
         await expect(page.locator('.timeline-clip')).toHaveCount(1);
