@@ -18,7 +18,7 @@ Windows x64、Electron 44，全部使用隔离临时配置与自产媒体，没�
 
 连续预览首轮曾在其他桌面截图/代理生成同时运行时测得单个最坏延迟 0.467 秒，超过测试的 0.4 秒阈值；暂停其他测试后同代码复测通过，阈值未修改。此结果只描述短测试样本，不是复杂工程或低配电脑的通用性能保证。宿主退出测试的媒体服务模拟已补齐新服务合同，全部原有保存/取消保护断言保留。
 
-首轮 macOS 多选回归暴露测试脚本错误：Control 点击在 Mac 上触发右键菜单，应该使用 Command。脚本现按平台使用 Command / Control，并以真实快捷键验证保存、撤销、重做和剪贴板操作；保存后等待界面收到完成通知，避免磁盘写入与界面解除忙碌之间的竞态。所有原断言保留，Windows 修正后 10/10 通过，Mac 结果以最终构建记录为准。
+首轮 macOS 多选回归暴露测试脚本错误：Control 点击在 Mac 上触发右键菜单，应该使用 Command。脚本现按平台使用 Command / Control，并以真实快捷键验证保存、撤销、重做和剪贴板操作；保存后等待界面收到完成通知，避免磁盘写入与界面解除忙碌之间的竞态。所有原断言保留，最终 Windows、Mac arm64 和 Mac x64 的多选回归均 10/10 通过，见下方构建记录。
 
 ## 本次验证范围
 
@@ -41,4 +41,9 @@ Windows x64、Electron 44，全部使用隔离临时配置与自产媒体，没�
 
 ## 发布
 
-目标版本为 `v0.6.0-preview.1`。安装包尚待三平台 CI 构建、实际打包应用验证、Release 上传与下载校验完成；不会把源码完成等同于安装包已发布。
+[v0.6.0-preview.1](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.6.0-preview.1) 已公开，源码提交 `8aad570817d291fb80521b1a9790384831643d70`。
+
+- [三平台构建](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/37202629502)：Windows x64、Mac arm64、Mac x64 全部成功，包含新增回归、既有功能回归、实际打包应用导出与打包组件检查。
+- [发布流程](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/37203106780)：核验对应源码和引擎源码后上传全部 15 份附件；每份上传大小和 SHA-256 均与清单匹配，再公开预发布版本。
+- 本机重新下载 Windows Setup、Portable、中英文教程及 SHA256SUMS，核对 GitHub 返回散列及清单。下载后的便携程序在隔离配置中实际启动，完成导入、工程保存重开与 MP4 导出。
+- [公开下载验证记录](verification/060-release.json) 不含本机用户目录；Mac 安装运行证据来自各自架构的 CI，不能当作用户设备的真机验收。

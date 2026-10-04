@@ -1,0 +1,129 @@
+{
+  "release": "https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.6.0-preview.1",
+  "tag": "v0.6.0-preview.1",
+  "commit": "8aad570817d291fb80521b1a9790384831643d70",
+  "assets": [
+    {
+      "name": "FreeCut-0.6.0-mac-arm64.dmg",
+      "size": 152859387,
+      "digest": "sha256:84d655e09f06859d37209599daf44454edebb5cf5fa4603090d2fd7061056377",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-0.6.0-mac-arm64.dmg"
+    },
+    {
+      "name": "FreeCut-0.6.0-mac-arm64.zip",
+      "size": 148747042,
+      "digest": "sha256:51626f552b4cc6f75eded82686a79f8ce941425759caa27666de8d31ab40532d",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-0.6.0-mac-arm64.zip"
+    },
+    {
+      "name": "FreeCut-0.6.0-mac-x64.dmg",
+      "size": 159601077,
+      "digest": "sha256:272c3d1a51f67fc4119db2c502accb20d717af41b5dbf3c8f2e1895ef390fa17",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-0.6.0-mac-x64.dmg"
+    },
+    {
+      "name": "FreeCut-0.6.0-mac-x64.zip",
+      "size": 155506569,
+      "digest": "sha256:c6aa11fad415bb7a9372d13961f82798d3158909b5af0977c083cfa95746d159",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-0.6.0-mac-x64.zip"
+    },
+    {
+      "name": "FreeCut-0.6.0-win-x64-Portable.exe",
+      "size": 109849259,
+      "digest": "sha256:448aa331e83b2b189bec255483917fa8e56347c7bcc98abca6169c809de12b05",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-0.6.0-win-x64-Portable.exe"
+    },
+    {
+      "name": "FreeCut-0.6.0-win-x64-Setup.exe",
+      "size": 126808147,
+      "digest": "sha256:edacbc2e7ce26d3271dacdaf388c4d54f9444c5fa75afa29c8745f73392d3c6b",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-0.6.0-win-x64-Setup.exe"
+    },
+    {
+      "name": "FreeCut-ffmpeg-source-darwin-arm64.tar.gz",
+      "size": 14727840,
+      "digest": "sha256:7ac1b64028d2b9336d697d9b4f17b5135de499e34e27ee8f3b5dc1cea92279d5",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-ffmpeg-source-darwin-arm64.tar.gz"
+    },
+    {
+      "name": "FreeCut-ffmpeg-source-darwin-x64.tar.gz",
+      "size": 14727889,
+      "digest": "sha256:29b929bf4fbc5e35fae3a11bc24d3c9009e4194d401f7a96dbc0614f1ad26da9",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-ffmpeg-source-darwin-x64.tar.gz"
+    },
+    {
+      "name": "FreeCut-ffmpeg-source-win32-x64.tar.gz",
+      "size": 14725194,
+      "digest": "sha256:ae5a656364309449c85fc59addf812b8a74fd20d5b400e0eff9103cc55773233",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-ffmpeg-source-win32-x64.tar.gz"
+    },
+    {
+      "name": "FreeCut-project-source-8aad570817d291fb80521b1a9790384831643d70.tar.gz",
+      "size": 77647784,
+      "digest": "sha256:bf5160d1c62a7e10c2ceef44edcc22961a39e4d271c740053a7cd6de537703e4",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-project-source-8aad570817d291fb80521b1a9790384831643d70.tar.gz"
+    },
+    {
+      "name": "FreeCut-Quickstart-en.md",
+      "size": 17225,
+      "digest": "sha256:d61569d1608257666957fc1ffcf6834a76e6ba519eeb097659fa5934dd40714c",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-Quickstart-en.md"
+    },
+    {
+      "name": "FreeCut-Quickstart-zh.md",
+      "size": 21009,
+      "digest": "sha256:002303c5786127eb355d2654183ed63d748b6295bc8eca615631060c4b36a750",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/FreeCut-Quickstart-zh.md"
+    },
+    {
+      "name": "LICENSE",
+      "size": 35149,
+      "digest": "sha256:3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/LICENSE"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 1372,
+      "digest": "sha256:d4a2f2fc6bab4ae86ebeb335a99eec6e24d0c2a80286ac5d3a4efaebfa5ef6a3",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/SHA256SUMS.txt"
+    },
+    {
+      "name": "THIRD_PARTY_NOTICES.md",
+      "size": 96292,
+      "digest": "sha256:ecdd43628f29be72fc993d0aca8f0efc229ff1a40a15fa29318a0e882e9efa1a",
+      "url": "https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.6.0-preview.1/THIRD_PARTY_NOTICES.md"
+    }
+  ],
+  "downloads": [
+    {
+      "name": "SHA256SUMS.txt",
+      "sha256": "d4a2f2fc6bab4ae86ebeb335a99eec6e24d0c2a80286ac5d3a4efaebfa5ef6a3",
+      "size": 1372
+    },
+    {
+      "name": "FreeCut-Quickstart-zh.md",
+      "sha256": "002303c5786127eb355d2654183ed63d748b6295bc8eca615631060c4b36a750",
+      "size": 21009
+    },
+    {
+      "name": "FreeCut-Quickstart-en.md",
+      "sha256": "d61569d1608257666957fc1ffcf6834a76e6ba519eeb097659fa5934dd40714c",
+      "size": 17225
+    },
+    {
+      "name": "FreeCut-0.6.0-win-x64-Portable.exe",
+      "sha256": "448aa331e83b2b189bec255483917fa8e56347c7bcc98abca6169c809de12b05",
+      "size": 109849259
+    },
+    {
+      "name": "FreeCut-0.6.0-win-x64-Setup.exe",
+      "sha256": "edacbc2e7ce26d3271dacdaf388c4d54f9444c5fa75afa29c8745f73392d3c6b",
+      "size": 126808147
+    }
+  ],
+  "buildRun": "https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/37202629502",
+  "publishRun": "https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/37203106780",
+  "downloadedWindowsSmoke": {
+    "passed": true
+  }
+}

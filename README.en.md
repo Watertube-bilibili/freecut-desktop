@@ -12,7 +12,7 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
-**The source is now at 0.6.0 preview; packages for `v0.6.0-preview.1` are pending publication.** This update adds manually generated 540p / 720p preview proxies, real waveforms and thumbnails generated on demand, local recovery copies, and timeline multiselection, marquee selection, dragging across tracks and ripple deletion. Proxies affect preview only: audio and final export use the original media. Proxy and preview-cache URLs are never saved or shared in projects. See the [0.6.0 verification record](docs/VERIFICATION-060.md) for test and publication status.
+**[The 0.6.0 preview is released](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.6.0-preview.1).** This update adds manually generated 540p / 720p preview proxies, real waveforms and thumbnails generated on demand, local recovery copies, and timeline multiselection, marquee selection, dragging across tracks and ripple deletion. Proxies affect preview only: audio and final export use the original media. Proxy and preview-cache URLs are never saved or shared in projects. See the [0.6.0 verification record](docs/VERIFICATION-060.md) for test and publication status.
 
 The resizable workbench, media categories, fit-to-timeline, frame stepping, cubic-bezier keyframes and expanded native FFmpeg composition introduced in 0.5.0 remain available. Those changes adopt selected algorithms and interactions from [Concat, formerly WolfCut](https://github.com/jub0t/Concat), retaining FreeCut's two layouts, Easy/Pro modes, speech tools, custom model storage, Internet collaboration and existing project compatibility. See the [integration and provenance record](docs/WOLFCUT-INTEGRATION.md) and historical [0.5.0 verification record](docs/VERIFICATION-050.md).
 
@@ -78,7 +78,7 @@ This section describes the implemented 0.6.0 preview source.
 
 ## Download and install
 
-**0.6.0 packages are pending publication.** The table lists intended filenames for `v0.6.0-preview.1`, not confirmation that files are already downloadable. Use the assets actually published on [GitHub Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases). The release will include matching source, both guides and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
+[Download the 0.6.0 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.6.0-preview.1). All packages listed below are published, with matching source, both guides and SHA-256 checksums. The Windows Setup and Portable downloads were hash-checked; the downloaded portable application passed a real launch and MP4 export check. The same application supports both languages and starts in Simplified Chinese.
 
 | Computer or use | Download | How to use it |
 | --- | --- | --- |

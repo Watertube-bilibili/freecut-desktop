@@ -14,7 +14,7 @@
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-**当前源码为 0.6.0 预览版，目标 Release 为 `v0.6.0-preview.1`，安装包待发布。** 本次新增手动生成的 540p / 720p 流畅预览代理、按需生成的真实波形与缩略图、本机自动恢复副本，以及时间线多选、框选、跨轨拖动和删除并补齐空隙。代理只用于预览，声音仍取自原片，导出始终使用原始素材；代理和预览缓存不写入工程或协作内容。功能与本次测试范围见 [0.6.0 验证记录](docs/VERIFICATION-060.md)。
+**[0.6.0 预览版已发布](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.6.0-preview.1)。** 本次新增手动生成的 540p / 720p 流畅预览代理、按需生成的真实波形与缩略图、本机自动恢复副本，以及时间线多选、框选、跨轨拖动和删除并补齐空隙。代理只用于预览，声音仍取自原片，导出始终使用原始素材；代理和预览缓存不写入工程或协作内容。功能与本次测试范围见 [0.6.0 验证记录](docs/VERIFICATION-060.md)。
 
 0.5.0 引入的可调工作台、媒体分类、时间线适配、逐帧查看、贝塞尔关键帧和扩展 FFmpeg 原生合成继续保留；这些改造基于 [Concat（原 WolfCut）](https://github.com/jub0t/Concat) 的部分算法与交互，并保留水管剪辑的双布局、普通 / 专业模式、语音工具、模型目录、异地协作和旧工程兼容。确切代码来源与许可见 [WolfCut 集成说明](docs/WOLFCUT-INTEGRATION.md)，历史验收见 [0.5.0 验证记录](docs/VERIFICATION-050.md)。
 
@@ -84,7 +84,7 @@
 
 ## 下载和运行
 
-**0.6.0 安装包待发布。** 下表是目标 `v0.6.0-preview.1` 的文件名，不表示附件已经可下载；请以[项目 Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases)实际公开的附件为准。发布时同时提供匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
+[下载 0.6.0 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.6.0-preview.1)：下表安装包均已公开，同时提供匹配源码、中英文教程和 SHA-256 清单。Windows 安装包、便携包已下载核对散列，下载后的便携程序已通过真实运行与 MP4 导出检查。首次启动默认简体中文，同一份应用可切换英文。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 

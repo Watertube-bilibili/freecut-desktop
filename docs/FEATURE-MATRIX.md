@@ -1,6 +1,6 @@
 # FreeCut 功能覆盖与验证边界
 
-本表对应水管剪辑 / FreeCut 0.6.0 的实际源码，更新于 2026-10-04；目标 Release 为 `v0.6.0-preview.1`，安装包待发布。目标是逐步替代常用剪辑工作流；当前是可运行的早期桌面编辑器，**尚未覆盖剪映的全部功能、素材和 AI 能力**。不能把研究建议、引擎支持的滤镜或界面入口计作已经完成的产品功能。本次测试与发行范围见 [0.6.0 验证记录](VERIFICATION-060.md)；0.5.0 工作台与原生导出的历史验收见 [对应记录](VERIFICATION-050.md)，历史真实跨网样本仍见 [0.4.1 验证记录](VERIFICATION-041.md)。
+本表对应水管剪辑 / FreeCut 0.6.0 的实际源码，更新于 2026-10-04；已发布 [v0.6.0-preview.1](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.6.0-preview.1)，包含 Windows x64 与 Mac arm64/x64 安装包。目标是逐步替代常用剪辑工作流；当前是可运行的早期桌面编辑器，**尚未覆盖剪映的全部功能、素材和 AI 能力**。不能把研究建议、引擎支持的滤镜或界面入口计作已经完成的产品功能。本次测试与发行范围见 [0.6.0 验证记录](VERIFICATION-060.md)；0.5.0 工作台与原生导出的历史验收见 [对应记录](VERIFICATION-050.md)，历史真实跨网样本仍见 [0.4.1 验证记录](VERIFICATION-041.md)。
 
 范围依据为 [桌面调研](../research-desktop.md)、[手机版调研](../research-mobile.md)、[效果与分发调研](../research-effects.md)，实际状态以 `src/App.tsx`、`src/components`、`src/core` 和 `electron` 的实现为准。国内剪映、海外 CapCut 及各平台的会员权益会变化，本文不把海外权益当作国内统一付费清单，也不声称复制任何受限素材。
 

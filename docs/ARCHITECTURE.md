@@ -1,6 +1,6 @@
 # FreeCut 架构与可追溯构建
 
-FreeCut 0.6.0 预览版由 React/TypeScript 编辑界面、Electron 桌面宿主和独立 FFmpeg 子进程组成。目标 Release 为 `v0.6.0-preview.1`，安装包待发布；下载以[项目 Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases)实际附件为准，当前测试与发行范围见 [0.6.0 验证记录](VERIFICATION-060.md)。核心工程是版本化 JSON；原始媒体保留在用户选择的位置。连续预览与精确导出使用独立解码状态，代理与恢复存储由不同宿主服务管理。符合条件的多层画面直接由 FFmpeg 合成，复杂画面由 Canvas 合成后通过 RGBA 管道编码；音频由浏览器试听、FFmpeg 混音。可选协作房间由用户自己的电脑承载。
+FreeCut 0.6.0 预览版由 React/TypeScript 编辑界面、Electron 桌面宿主和独立 FFmpeg 子进程组成。已发布 [v0.6.0-preview.1](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.6.0-preview.1)，包含 Windows x64 与 Mac arm64/x64 安装包；下载以[项目 Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases)实际附件为准，当前测试与发行范围见 [0.6.0 验证记录](VERIFICATION-060.md)。核心工程是版本化 JSON；原始媒体保留在用户选择的位置。连续预览与精确导出使用独立解码状态，代理与恢复存储由不同宿主服务管理。符合条件的多层画面直接由 FFmpeg 合成，复杂画面由 Canvas 合成后通过 RGBA 管道编码；音频由浏览器试听、FFmpeg 混音。可选协作房间由用户自己的电脑承载。
 
 0.5.0 从 Concat（原 WolfCut）的固定提交移植贝塞尔求值与画面放置 / 旋转边界计算，并参考其工作台交互重构 React 面板；没有引入完整 Rust、Slint、上游字体或新的 GPU 引擎。原 GPL 代码与新增 AGPL 派生模块保留各自许可证，按两协议第 13 条组合。来源、hash、修改与再分发说明见 [WOLFCUT-INTEGRATION.md](WOLFCUT-INTEGRATION.md)。
 
