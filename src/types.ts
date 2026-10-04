@@ -135,6 +135,8 @@ export interface ExportProgress {
   progress: number;
 }
 export interface DesktopAPI {
+  recovery: import('./recovery-types').RecoveryAPI;
+  mediaCache: import('./media-cache-types').MediaCacheAPI;
   collaboration: import('./collaboration-types').CollaborationAPI;
   setLanguage: (language: 'zh-CN' | 'en') => Promise<'zh-CN' | 'en'>;
   listSounds: () => Promise<

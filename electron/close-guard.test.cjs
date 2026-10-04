@@ -68,6 +68,8 @@ async function mainHarness(platform,existingDirectory,updateOptions){
   const customRequire=name=>{
     if(name==='electron')return electron;
     if(name==='./media.cjs')return {createMediaLibrary:()=>({}),MEDIA_EXTENSIONS:[],assertTrustedSender(){}};
+    if(name==='./recovery.cjs')return {createRecovery:()=>({flush:async()=>{},authorizeProject(){}})};
+    if(name==='./media-cache.cjs')return {createMediaCache:()=>({onProgress(){},cancelAll(){counts.cacheCancelled=(counts.cacheCancelled||0)+1;},dispose(){counts.cacheDisposed=(counts.cacheDisposed||0)+1;}})};
     if(name==='./export.cjs')return {...nativeRequire('./export.cjs'),createExporter:()=>({dispose:async()=>{counts.export++;}})};
     if(name==='./ai.cjs')return {registerAI:options=>{assert.equal(options.app.on,undefined,'AI must not attach a premature before-quit listener');return {cancel:()=>{counts.ai++;}};}};
     if(name==='./chattts.cjs')return {registerChatTTS:()=>({dispose:async()=>{counts.chattts++;}})};

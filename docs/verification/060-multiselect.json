@@ -1,0 +1,19 @@
+{
+  "version": "0.6.0",
+  "platform": "Windows x64",
+  "date": "2026-10-04",
+  "passed": true,
+  "checks": [
+    "Shift and Ctrl toggle multiple clips without changing the project",
+    "Focused Space selects clips without playing; editor Space still plays",
+    "Empty-lane marquee selects intersected tracks without seeking or recording edits",
+    "Group move preserves timing offsets and one undo restores every member",
+    "Compatible cross-track drag preserves relative track offsets",
+    "Locked or incompatible destinations reject the entire group",
+    "Escape and pointercancel restore the full selection without adding history",
+    "Group copy and paste keep animation and create independent IDs",
+    "Group duplication and ripple deletion each use one undo step",
+    "Select-all and batch delete preserve locked clips"
+  ],
+  "rendererErrors": []
+}

@@ -1,4 +1,9 @@
 @import url('./components/ai-panel.css');
+.recovery-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow-y: auto; }
+.recovery-dialog-actions { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+.preview-cache-button { display: inline-flex; align-items: center; gap: 5px; }
+.recovery-status.error { color: #f0b59b; }
+@media (max-width: 1200px) { .preview-cache-button > span { display: none; } }
 :root {
   font-family:
     'Microsoft YaHei',

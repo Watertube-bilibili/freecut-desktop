@@ -1,0 +1,112 @@
+{
+  "platform": "win32",
+  "passed": true,
+  "rendererErrors": [],
+  "renderer": {
+    "playback": {
+      "samples": 212,
+      "uniqueFrames": 105,
+      "seeks": 1,
+      "worstLagSeconds": 0.0592333333690962,
+      "p95LagSeconds": 0.05686666671435048,
+      "last": {
+        "wanted": 3.9973000000119208,
+        "actual": 3.966666666666667,
+        "elapsed": 3.5053000000119208
+      }
+    },
+    "jump": {
+      "samples": 98,
+      "uniqueFrames": 53,
+      "seeks": 1,
+      "worstLagSeconds": 0.21950000000000003,
+      "p95LagSeconds": 0.20239999997615676,
+      "last": {
+        "wanted": 9.796300000011922,
+        "actual": 9.733333333333333,
+        "elapsed": 1.8023999999761582
+      }
+    },
+    "delayedReadiness": {
+      "samples": 193,
+      "uniqueFrames": 113,
+      "seeks": 1,
+      "worstLagSeconds": 0.6366999999880791,
+      "p95LagSeconds": 0.6041666666666661,
+      "last": {
+        "wanted": 7.798100000023842,
+        "actual": 7.733333333333333,
+        "elapsed": 3.802300000011921
+      }
+    },
+    "doubleSpeed": {
+      "samples": 73,
+      "uniqueFrames": 71,
+      "seeks": 1,
+      "worstLagSeconds": 0.03613333334525448,
+      "p95LagSeconds": 0.03600000000000003,
+      "last": {
+        "wanted": 2.1968000000119208,
+        "actual": 2.1666666666666665,
+        "elapsed": 1.202800000011921
+      }
+    },
+    "scrubCommitted": 23,
+    "scrubDistinctFrames": 23,
+    "strict": [
+      {
+        "time": 0.03333333333333333,
+        "frame": 1
+      },
+      {
+        "time": 7.1,
+        "frame": 213
+      },
+      {
+        "time": 10.5,
+        "frame": 315
+      },
+      {
+        "time": 0.2,
+        "frame": 6
+      }
+    ],
+    "stats": {
+      "requested": 874,
+      "committed": 604,
+      "coalesced": 270,
+      "seeks": 31,
+      "lastCommittedTime": 9,
+      "playingVideos": 0
+    }
+  },
+  "editor": {
+    "results": [
+      {
+        "layout": "professional",
+        "distinctFrames": 92,
+        "samples": 187,
+        "p95LagSeconds": 0.03333333333333366,
+        "worstLagSeconds": 0.03333333333333366,
+        "last": {
+          "wall": 3.741199999988079,
+          "frame": 106,
+          "timeline": 3.5666666666666664
+        }
+      },
+      {
+        "layout": "mobile",
+        "distinctFrames": 84,
+        "samples": 167,
+        "p95LagSeconds": 0.03333333333333344,
+        "worstLagSeconds": 0.03333333333333366,
+        "last": {
+          "wall": 3.303,
+          "frame": 96,
+          "timeline": 3.2
+        }
+      }
+    ],
+    "leavingEditorPausesDecoders": true
+  }
+}

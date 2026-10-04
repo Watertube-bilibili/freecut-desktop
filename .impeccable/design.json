@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T12:18:33.629Z",
+  "title": "Design System: 水管剪辑 FreeCut",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "cache-dialog",
+        "value": "0 24px 100px #0009",
+        "purpose": "代理与媒体缓存弹窗。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "background 0.14s, color 0.14s",
+        "purpose": "按钮状态变化。"
+      },
+      {
+        "name": "divider-feedback",
+        "value": "opacity 120ms ease",
+        "purpose": "面板分隔条反馈。"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-workbench",
+        "value": "1100px"
+      },
+      {
+        "name": "short-workbench-height",
+        "value": "740px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "主按钮",
+      "kind": "button",
+      "description": "工作台导出与主要动作。",
+      "html": "<button class=\"ds-primary\">导出</button>",
+      "css": ".ds-primary{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;background:var(--accent,#91e6c6);color:var(--accent-ink,#102e24);border:0;border-radius:6px;padding:9px 17px;font-weight:700;cursor:pointer;transition:background .14s,color .14s}.ds-primary:hover{background:#b1f1d9}.ds-primary:disabled{opacity:.35;cursor:not-allowed}.ds-primary:focus-visible{outline:2px solid var(--accent,#91e6c6);outline-offset:2px}"
+    },
+    {
+      "name": "普通按钮",
+      "kind": "button",
+      "description": "低层级工具与关闭操作。",
+      "html": "<button class=\"ds-ghost\">关闭</button>",
+      "css": ".ds-ghost{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;background:none;color:var(--text,#eef2f2);border:0;border-radius:6px;padding:7px 10px;cursor:pointer;transition:background .14s,color .14s}.ds-ghost:hover{background:#30363b}.ds-ghost:disabled{opacity:.35;cursor:not-allowed}.ds-ghost:focus-visible{outline:2px solid var(--accent,#91e6c6);outline-offset:2px}"
+    },
+    {
+      "name": "文本输入",
+      "kind": "input",
+      "description": "素材搜索与文本参数。",
+      "html": "<input class=\"ds-input\" aria-label=\"搜索素材\" placeholder=\"搜索素材、效果或工具\">",
+      "css": ".ds-input{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;color:var(--text,#eef2f2);background:#25292d;border:1px solid #353b40;border-radius:5px;padding:7px 8px;caret-color:var(--accent,#91e6c6)}.ds-input::placeholder{color:#9aa6ac}.ds-input:focus-visible{outline:2px solid var(--accent,#91e6c6);outline-offset:2px}"
+    },
+    {
+      "name": "首页导航",
+      "kind": "nav",
+      "description": "当前项目页使用薄荷文字与深绿底。",
+      "html": "<nav class=\"ds-nav\"><button aria-current=\"page\">我的项目</button><button>设置</button><button>关于</button></nav>",
+      "css": ".ds-nav{display:grid;gap:7px;background:var(--panel,#191c1f);padding:14px}.ds-nav button{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;font-size:14px;text-align:left;border:0;border-radius:6px;padding:14px;color:var(--text,#eef2f2);background:none;cursor:pointer}.ds-nav button:hover{background:#30363b}.ds-nav button[aria-current]{background:#283b34;color:var(--accent,#91e6c6)}.ds-nav button:focus-visible{outline:2px solid var(--accent,#91e6c6);outline-offset:2px}"
+    },
+    {
+      "name": "素材类型筛选",
+      "kind": "chip",
+      "description": "类型名称与数量共同显示当前筛选。",
+      "html": "<div class=\"ds-filters\"><button aria-pressed=\"true\">全部 2</button><button aria-pressed=\"false\">视频 1</button><button aria-pressed=\"false\">音频 1</button></div>",
+      "css": ".ds-filters{display:flex;gap:4px;flex-wrap:wrap}.ds-filters button{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;font-size:11px;border:0;border-radius:6px;padding:5px 6px;background:none;color:#c3cdd0;cursor:pointer}.ds-filters button:hover{background:#30363b}.ds-filters button[aria-pressed=true]{color:var(--accent,#91e6c6);background:#293a33}.ds-filters button:focus-visible{outline:2px solid var(--accent,#91e6c6);outline-offset:2px}"
+    },
+    {
+      "name": "恢复记录容器",
+      "kind": "card",
+      "description": "首页与弹窗复用，恢复动作突出，元信息次要。",
+      "html": "<section class=\"ds-recovery\"><h2>恢复记录</h2><p>自动保留编辑副本。恢复后请手动保存为工程文件。</p><div><strong>恢复测试版本</strong><button>恢复</button></div></section>",
+      "css": ".ds-recovery{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;padding:18px 20px 14px;border:1px solid #34433e;border-radius:10px;background:#1a211f;color:var(--text,#eef2f2)}.ds-recovery h2{margin:0;font-size:15px;font-weight:600}.ds-recovery p{color:#a9b8b1;line-height:1.6}.ds-recovery>div{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid #303c37}.ds-recovery button{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;border-radius:6px;padding:7px 10px;min-height:34px;color:var(--accent,#91e6c6);border:1px solid #466456;background:#243a30;cursor:pointer}.ds-recovery button:hover{background:#30363b}.ds-recovery button:focus-visible{outline:2px solid var(--accent,#91e6c6);outline-offset:2px}"
+    },
+    {
+      "name": "代理生成区域",
+      "kind": "custom",
+      "description": "代理分辨率与全量生成在同一区域。",
+      "html": "<section class=\"ds-proxy\"><strong>视频代理</strong><label>预览分辨率 <select aria-label=\"预览分辨率\"><option>540p</option><option>720p</option></select></label><button>生成全部视频代理</button></section>",
+      "css": ".ds-proxy{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding:18px;background:#202925;border:1px solid #39463e;border-radius:10px;color:#e6ece9}.ds-proxy strong{flex:1;font-size:14px}.ds-proxy label{display:flex;flex-direction:column;gap:6px;font-size:10px;color:#aebfb3}.ds-proxy select{background:#171e1a;border:1px solid #4b6052;color:#e3eee7;padding:5px 8px;border-radius:5px}.ds-proxy button{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;border:1px solid #a5d8b8;border-radius:7px;padding:8px 11px;background:#a5d8b8;color:#14271b;font-weight:600;cursor:pointer}.ds-proxy button:hover{background:#344c3e;border-color:#80ae91}.ds-proxy button:disabled{opacity:.45;cursor:default}.ds-proxy button:focus-visible{outline:2px solid var(--accent,#91e6c6);outline-offset:2px}.ds-proxy select:focus-visible{outline:2px solid var(--accent,#91e6c6);outline-offset:2px}"
+    },
+    {
+      "name": "主选中片段",
+      "kind": "custom",
+      "description": "片段文字置于真实媒体分析上层；此样例无媒体数据。",
+      "html": "<button class=\"ds-clip\" aria-pressed=\"true\"><span>Synthetic mint studio</span><small>1× · 14.0s</small></button>",
+      "css": ".ds-clip{font-family:'Microsoft YaHei','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;display:block;width:280px;height:49px;text-align:left;background:#34574a;color:#d4e5db;border:1px solid #bedfce;border-radius:5px;outline:2px solid #b2e9d4;outline-offset:-1px;box-shadow:inset 0 0 0 1px #e3fff2;overflow:hidden;cursor:grab}.ds-clip span{display:block;font-size:10px;padding:7px 9px 1px}.ds-clip small{display:block;font-size:9px;padding:4px 9px}.ds-clip:focus-visible{outline:2px solid var(--accent,#91e6c6);outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "视频审片室",
+    "overview": "0.6.0 延续上述中性深灰、薄荷强调与紧凑多轨工作台。本节记录已构建界面；前文的 0.5.0 截图与 2026-09-19 回归属于历史证据。0.6.0 的截图来自本机源码与 Synthetic media 合成测试素材，不表示 GitHub Release 已发布或所有平台已验收。",
+    "keyCharacteristics": [],
+    "rules": [],
+    "dos": [
+      "Do 延续深灰表面、薄荷反馈、细分隔线和紧凑控件，让用户素材成为视觉中心。",
+      "Do 同时用文字、图标、边线和可访问状态表达类型、选择、锁定、进度与失败。"
+    ],
+    "donts": [
+      "Don't 将恢复副本描述为手动保存的工程，或将预览代理描述为导出源。",
+      "Don't 将合成测试素材、本机截图或旧版回归写成 Release 已发布或全平台已验收。"
+    ]
+  }
+}

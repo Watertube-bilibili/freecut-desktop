@@ -1,0 +1,46 @@
+.track-lane {
+  touch-action: none;
+  user-select: none;
+}
+.timeline-clip.primary-selection {
+  box-shadow: inset 0 0 0 1px #e3fff2;
+}
+.timeline-clip.locked-clip,
+.timeline-clip.locked-clip .trim-handle {
+  cursor: not-allowed;
+}
+.timeline-clip.locked-clip .trim-handle {
+  background: transparent;
+}
+.timeline-marquee {
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+  border: 1px solid #afe9d0;
+  background: #90d7b923;
+  box-shadow: inset 0 0 0 1px #101c175c;
+}
+.timeline-content.invalid-drop .timeline-clip {
+  cursor: not-allowed;
+}
+.timeline-drop-notice {
+  position: sticky;
+  left: 12px;
+  bottom: 8px;
+  z-index: 7;
+  width: max-content;
+  max-width: min(420px, 90%);
+  padding: 6px 10px;
+  background: #282d2cf0;
+  border: 1px solid #6d6953;
+  border-radius: 5px;
+  color: #ead9aa;
+  font-size: 11px;
+  pointer-events: none;
+}
+.timeline-clip .clip-label,
+.timeline-clip .clip-detail,
+.timeline-clip .audio-stripe {
+  position: relative;
+  z-index: 1;
+}

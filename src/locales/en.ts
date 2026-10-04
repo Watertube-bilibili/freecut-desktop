@@ -2,9 +2,13 @@ import { enApp } from './en-app';
 import { enWorkbench } from './en-workbench';
 import { enBezier } from './en-bezier';
 import { enConcat } from './en-concat';
+import { enRecovery } from './en-recovery';
+import { enMediaCache } from './en-media-cache';
+import { enTimelineSelection } from './en-timeline-selection';
 
 /** UI copy only. Never use this dictionary to rewrite project or media data. */
 export const en: Record<string, string> = {
+  '还没有历史备份。编辑后暂停 10 秒，系统会自动保留副本。': 'No backups yet. Pause for 10 seconds after editing to create a backup automatically.',
   字幕与语音: 'Captions & speech',
   关闭: 'Close',
   自动字幕: 'Auto captions',
@@ -712,4 +716,15 @@ export const en: Record<string, string> = {
   ...enWorkbench,
   ...enBezier,
   ...enConcat,
+  ...enRecovery,
+  ...enMediaCache,
+  ...enTimelineSelection,
+  '历史备份': 'Project backups',
+  '关闭历史备份': 'Close project backups',
+  '备份失败': 'Backup failed',
+  '备份中…': 'Backing up…',
+  '流畅预览': 'Smooth preview',
+  '流畅预览与缓存': 'Smooth preview & cache',
+  '已选 {count} 个片段': '{count} clips selected',
+  '其他片段与删除区间重叠，请先调整重叠内容。': 'Other clips overlap the removed interval. Adjust the overlap before closing the gap.',
 };

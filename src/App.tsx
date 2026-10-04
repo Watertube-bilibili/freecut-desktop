@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type SetStateAction } from 'react';
 import {
   Film,
   FolderOpen,
@@ -49,6 +49,9 @@ import {
   StepForward,
   ScanLine,
   MousePointer2,
+  History,
+  Gauge,
+  ChevronsLeftRight,
 } from 'lucide-react';
 import type { AnimProperty, Clip, MediaAsset, Project, ProjectSummary, Transform } from './types';
 import {
@@ -80,6 +83,11 @@ import { CollaborationSession, disconnectedCollaboration } from './core/collabor
 import type { CollaborationJoinOptions } from './collaboration-types';
 import WorkbenchResizeHandle, { useWorkbenchLayout } from './components/WorkbenchResizeHandle';
 import { prepareExportRasterLayers } from './core/export-preparation';
+import { copySelection, pasteSelection, duplicateSelection, deleteSelection, editableSelection } from './core/timeline-selection';
+import { useRecovery } from './core/use-recovery';
+import RecoveryPanel from './components/RecoveryPanel';
+import MediaCachePanel from './components/MediaCachePanel';
+import { useMediaCache } from './core/use-media-cache';
 import { t, useI18n, type Language } from './i18n';
 import { version as appVersion } from '../package.json';
 
@@ -96,17 +104,6 @@ type EditorMenu = {
   returnFocus: HTMLElement;
   session: number;
 };
-
-function cloneClipForPlacement(source: Clip, trackId: string, start: number): Clip {
-  const clone = structuredClone(source);
-  clone.id = crypto.randomUUID();
-  clone.trackId = trackId;
-  clone.start = start;
-  Object.values(clone.keyframes).forEach((frames) =>
-    frames?.forEach((frame) => (frame.id = crypto.randomUUID())),
-  );
-  return clone;
-}
 
 function createLocalizedProject() {
   const p = createProject();
@@ -218,7 +215,10 @@ export default function App() {
   const [collaborationError, setCollaborationError] = useState('');
   const [collaborationConflicts, setCollaborationConflicts] = useState<string[]>([]);
   const collaborationSession = useRef<CollaborationSession | null>(null);
-  const [clipboard, setClipboard] = useState<Clip>();
+  const [clipboard, setClipboard] = useState<Clip[]>();
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
+  const recoveryDialog = useRef<HTMLDivElement>(null);
+  const [mediaCacheOpen, setMediaCacheOpen] = useState(false);
   const closeContextMenu = useCallback(() => setContextMenu(undefined), []);
   const [project, setProject] = useState<Project>(() => {
     try {
@@ -227,8 +227,24 @@ export default function App() {
     } catch {}
     return createLocalizedProject();
   });
-  const [selected, setSelected] = useState<string>(),
-    [time, setTimeState] = useState(0),
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const selected = selectedIds[0];
+  const setSelected = useCallback((value: SetStateAction<string | undefined>) => {
+    setSelectedIds((previous) => {
+      const next = typeof value === 'function' ? value(previous[0]) : value;
+      return next ? [next] : [];
+    });
+  }, []);
+  const changeSelection = useCallback((ids: string[], primary?: string) => {
+    setSelectedIds([...new Set(primary ? [primary, ...ids] : ids)]);
+  }, []);
+  useEffect(() => {
+    setSelectedIds((ids) => {
+      const retained = ids.filter((id) => project.clips.some((item) => item.id === id));
+      return retained.length === ids.length ? ids : retained;
+    });
+  }, [project]);
+  const [time, setTimeState] = useState(0),
     [playing, setPlaying] = useState(false),
     [tab, setTab] = useState('media'),
     [inspectorTab, setInspectorTab] = useState('basic'),
@@ -265,6 +281,10 @@ export default function App() {
   const [savedFingerprint, setSavedFingerprint] = useState(() => JSON.stringify(project));
   const savedRef = useRef(savedFingerprint);
   const projectSession = useRef(0);
+  const recoveryInstance = useRef(crypto.randomUUID());
+  const previewMediaRevision = useRef(0);
+  const mediaCacheState = useMediaCache(project.assets);
+  useEffect(() => { previewMediaRevision.current++; }, [mediaCacheState.entries]);
   const fileOperation = useRef(false);
   const [fileBusy, setFileBusy] = useState(false);
   const fingerprint = useMemo(() => JSON.stringify(project), [project]);
@@ -275,6 +295,25 @@ export default function App() {
     action: () => void | Promise<void>;
   }>();
   const [navigationBusy, setNavigationBusy] = useState(false);
+  useEffect(() => {
+    if (!recoveryOpen || pendingNavigation) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const dialog = recoveryDialog.current;
+    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), [tabindex="0"]') ?? []);
+    focusable()[0]?.focus();
+    const trap = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+      const items = focusable(), first = items[0], last = items.at(-1);
+      if (!first) { event.preventDefault(); dialog?.focus(); return; }
+      if (event.shiftKey && (document.activeElement === first || !dialog?.contains(document.activeElement))) {
+        event.preventDefault(); last?.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog?.contains(document.activeElement))) {
+        event.preventDefault(); first.focus();
+      }
+    };
+    document.addEventListener('keydown', trap);
+    return () => { document.removeEventListener('keydown', trap); if (previous?.isConnected) previous.focus(); };
+  }, [recoveryOpen, pendingNavigation]);
   const previewGesture = useRef<
     { id: string; before: Clip; session: number; localTime: number } | undefined
   >(undefined);
@@ -329,9 +368,18 @@ export default function App() {
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(''), 4200);
   }, []);
+  const recovery = useRecovery({
+    api: window.freecut?.recovery,
+    project, dirty, enabled: !home,
+    sessionId: `${recoveryInstance.current}:${projectSession.current}`,
+    busy: fileBusy || closing || busy || !!previewGesture.current || timelineGesture.current,
+  });
   const markSaved = useCallback((snapshot: Project) => {
     savedRef.current = JSON.stringify(snapshot);
     setSavedFingerprint(savedRef.current);
+    void window.freecut?.recovery?.markSaved({
+      project: snapshot, sessionId: `${recoveryInstance.current}:${projectSession.current}`,
+    }).catch(() => {});
   }, []);
   useEffect(() => {
     const api = window.freecut?.collaboration;
@@ -655,13 +703,23 @@ export default function App() {
     (id?: string) => {
       const p = projectRef.current,
         c = p.clips.find((c) => c.id === id);
-      if (!c || p.tracks.find((t) => t.id === c.trackId)?.locked) return;
-      commit((p) => ({ ...p, clips: p.clips.filter((c) => c.id !== id) }));
-      setSelected((current) => (current === id ? undefined : current));
+      if (!c) return;
+      const result = deleteSelection(p, id && selectedIds.includes(id) ? selectedIds : [id!]);
+      commit(() => result.project);
+      changeSelection(result.ids);
     },
-    [commit],
+    [commit, selectedIds, changeSelection],
   );
   const remove = useCallback(() => removeClipById(selected), [removeClipById, selected]);
+  function rippleRemove() {
+    const result = deleteSelection(projectRef.current, selectedIds, true);
+    if (result.error) {
+      notify(t('其他片段与删除区间重叠，请先调整重叠内容。'));
+      return;
+    }
+    commit(() => result.project);
+    changeSelection(result.ids);
+  }
   const splitClipById = useCallback(
     (id?: string) => {
       const p = projectRef.current,
@@ -692,40 +750,44 @@ export default function App() {
   const duplicateClipById = (id?: string) => {
     const p = projectRef.current,
       source = p.clips.find((item) => item.id === id);
-    if (source && p.tracks.find((track) => track.id === source.trackId)?.locked) {
+    if (source && !editableSelection(p, selectedIds.includes(source.id) ? selectedIds : [source.id]).length) {
       notify(t('轨道已锁定，请先解锁。'));
       return;
     }
     if (source) {
-      const clone = cloneClipForPlacement(source, source.trackId, source.start + source.duration);
-      clone.name += t(' 副本');
-      commit((p) => ({ ...p, clips: [...p.clips, clone] }));
-      setSelected(clone.id);
+      const result = duplicateSelection(p, selectedIds.includes(source.id) ? selectedIds : [source.id]);
+      if (result.error) { notify(t('请先复制片段，并选择未锁定的兼容轨道。')); return; }
+      commit(() => result.project);
+      changeSelection(result.ids);
     }
   };
   const duplicate = () => duplicateClipById(selected);
   function copyClipById(id?: string, cut = false) {
     const p = projectRef.current,
       source = p.clips.find((item) => item.id === id);
-    if (!source || (cut && p.tracks.find((track) => track.id === source.trackId)?.locked)) return;
-    setClipboard(structuredClone(source));
+    if (!source) return;
+    const ids = selectedIds.includes(source.id) ? selectedIds : [source.id];
+    const copied = copySelection(p, ids).filter((item) => !cut || !p.tracks.find((track) => track.id === item.trackId)?.locked);
+    if (!copied.length) return;
+    setClipboard(copied);
     if (cut) removeClipById(id);
     notify(cut ? t('片段已剪切，可在时间线上粘贴。') : t('片段已复制，可在时间线上粘贴。'));
   }
   function pasteDestination(trackId?: string) {
     const p = projectRef.current;
-    if (!clipboard || (clipboard.assetId && !p.assets.some((a) => a.id === clipboard.assetId)))
+    const first = clipboard?.[0];
+    if (!first || (first.assetId && !p.assets.some((a) => a.id === first.assetId)))
       return;
     const compatible = (track: Project['tracks'][number]) =>
-      !track.locked && (track.kind !== 'audio' || clipboard.kind === 'audio');
+      !track.locked && (track.kind !== 'audio' || first.kind === 'audio');
     if (trackId) return p.tracks.find((track) => track.id === trackId && compatible(track));
-    const preferred = p.clips.find((item) => item.id === selected)?.trackId ?? clipboard.trackId;
+    const preferred = p.clips.find((item) => item.id === selected)?.trackId ?? first.trackId;
     return (
       p.tracks.find((track) => track.id === preferred && compatible(track)) ??
-      p.tracks.find((track) => track.id === clipboard.trackId && compatible(track)) ??
+      p.tracks.find((track) => track.id === first.trackId && compatible(track)) ??
       p.tracks.find(
         (track) =>
-          track.kind === (clipboard.kind === 'audio' ? 'audio' : 'video') && compatible(track),
+          track.kind === (first.kind === 'audio' ? 'audio' : 'video') && compatible(track),
       ) ??
       p.tracks.find(compatible)
     );
@@ -738,9 +800,10 @@ export default function App() {
     }
     const p = projectRef.current;
     const start = Math.max(0, Math.round(at * p.fps) / p.fps);
-    const clone = cloneClipForPlacement(clipboard, target.id, start);
-    commit((p) => ({ ...p, clips: [...p.clips, clone] }));
-    setSelected(clone.id);
+    const result = pasteSelection(p, clipboard, start, target.id);
+    if (result.error) { notify(t('请先复制片段，并选择未锁定的兼容轨道。')); return; }
+    commit(() => result.project);
+    changeSelection(result.ids);
     seek(start);
     notify(t('片段已粘贴。'));
   }
@@ -779,7 +842,7 @@ export default function App() {
     finishPreviewGesture(true);
     playingRef.current = false;
     setPlaying(false);
-    if (target.kind === 'clip' || target.kind === 'preview') setSelected(target.id);
+    if (target.kind === 'preview' || (target.kind === 'clip' && !selectedIds.includes(target.id ?? ''))) setSelected(target.id);
     const origin = event.currentTarget as HTMLElement;
     origin.focus({ preventScroll: true });
     setContextMenu({
@@ -875,6 +938,7 @@ export default function App() {
       lastTime = -1,
       lastPlaying = false,
       lastRequest = 0,
+      lastMediaRevision = -1,
       lastCanvas: HTMLCanvasElement | null = null;
     const preview = createPreviewRenderer();
     function draw() {
@@ -890,6 +954,7 @@ export default function App() {
       if (
         canvas.current &&
         (lastProject !== p ||
+          lastMediaRevision !== previewMediaRevision.current ||
           lastTime !== t ||
           lastPlaying !== isPlaying ||
           lastCanvas !== canvas.current) &&
@@ -900,6 +965,7 @@ export default function App() {
           now - lastRequest >= 1000 / Math.min(30, p.fps) - 1)
       ) {
         lastProject = p;
+        lastMediaRevision = previewMediaRevision.current;
         lastTime = t;
         lastCanvas = canvas.current;
         lastPlaying = isPlaying;
@@ -1296,7 +1362,7 @@ export default function App() {
     }
     await loadDesktopProject(() => window.freecut!.openProject());
   }
-  async function loadDesktopProject(load: () => Promise<Project | null>) {
+  async function loadDesktopProject(load: () => Promise<Project | null>, saved = true) {
     if (fileOperation.current) return;
     fileOperation.current = true;
     setFileBusy(true);
@@ -1309,7 +1375,7 @@ export default function App() {
         notify(t('打开文件期间当前工程有更新，已保留当前工程。请保存后重新打开。'));
         return;
       }
-      replaceProject(validateProject(data));
+      replaceProject(validateProject(data), saved);
     } catch (e) {
       notify((e as Error).message);
     } finally {
@@ -1321,6 +1387,13 @@ export default function App() {
     navigate(async () => {
       if (window.freecut) await loadDesktopProject(() => window.freecut!.openRecentProject(id));
       await refreshProjects();
+    });
+  }
+  function restoreRecovery(id: string) {
+    navigate(async () => {
+      if (!window.freecut?.recovery) return;
+      await loadDesktopProject(() => window.freecut!.recovery.restore(id), false);
+      setRecoveryOpen(false);
     });
   }
   async function finishNavigation(shouldSave: boolean) {
@@ -1525,6 +1598,13 @@ export default function App() {
   }
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
+      if (recoveryOpen || mediaCacheOpen) {
+        if (event.key === 'Escape') {
+          setRecoveryOpen(false);
+          setMediaCacheOpen(false);
+        }
+        return;
+      }
       if (previewGesture.current) {
         if (event.key === 'Escape') finishPreviewGesture(true);
         event.preventDefault();
@@ -1549,6 +1629,7 @@ export default function App() {
       const mod = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
       if (event.key === 'Escape') {
+        setSelected(undefined);
         setInspectorOpen(false);
         setMobileShelf(false);
       } else if (event.code === 'Space') {
@@ -1556,7 +1637,10 @@ export default function App() {
         setPlaying((p) => !p);
       } else if (event.key === 'Delete' || event.key === 'Backspace') {
         event.preventDefault();
-        remove();
+        event.shiftKey ? rippleRemove() : remove();
+      } else if (mod && key === 'a') {
+        event.preventDefault();
+        changeSelection(projectRef.current.clips.map((item) => item.id));
       } else if (mod && key === 'z') {
         event.preventDefault();
         event.shiftKey ? redo() : undo();
@@ -1593,6 +1677,9 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler);
   }, [
     selected,
+    selectedIds,
+    recoveryOpen,
+    mediaCacheOpen,
     clipboard,
     contextMenu,
     language,
@@ -1700,7 +1787,7 @@ export default function App() {
       id: 'paste',
       label: t('粘贴'),
       shortcut: `${mod}+V`,
-      disabled: !pasteDestination(trackId),
+      disabled: !clipboard?.length || !pasteDestination(trackId) || Boolean(pasteSelection(p, clipboard ?? [], at ?? timeRef.current, pasteDestination(trackId)?.id).error),
       onSelect: () => pasteClip(trackId, at),
     });
     const historyItems = (): ContextMenuItem[] => [
@@ -1748,6 +1835,7 @@ export default function App() {
       const item = p.clips.find((item) => item.id === target.id);
       if (!item) return;
       const locked = !!p.tracks.find((track) => track.id === item.trackId)?.locked;
+      const groupLocked = !editableSelection(p, selectedIds.includes(item.id) ? selectedIds : [item.id]).length;
       const visual = item.kind !== 'audio';
       const items: ContextMenuItem[] = [
         {
@@ -1769,7 +1857,7 @@ export default function App() {
           id: 'cut',
           label: t('剪切'),
           shortcut: `${mod}+X`,
-          disabled: locked,
+          disabled: groupLocked,
           onSelect: () => copyClipById(item.id, true),
         },
         pasting(item.trackId),
@@ -1777,7 +1865,7 @@ export default function App() {
           id: 'duplicate',
           label: t('复制到片段后'),
           shortcut: `${mod}+D`,
-          disabled: locked,
+          disabled: groupLocked,
           onSelect: () => duplicateClipById(item.id),
         },
         {
@@ -1785,8 +1873,15 @@ export default function App() {
           label: t('删除片段'),
           shortcut: 'Delete',
           danger: true,
-          disabled: locked,
+          disabled: groupLocked,
           onSelect: () => removeClipById(item.id),
+        },
+        {
+          id: 'ripple-delete',
+          label: t('删除并补齐空隙'),
+          shortcut: 'Shift+Delete',
+          disabled: groupLocked,
+          onSelect: rippleRemove,
         },
         {
           id: 'keyframes',
@@ -2029,6 +2124,7 @@ export default function App() {
           busy ||
           playing ||
           collaborationOpen ||
+          recoveryOpen || mediaCacheOpen ||
           collaborationState.mode !== 'disconnected' ||
           (!home && (exportOpen || aiOpen || onboarding || helpOpen)) ||
           !!pendingNavigation
@@ -2050,8 +2146,25 @@ export default function App() {
           onUseRemote={() => void adoptRoomProject().catch((e) => setCollaborationError(e.message))}
         />
       )}
+      {mediaCacheOpen && <MediaCachePanel assets={project.assets} onClose={() => setMediaCacheOpen(false)} />}
+      {recoveryOpen && (
+        <div className="modal-backdrop" onClick={() => setRecoveryOpen(false)}>
+          <div ref={recoveryDialog} tabIndex={-1} className="modal recovery-dialog" role="dialog" aria-modal="true" aria-label={t('历史备份')} onClick={(event) => event.stopPropagation()}>
+            <div className="recovery-dialog-actions">
+              <button onClick={() => setRecoveryOpen(false)} aria-label={t('关闭历史备份')}><X size={16} />{t('关闭')}</button>
+            </div>
+            {!recovery.entries.length && !recovery.loading && !recovery.error && !recovery.issues && <p>{t('还没有历史备份。编辑后暂停 10 秒，系统会自动保留副本。')}</p>}
+            <RecoveryPanel entries={recovery.entries} issues={recovery.issues} loading={recovery.loading} error={recovery.error}
+              busy={fileBusy || navigationBusy} onRefresh={recovery.refresh} onRestore={restoreRecovery} onRemove={recovery.remove} />
+          </div>
+        </div>
+      )}
       {home ? (
         <Home
+          recoverySlot={window.freecut && (recovery.entries.length > 0 || recovery.error || recovery.issues > 0) ? (
+            <RecoveryPanel entries={recovery.entries} issues={recovery.issues} loading={recovery.loading} error={recovery.error}
+              busy={fileBusy || navigationBusy} onRefresh={recovery.refresh} onRestore={restoreRecovery} onRemove={recovery.remove} />
+          ) : undefined}
           projects={recentProjects}
           mobile={mobile}
           mode={keyframeMode}
@@ -2535,6 +2648,9 @@ export default function App() {
                   {t('播放器')}
                 </span>
                 <div>
+                  {window.freecut && <button className="preview-cache-button" title={t('流畅预览与缓存')} onClick={() => { setPlaying(false); setMediaCacheOpen(true); }}>
+                    <Gauge size={16} /><span>{t('流畅预览')}</span>
+                  </button>}
                   <select
                     aria-label={t('画布比例')}
                     value={`${project.width}:${project.height}`}
@@ -2851,6 +2967,9 @@ export default function App() {
                 >
                   <Trash2 size={16} />
                 </button>
+                <button className="icon-button" title={t('删除并补齐空隙')} disabled={!clip} onClick={rippleRemove}>
+                  <ChevronsLeftRight size={16} />
+                </button>
                 <i />
                 <button
                   className={snap ? 'active' : ''}
@@ -2907,6 +3026,8 @@ export default function App() {
               }}
               project={project}
               selected={selected}
+              selectedIds={selectedIds}
+              onSelectionChange={changeSelection}
               time={time}
               zoom={zoom}
               snap={snap}
@@ -2943,11 +3064,14 @@ export default function App() {
               <span className="muted">{appVersion}</span>
             </span>
             <span>
-              {clip ? t('已选择 {v0}', { v0: clip.name }) : t('双击素材添加到时间线')}
+              {selectedIds.length > 1 ? t('已选 {count} 个片段', { count: selectedIds.length }) : clip ? t('已选择 {v0}', { v0: clip.name }) : t('双击素材添加到时间线')}
               <span className="status-shortcuts">
                 {t('右键查看更多 · Space 播放 · Ctrl+B 分割')}
               </span>
             </span>
+            {window.freecut && <button className={`recovery-status ${recovery.status === 'error' ? 'error' : ''}`} title={recovery.error ? t(recovery.error) : t('历史备份')} onClick={() => { void recovery.refresh(); setRecoveryOpen(true); }}>
+              <History size={13} />{recovery.status === 'error' ? t('备份失败') : recovery.status === 'saving' ? t('备份中…') : t('历史备份')}
+            </button>}
             <button onClick={() => setHelpOpen(true)}>
               <Keyboard size={12} />
               {t('快捷键')}

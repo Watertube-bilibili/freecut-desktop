@@ -47,15 +47,16 @@ if(mode==='verify'){
     assert.equal(assets.length,14);
     const sums=assets.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(asset=>`${asset.sha256}  ${asset.name}`).join('\n')+'\n';
     await fs.writeFile(path.join(out,'SHA256SUMS.txt'),sums);assets.push({name:'SHA256SUMS.txt',size:Buffer.byteLength(sums),sha256:await digest(path.join(out,'SHA256SUMS.txt'))});
-    const notes=`水管剪辑 / FreeCut ${version} 预览版 · 工作台与导出升级，我叫水管同学出品。
+    const notes=`水管剪辑 / FreeCut ${version} 预览版 · 日常剪辑与恢复升级，我叫水管同学出品。
 
 ## 本次更新
 
-- 重构桌面工作台：素材和属性面板可调宽度，时间线可调高度；素材按类型筛选和排序，时间线可“适合全片”，预览可逐帧查看，并支持重置工作台布局。
-- 新增贝塞尔关键帧：切到“专业模式 → 关键帧”，在一个关键帧的缓动方式中选择“贝塞尔曲线”，使用预设或编辑四个控制点。该点控制到下一关键帧的变化；旧工程的原有缓动规则保持不变。
-- 扩展 FFmpeg 原生导出：符合条件的多轨叠加、静态缩放/旋转/透明度、位置关键帧与淡入淡出可直接合成。合适的文字和图形只准备一次透明 PNG，再由原生路径合成，减少浏览器逐帧绘制。
-- 动态缩放、旋转或不透明度、未支持的复杂效果、不对齐的剪切时刻等仍自动使用 Canvas 与 RGBA 管道，保留画面语义。图片准备受尺寸、数量和总字节数限制；复杂工程与低配电脑仍可能耗时，不承诺统一加速倍数。
-- 实际采用 Concat（原 WolfCut）固定提交的贝塞尔、放置及旋转边界算法，并参考其工作台交互；保留 FreeCut 的 Electron/React 架构与原有 FFmpeg 构建。这不是完整 Rust/Slint 重写，也没有新增 GPU 编码。
+- 桌面自动备份：编辑暂停 10 秒后创建恢复副本，连续编辑约每 30 秒检查一次。重启后可在首页选择历史版本恢复；编辑器底部也可打开历史备份。恢复后仍需手动保存工程，副本不覆盖原工程、不包含原始媒体。
+- 流畅预览：预览区新增入口，为视频按需生成 540p 或 720p 代理，可随时切换原片预览；原始音频和最终导出继续使用原素材。可取消生成、清理缓存和选择存放位置，自动创建 FreeCut-MediaCache 子目录。代理生成本身需要时间，不承诺所有素材或设备都流畅。
+- 时间线多选：Shift / Ctrl / Command 点选、空白处框选、Ctrl / Command+A 全选，支持整体移动、跨轨拖动、复制、剪切、粘贴、复制到末尾及删除；一次拖动只占一次撤销，Escape 或异常中断会回滚。锁轨不可修改，目标轨道类型必须兼容。
+- 新增波纹删除（Shift+Delete）：关闭所选片段占用的时间区间并前移未锁定轨道后续片段；如果未选片段跨越该区间，会拒绝操作并提示，避免静默剪断其他内容。
+- 视频缩略图与真实音频波形按可见片段在后台生成；单任务队列、缓存上限 2 GiB，每段素材最多 8 张缩略图、2048 个波形采样格。恢复副本最多每会话 8 个、总计 40 个 / 128 MiB；未保存会话的最后一份副本优先保留。
+- 保留 0.5.0 的可调工作台、贝塞尔关键帧与符合条件的多层 FFmpeg 原生导出。复杂效果仍使用 Canvas/RGBA 合成；本次没有改为 GPU 编码，也不把代理生成称为导出加速。
 - 保留双布局、普通关键帧、右键剪辑、预览拖动/缩放/旋转、蒙版、原创滤镜与音效、左右声道、自动字幕、ChatTTS、朗读模型自定义目录及异地邀请码协作。首次启动默认简体中文，可切换并记住 English；英文功能说明和教程同步更新。
 - 全部功能永久免费，不设会员、不设付费解锁，导出无水印。
 
@@ -63,13 +64,13 @@ if(mode==='verify'){
 
 FreeCut is a free, open-source desktop video editor created by a junior high school student using GPT-6 and Codex. All features are free forever, with no membership, paid unlocks or export watermark.
 
-The rebuilt workbench adds resizable media and inspector panels, adjustable timeline height, media type filters and sorting, fit-to-timeline, frame stepping, and a workspace reset. Desktop/mobile layouts still edit the same project.
+Desktop recovery now retains snapshots after a 10-second editing pause, with checkpoints during continuous editing. Restore a version from Home or the editor's backup history, then save it as a project. Recovery copies never overwrite the original project and do not include source media. Retention is bounded, with the latest unsaved copy of each session protected.
 
-New cubic-bezier keyframes are available in Pro mode → Keyframes. Select Cubic-bezier in a keyframe's Easing menu, then choose a preset or edit its four control points. The curve controls the interval to the next keyframe; old easing behavior is preserved.
+Smooth preview can generate 540p or 720p video proxies on demand. Switch between proxy and original previews, cancel work, clear generated cache, or choose a parent folder. Original audio and exports still use the original media; derived URLs are never saved in the project. Generating a proxy takes time and does not guarantee smooth performance on every device.
 
-Eligible layered compositions, static transforms, position animation and fades can use native FFmpeg export. Suitable title/shape layers are prepared as transparent PNGs once. Unsupported effects, animated scale/rotation/opacity and other ineligible cases retain Canvas and the RGBA pipe; effects are not silently dropped. Complex projects can still take time, and a speedup is not guaranteed for every project or computer.
+Select several clips with modifier clicks, a marquee, or Ctrl/Command+A. Move or drag the group across compatible tracks, copy/cut/paste, duplicate, or delete it. A completed drag is one undo step; Escape and interrupted gestures roll back. Locked tracks stay unchanged. Shift+Delete closes removed time ranges on unlocked tracks, refusing to cut through other unselected clips.
 
-This uses selected algorithms from a pinned Concat (formerly WolfCut) revision and independently implemented workbench interactions. FreeCut still uses Electron/React and its existing FFmpeg build: this is not a complete Rust/Slint replacement or a new GPU encoder. Existing speech tools, custom voice-model storage, Internet invitations and legacy project support remain available.
+Visible clips gain real audio waveforms and video thumbnails through a bounded background queue and a 2 GiB cache. The 0.5.0 resizable workbench, cubic-bezier controls, eligible native layered exports, selected Concat-derived algorithms, speech tools, custom model storage and Internet invitations remain available. This update does not replace the export engine or add GPU encoding.
 
 Original FreeCut code remains GPL-3.0-or-later; Concat-derived modules remain AGPL-3.0-or-later, copyright Jareer and Concat contributors. Their combination follows section 13 of both licenses, including the network-source requirement. Corresponding source, full licenses and modification notices accompany this release; the internal-code adaptations do not use Concat's plugin exception.
 
@@ -97,7 +98,7 @@ FreeCut-project-source-*.tar.gz 是本次应用完整对应源码，包含 GPL �
 
 ## 发布验证与说明
 
-发布流程要求 Windows x64、Mac arm64、Mac x64 对应构建全部成功，并核验安装包、对应源码与上传散列。实际核心/宿主测试、桌面回归和打包应用导出结果以[本次构建记录](https://github.com/${repo}/actions/runs/${runId})为准。算法来源、移植范围及原生合成边界见随附源码的 docs/WOLFCUT-INTEGRATION.md。历史异地协作结果仍见 docs/VERIFICATION-041.md，不冒充本版本重新完成的公网测试。源码提交：${build.head_sha}。
+发布流程要求 Windows x64、Mac arm64、Mac x64 对应构建全部成功，并核验安装包、对应源码与上传散列。实际核心/宿主测试、桌面回归和打包应用导出结果以[本次构建记录](https://github.com/${repo}/actions/runs/${runId})及 docs/VERIFICATION-060.md 为准。算法来源和原生合成边界见 docs/WOLFCUT-INTEGRATION.md。历史异地协作结果仍见 docs/VERIFICATION-041.md，不冒充本版本重新完成的公网测试。源码提交：${build.head_sha}。
 
 Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按各自许可另行下载，ChatTTS 官方模型为 CC BY-NC 4.0，仅限非商业用途；Mac 的可选模型推理仍需设备验收。本项目为持续开发的预览版，功能范围与尚未完成能力见 docs/FEATURE-MATRIX.md。
 
@@ -115,7 +116,7 @@ Windows 包未签名，Mac 使用临时签名且未公证。可选 AI 模型按�
     const refs=api('git/matching-refs/tags/'+encodeURIComponent(tag)).filter(ref=>ref.ref===`refs/tags/${tag}`);
     if(refs.length){let object=refs[0].object;for(let i=0;object.type==='tag'&&i<5;i++)object=api(`git/tags/${object.sha}`).object;assert.equal(object.sha,build.head_sha,'Existing git tag targets a different commit');}
     const releases=JSON.parse(command('gh',['api','--paginate','--slurp',`repos/${repo}/releases?per_page=100`])).flat();const matches=releases.filter(release=>release.tag_name===tag);assert(matches.length<=1);let release=matches[0];if(release)assert.equal(release.draft,true,'Published releases cannot be overwritten');
-    const body={tag_name:tag,target_commitish:build.head_sha,name:`水管剪辑 ${tag} · FreeCut · 工作台与导出升级`,body:await fs.readFile(path.join(out,'release-notes.md'),'utf8'),draft:true,prerelease:true};
+    const body={tag_name:tag,target_commitish:build.head_sha,name:`水管剪辑 ${tag} · FreeCut · 日常剪辑与恢复升级`,body:await fs.readFile(path.join(out,'release-notes.md'),'utf8'),draft:true,prerelease:true};
     release=release?api(`releases/${release.id}`,'PATCH',body):api('releases','POST',body);
     assert.equal(release.draft,true);assert.equal(release.target_commitish,build.head_sha);
     // --clobber replaces only the explicitly named assets; unrelated draft assets remain intact.

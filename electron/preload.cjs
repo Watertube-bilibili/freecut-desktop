@@ -31,6 +31,21 @@ function subscribe(channel, callback) {
 contextBridge.exposeInMainWorld(
   'freecut',
   Object.freeze({
+    recovery: Object.freeze({
+      list: () => ipcRenderer.invoke('freecut:recovery-list'),
+      snapshot: (data) => ipcRenderer.invoke('freecut:recovery-snapshot', data),
+      restore: (id) => ipcRenderer.invoke('freecut:recovery-restore', id),
+      remove: (id) => ipcRenderer.invoke('freecut:recovery-remove', id),
+      markSaved: (data) => ipcRenderer.invoke('freecut:recovery-saved', data),
+    }),
+    mediaCache: Object.freeze({
+      status: () => ipcRenderer.invoke('freecut:media-cache-status'),
+      request: (data) => ipcRenderer.invoke('freecut:media-cache-request', data),
+      cancel: (id) => ipcRenderer.invoke('freecut:media-cache-cancel', id),
+      clear: () => ipcRenderer.invoke('freecut:media-cache-clear'),
+      chooseDirectory: () => ipcRenderer.invoke('freecut:media-cache-directory'),
+      onProgress: (callback) => subscribe('freecut:media-cache-progress', callback),
+    }),
     collaboration: Object.freeze({
       host: (options) => ipcRenderer.invoke('freecut:collaboration-host', options),
       join: (options) => ipcRenderer.invoke('freecut:collaboration-join', options),

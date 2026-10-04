@@ -14,11 +14,13 @@
 
 **全部功能永久免费，不设会员，不设付费解锁，无水印导出。** [爱发电支持作者](https://afdian.com/a/watertube)只是自愿赞助，是否赞助都能使用全部功能。
 
-**当前已发布 0.5.0 预览版。** 这次基于 [Concat（原 WolfCut）](https://github.com/jub0t/Concat) 的部分算法与交互重构工作台和导出：可调面板、媒体分类、时间线适配、逐帧查看，新增贝塞尔关键帧；符合条件的多层画面走 FFmpeg 原生合成，文字和图形可在导出前生成一次透明图片后参与合成。保留水管剪辑的双布局、普通 / 专业模式、语音工具、模型目录、异地协作和旧工程兼容。确切代码来源、许可与未引入的组件见 [WolfCut 集成说明](docs/WOLFCUT-INTEGRATION.md)。这不是完整 Rust 引擎替换，也没有新增 GPU 编码；实际测试范围见 [0.5.0 验证记录](docs/VERIFICATION-050.md)。
+**当前源码为 0.6.0 预览版，目标 Release 为 `v0.6.0-preview.1`，安装包待发布。** 本次新增手动生成的 540p / 720p 流畅预览代理、按需生成的真实波形与缩略图、本机自动恢复副本，以及时间线多选、框选、跨轨拖动和删除并补齐空隙。代理只用于预览，声音仍取自原片，导出始终使用原始素材；代理和预览缓存不写入工程或协作内容。功能与本次测试范围见 [0.6.0 验证记录](docs/VERIFICATION-060.md)。
+
+0.5.0 引入的可调工作台、媒体分类、时间线适配、逐帧查看、贝塞尔关键帧和扩展 FFmpeg 原生合成继续保留；这些改造基于 [Concat（原 WolfCut）](https://github.com/jub0t/Concat) 的部分算法与交互，并保留水管剪辑的双布局、普通 / 专业模式、语音工具、模型目录、异地协作和旧工程兼容。确切代码来源与许可见 [WolfCut 集成说明](docs/WOLFCUT-INTEGRATION.md)，历史验收见 [0.5.0 验证记录](docs/VERIFICATION-050.md)。
 
 软件支持自定义朗读模型下载目录：在“AI 语音 → 语音朗读”选择父目录后，自动创建 `FreeCut-VoiceModels` 子目录，用于 ChatTTS、轻量 AISHELL 中文朗读模型及其模型缓存。此功能自 0.4.2 加入并继续保留，原始验证见 [0.4.2 验证记录](docs/VERIFICATION-042.md)。软件并未完整覆盖剪映。无账户要求；单人媒体处理在本地，开启协作后工程和素材会传给房间成员。
 
-历史 0.4.1 已通过本机双桌面应用协作、Windows 与异地 Linux 机器之间的真实加密工程/素材传输，以及 Windows 打包程序中的原生传输检查；窄窗口工具栏自动收紧文字。具体样本、时间、发行状态和适用范围见 [0.4.1 验证记录](docs/VERIFICATION-041.md)及[跨网测试摘要](docs/verification/041-internet.json)，这些历史结果不等同于 0.5.0 已重新完成跨网测试；本版实际范围见 [0.5.0 验证记录](docs/VERIFICATION-050.md)。旧版安装图标与导出改造记录保留在 [0.3.2 验证记录](docs/VERIFICATION-032.md)。
+历史 0.4.1 已通过本机双桌面应用协作、Windows 与异地 Linux 机器之间的真实加密工程/素材传输，以及 Windows 打包程序中的原生传输检查；窄窗口工具栏自动收紧文字。具体样本、时间、发行状态和适用范围见 [0.4.1 验证记录](docs/VERIFICATION-041.md)及[跨网测试摘要](docs/verification/041-internet.json)，这些历史结果不等同于 0.6.0 已重新完成跨网测试；本版实际范围见 [0.6.0 验证记录](docs/VERIFICATION-060.md)。旧版安装图标与导出改造记录保留在 [0.3.2 验证记录](docs/VERIFICATION-032.md)。
 
 切换朗读模型目录时，已完整安装的模型先复制、校验，成功后才启用新位置，源文件保留；失败则继续使用原目录。旧下载缓存和未完成文件保留原位，不参与迁移，后续朗读模型下载缓存使用新位置。下载或生成期间不能切换，可恢复默认，并记住下次启动的选择。Python、sherpa 运行环境、生成的音频，以及 SenseVoice / Whisper 自动字幕模型仍在原位置；自定义的是朗读模型和后续模型缓存，不能把整个应用的数据目录一起搬走。详见[模型目录说明](docs/AI-MODELS.md#自定义朗读模型目录)。
 
@@ -32,7 +34,7 @@
 
 新版采用原创 3D 图标，以“水管剪辑”为中文主名称。FreeCut 保留为英文名，仓库名、安装文件名和 `.freecut` 工程格式继续兼容。品牌来源与发布前排查见 [品牌说明](docs/BRAND.md) 和 [来源及许可核查](docs/RELEASE-REVIEW-030.md)。
 
-操作步骤见 [中文使用说明](docs/QUICKSTART.md)，本次本机工作台和导出测试范围见 [0.5.0 验证记录](docs/VERIFICATION-050.md)；历史功能验证保留在 [验证记录](docs/VERIFICATION.md)。
+操作步骤见 [中文使用说明](docs/QUICKSTART.md)，本次本机测试和发行状态见 [0.6.0 验证记录](docs/VERIFICATION-060.md)；历史功能验证保留在 [验证记录](docs/VERIFICATION.md)。
 
 自动更新默认开启：每次启动约 12 秒后检查本仓库 Release，发现新版自动下载和校验；运行期间每 4 小时再检查。下载就绪后在空闲时倒计时安装，未保存工程仍会提示保存。若异地组件缺失，界面提示重新安装，普通单人剪辑仍可启动。
 
@@ -42,15 +44,20 @@
 
 [下载英文宣传片工程包](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-editing-kit.zip)：包含真实 `.freecut` 工程、视觉素材、可复现配方、英文说明及许可。换电脑打开工程时，将唯一缺失素材重新链接到包内的 `media/visual-source.mp4`。
 
-![水管剪辑 0.5.0 中文桌面工作台](docs/screenshots/editor-050.png)
+![水管剪辑 0.6.0 中文桌面工作台与多选](docs/screenshots/editor-060.png)
 
-![水管剪辑 0.5.0 手机风格工作台](docs/screenshots/mobile-050.png)
+![水管剪辑 0.6.0 手机风格工作台](docs/screenshots/mobile-060.png)
 
-以上为 2026-09-19 真实运行的 0.5.0 源码截图：中文桌面 1440×900、手机风格 1100×620。工作台 7 项回归均通过，见[工作台证据](docs/verification/050-workbench.json)。安装包和对应源码见下方下载区。
+以上为 2026-10-04 真实运行的 0.6.0：中文桌面 1440×900、手机风格 1100×620。截图中的 Synthetic media 是专门制作的测试素材，已通过真实工程导入、缩略图、波形和代理生成流程；同时选择两个片段。另见[流畅预览面板](docs/screenshots/media-cache-060.png)与[本版验证记录](docs/VERIFICATION-060.md)。
 
 ## 可以做什么
 
-本节描述 0.5.0 预览版，包括新增工作台、贝塞尔和扩展原生合成。
+本节描述 0.6.0 预览版的实际源码。
+
+- 在“代理与媒体缓存”手动生成视频代理，默认 540p，可选 720p；“流畅预览”开关记住选择，可立即切回原片。预览保留原始音频，最终导出始终使用原片。
+- 可见时间线片段自动请求缩略图与真实音频波形。媒体缓存最多 2 GB、每源最多 8 张缩略图和 2048 个波形采样柱；支持查看进度、取消、清理与更换缓存位置，原片被替换后缓存失效。
+- 桌面未保存编辑在停手约 10 秒后保留恢复副本，连续编辑约每 30 秒尝试备份，忙碌时延后。首页和“历史备份”可恢复；每会话最多 8 版、全局最多 40 条 / 128 MiB，保留未保存会话最新副本，容量不足时报错。恢复后仍需手动保存工程。
+- Shift / Ctrl / Command 点选或拖动空白区域框选；批量移动、复制、剪切、粘贴、删除与跨轨拖动保留相对时间和轨道位置，一次拖动一次撤销。锁轨和不兼容目标受保护；Shift+Delete 补齐删除区间，遇到其他未锁定片段跨越删除区间时整次操作拒绝执行。
 
 - 工作台面板可调整，素材按类型筛选；时间线提供适配全部片段与分组工具，预览可逐帧查看。
 - 导入本地视频、图片、音频；多轨编排、叠加画中画、吸附、修剪、分割、复制、撤销 / 重做。
@@ -77,16 +84,16 @@
 
 ## 下载和运行
 
-[下载 0.5.0 预览版](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.5.0-preview.1)：下表中的安装包均已发布，另附匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
+**0.6.0 安装包待发布。** 下表是目标 `v0.6.0-preview.1` 的文件名，不表示附件已经可下载；请以[项目 Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases)实际公开的附件为准。发布时同时提供匹配源码、中英文教程和 SHA-256 清单。首次启动默认简体中文，同一份应用可切换英文。
 
 源码位于 [Watertube-bilibili/freecut-desktop](https://github.com/Watertube-bilibili/freecut-desktop)。每个 Release 的说明列出对应提交与三平台构建记录；发布流程核验应用包、源码和上传文件的散列。
 
 | 你的电脑 / 用途 | 推荐下载 | 说明 |
 | --- | --- | --- |
-| Windows 10/11 x64，日常使用 | `FreeCut-0.5.0-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘；覆盖安装会修复符合条件的旧快捷方式与图标。 |
-| Windows 10/11 x64，免安装 | `FreeCut-0.5.0-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表与默认模型，移动时一起保留；另选的朗读模型目录也需保留。 |
-| Mac M 系列芯片 | `FreeCut-0.5.0-mac-arm64.dmg` | 打开后拖入 Applications。 |
-| Mac Intel 处理器 | `FreeCut-0.5.0-mac-x64.dmg` | 安装方法同上。 |
+| Windows 10/11 x64，日常使用 | `FreeCut-0.6.0-win-x64-Setup.exe` | 自定义安装页面，首次由你选择磁盘，不预选 C 盘；覆盖安装会修复符合条件的旧快捷方式与图标。 |
+| Windows 10/11 x64，免安装 | `FreeCut-0.6.0-win-x64-Portable.exe` | 放在可写目录直接运行。程序旁的 `FreeCutData` 保存设置、最近列表、恢复副本与默认模型，移动时一起保留；另选的模型、媒体缓存目录也需保留。 |
+| Mac M 系列芯片 | `FreeCut-0.6.0-mac-arm64.dmg` | 打开后拖入 Applications。 |
+| Mac Intel 处理器 | `FreeCut-0.6.0-mac-x64.dmg` | 安装方法同上。 |
 | Mac 需要 ZIP | 对应芯片的 `mac-arm64.zip` / `mac-x64.zip` | 解压得到同一应用；DMG、ZIP 任选一种。 |
 
 普通使用只需一份应用包，无需下载 `source` 源码包。Mac 可在「 → 关于本机」查看芯片。Windows 未签名；Mac 使用临时签名，尚未配置正式 Developer ID 和 Apple 公证。
@@ -133,7 +140,7 @@ node installer/smoke.cjs
 
 桌面回归覆盖保存退出、真实视频定位、普通关键帧、预览拖拽、蒙版像素、短窗口滚动、立体声预览与导出，以及更新时的保存/取消/失败路径。脚本使用独立临时用户目录；更新回归仅替换网络响应和最后的安装启动器，不改用户安装。`npm run test:desktop` 完成构建和桌面回归。真实语音测试脚本默认禁止下载；命令与模型验收结果见模型文档。
 
-历史 0.3.2 发布构建对应 `aba5cac`，Windows x64、Mac Intel 和 Apple 芯片均通过该版本 CI 的回归和打包后媒体验收。详细范围见[旧版验证记录](docs/VERIFICATION-032.md)和[对应 CI](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722)；0.4.1 的历史结果见[协作验证记录](docs/VERIFICATION-041.md)，0.4.2 的目录设置和发行检查见[对应历史记录](docs/VERIFICATION-042.md)，本次工作台、导出和发行范围见 [0.5.0 验证记录](docs/VERIFICATION-050.md)。这些结果不代表所有硬件、素材和长工程均已验证。
+历史 0.3.2 发布构建对应 `aba5cac`，Windows x64、Mac Intel 和 Apple 芯片均通过该版本 CI 的回归和打包后媒体验收。详细范围见[旧版验证记录](docs/VERIFICATION-032.md)和[对应 CI](https://github.com/Watertube-bilibili/freecut-desktop/actions/runs/34140392722)；0.4.1 的历史结果见[协作验证记录](docs/VERIFICATION-041.md)，0.4.2 的目录设置和发行检查见[对应历史记录](docs/VERIFICATION-042.md)，0.5.0 工作台和导出结果见[对应历史记录](docs/VERIFICATION-050.md)，本次范围见 [0.6.0 验证记录](docs/VERIFICATION-060.md)。这些结果不代表所有硬件、素材和长工程均已验证。
 
 同工程导出对照中，普通剪辑样本从 **18.025 秒降至 3.070 秒**；带叠加画面的复杂样本从 **15.170 秒变为 15.761 秒，没有提速**。这些是指定设备和样本的实测结果，不能推算所有项目的加速倍数；测试方法与范围见[导出验证记录](docs/VERIFICATION-032.md)。
 
@@ -152,7 +159,7 @@ npm run package:mac
 ## 已知边界
 
 - 这是桌面应用。手机风格是桌面内的交互布局，不是 Android / iOS 安装包。
-- 常规剪辑可直接由 FFmpeg 导出；复杂效果仍依赖逐帧解码与 Canvas 合成，长片 / 4K 仍可能耗时。管道导出减少了中间 PNG 文件，但编码和最终视频仍需要内存及磁盘空间。尚无代理媒体和 GPU 渲染管线，也不保证所有机器获得相同提速。
+- 常规剪辑可直接由 FFmpeg 导出；复杂效果仍依赖逐帧解码与 Canvas 合成，长片 / 4K 仍可能耗时。540p / 720p 代理减轻预览解码负担，不改变导出画质和输出路径；仍无 GPU 渲染管线，也不保证所有机器获得相同提速。
 - 浏览器预览解码能力受 Electron 支持的媒体格式约束。常见 MP4 / H.264、PNG / JPEG、WAV / MP3 更适合当前版本；专业编码可能需要先转码。
 - 语音识别效果取决于语言、录音和模型；字幕输出可编辑，不能保证完全准确。
 - 自动字幕、ChatTTS 的下载与推理涉及网络、磁盘和硬件；完成验证的实际范围见各模型文档，Mac 运行效果仍需要对应设备验收。
@@ -161,6 +168,8 @@ npm run package:mac
 ## 架构与授权
 
 React + TypeScript + Electron。0.5.0 采用 Concat 的部分算法移植，并扩展 FFmpeg 原生多层合成；保留复杂画面的 Canvas 合成器与 RGBA 背压管道。贝塞尔求值由预览与宿主导出共享模块，文字图片只在任务临时目录创建且受数量、字节数与尺寸校验约束。H.264 仍使用 x264 的 veryfast 预设和 4 个编码线程，没有宣称 Rust 或 GPU 后端。桌面 IPC 隔离渲染进程，媒体只从用户选择或工程明确引用的本地文件授权。设计与模型协议见 [架构文档](docs/ARCHITECTURE.md)。
+
+0.6.0 增加独立媒体缓存服务与宿主恢复仓库。缓存串行运行、限制编码线程，目录仅使用受标记保护的 `FreeCut-MediaCache` 子目录；恢复副本通过临时文件与原子替换写入，重新恢复时再次授权媒体。两者都与手动保存的工程文件分离。
 
 FreeCut 原创代码保留 **GPL-3.0-or-later**，见 [LICENSE](LICENSE)；基于 Concat 的贝塞尔、放置与旋转边界算法保留 **AGPL-3.0-or-later**，版权归 Jareer 及 Concat 贡献者所有。按两许可证第 13 条组合，并履行对应的网络源码要求；内部代码移植不使用 Concat 的插件例外。完整 [AGPL 文本](docs/third-party/concat/AGPL-3.0.txt)、[来源与修改记录](docs/WOLFCUT-INTEGRATION.md)以及各组件、模型的独立授权见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。关于页与协作面板提供源码与许可入口；再分发时请同时提供与安装包匹配的完整源码。
 

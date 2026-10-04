@@ -291,13 +291,17 @@ async function main() {
         await host.page.mouse.move(origin.x + 45, origin.y, { steps: 4 });
         // Deliberately exceed the collaboration debounce while keeping the pointer held.
         await host.page.waitForTimeout(400);
-        assert.equal(await dragged.evaluate((element) => element.hasPointerCapture(1)), true);
+        // The stable timeline parent owns capture while clips can move between track DOM nodes.
+        const capture = host.page.locator('.timeline-inner');
+        assert.equal(await capture.evaluate((element) => element.hasPointerCapture(1)), true);
+        assert.equal(await dragged.evaluate((element) => element.hasPointerCapture(1)), false);
         const before = (await state(host)).revision;
         await client.page
           .getByRole('button', { name: '片段 shared-blue.png', exact: true })
           .click();
         await client.page.getByLabel('片段时长', { exact: true }).fill('6');
         await expect.poll(async () => (await state(host)).revision).toBeGreaterThan(before);
+        assert.equal(await capture.evaluate((element) => element.hasPointerCapture(1)), true);
         await host.page.mouse.move(origin.x + 95, origin.y, { steps: 4 });
       } finally {
         await host.page.mouse.up();

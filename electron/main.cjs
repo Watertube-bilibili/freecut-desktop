@@ -69,6 +69,8 @@ let window = null,
 let updater = null,
   collaboration = null,
   voiceStorage = null,
+  recovery = null,
+  mediaCache = null,
   pendingUpdate = null,
   updateStarting = false,
   approvingQuit = false;
@@ -197,10 +199,11 @@ async function openProjectPath(file) {
     }
   }
   selectedPaths.add(file);
+  recovery?.authorizeProject(project);
   await rememberProject(project, file);
   return project;
 }
-function disposeResources() {
+function disposeResources(permanent = false) {
   if (!disposing)
     disposing = Promise.allSettled([
       exporter?.dispose(),
@@ -208,6 +211,8 @@ function disposeResources() {
       ai?.cancel?.(),
       collaboration?.dispose(),
       voiceStorage?.dispose(),
+      recovery?.flush(),
+      permanent ? mediaCache?.dispose() : mediaCache?.cancelAll(),
     ]).finally(() => {
       disposing = null;
     });
@@ -216,13 +221,43 @@ function disposeResources() {
 function completeQuit() {
   if (shutdown) return;
   updater?.dispose();
-  shutdown = disposeResources().finally(() => {
+  shutdown = disposeResources(true).finally(() => {
     quitting = true;
     app.quit();
   });
 }
 
 function installIPC() {
+  recovery = require('./recovery.cjs').createRecovery({
+    userData: app.getPath('userData'), validateProject,
+    resolveAsset: media.resolveAsset, importPath,
+  });
+  handle('freecut:recovery-list', () => recovery.list());
+  handle('freecut:recovery-snapshot', (data) => recovery.snapshot(data));
+  handle('freecut:recovery-restore', (id) => recovery.restore(id));
+  handle('freecut:recovery-remove', (id) => recovery.remove(id));
+  handle('freecut:recovery-saved', (data) => recovery.markSaved(data));
+  mediaCache = require('./media-cache.cjs').createMediaCache({
+    userData: app.getPath('userData'), ffmpegPath,
+    resolveAsset: media.resolveAsset, importPath,
+  });
+  mediaCache.onProgress((state) => {
+    if (window && !window.isDestroyed()) window.webContents.send('freecut:media-cache-progress', state);
+  });
+  handle('freecut:media-cache-status', () => mediaCache.status());
+  handle('freecut:media-cache-request', (data) => mediaCache.request(data));
+  handle('freecut:media-cache-cancel', (id) => mediaCache.cancel(id));
+  handle('freecut:media-cache-clear', () => mediaCache.clear());
+  handle('freecut:media-cache-directory', async () => {
+    const state = await mediaCache.status();
+    const selected = await dialog.showOpenDialog(window, {
+      title: uiText('选择预览缓存位置', 'Choose preview cache location'),
+      defaultPath: state.directory,
+      properties: ['openDirectory', 'createDirectory'],
+    });
+    if (selected.canceled || !selected.filePaths?.[0]) return null;
+    return mediaCache.setDirectory(selected.filePaths[0]);
+  });
   voiceStorage = require('./voice-storage.cjs').createVoiceModelStorage({ userData: app.getPath('userData') });
   handle('freecut:voice-storage-status', () => voiceStorage.status());
   handle('freecut:voice-storage-copy', () => {

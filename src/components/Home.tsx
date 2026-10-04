@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   FolderOpen,
   Plus,
@@ -24,6 +24,7 @@ import BrandIcon from './BrandIcon';
 import { version } from '../../package.json';
 
 interface Props {
+  recoverySlot?: ReactNode;
   projects: ProjectSummary[];
   mobile: boolean;
   mode: 'easy' | 'pro';
@@ -143,6 +144,7 @@ export default function Home(props: Props) {
                 <ChevronRight size={17} />
               </button>
             </section>
+            {props.recoverySlot}
             <div className="home-list-heading">
               <h2>
                 {' '}

@@ -1,0 +1,30 @@
+{
+  "version": "0.6.0",
+  "platform": "Windows x64",
+  "date": "2026-10-04",
+  "passed": true,
+  "checks": [
+    "Original preview decodes source",
+    "Paused preview refreshes to proxy at same timestamp",
+    "Strict frame export ignores preview proxy",
+    "Original geometry preserved at y=60",
+    "Original geometry preserved at y=69",
+    "Original geometry preserved at y=70",
+    "Original geometry preserved at y=80",
+    "Original geometry preserved at y=249",
+    "Original geometry preserved at y=250",
+    "Original geometry preserved at y=260",
+    "Preview audio always opens original source",
+    "Disabling smooth preview returns to original immediately",
+    "Runtime proxies never mutate saved project"
+  ],
+  "rendererErrors": [],
+  "stats": {
+    "requested": 3,
+    "committed": 3,
+    "coalesced": 0,
+    "seeks": 3,
+    "lastCommittedTime": 0.25,
+    "playingVideos": 0
+  }
+}

@@ -90,6 +90,12 @@ jobs:
       - name: Verify bundled P2P notices
         run: node docs/third-party/p2p/generate-notices.cjs --check
       - run: npm run build
+      - name: Verify crash recovery and restored media export
+        run: node scripts/regression-recovery.cjs
+      - name: Verify preview-only proxies and original export geometry
+        run: node scripts/regression-media-cache.cjs
+      - name: Verify marquee selection and grouped timeline edits
+        run: node scripts/regression-multiselect.cjs
       - name: Verify the resizable workbench and persisted Bezier editing
         run: node scripts/regression-workbench.cjs
       - name: Compare native layered exports with the shared Canvas renderer
@@ -189,6 +195,9 @@ jobs:
             artifacts/skill-smoke/render.mp4
             artifacts/workbench/*
             artifacts/compositor/verification.json
+            artifacts/recovery/*
+            artifacts/media-cache/*
+            artifacts/multiselect/*
             resources/ffmpeg/*.txt
             resources/ffmpeg/*.json
           if-no-files-found: error

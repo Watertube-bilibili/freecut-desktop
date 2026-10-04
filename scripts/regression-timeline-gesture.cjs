@@ -51,7 +51,7 @@ async function main() {
     await fs.writeFile(
       path.join(directory, 'index.html'),
       `<!doctype html><meta charset="utf-8"><style>
-      body{margin:20px}.track-headers{display:none}.timeline-inner,.track-row{position:relative}.ruler{height:30px}.track-row{height:63px;background:#ddd}.timeline-clip{position:absolute;background:#267b69;touch-action:none}.trim-handle{position:absolute;top:0;bottom:0;width:8px}.left{left:0}.right{right:0}.playhead{pointer-events:none}
+      body{margin:20px}.track-headers{display:none}.timeline-inner,.track-lane{position:relative}.ruler{height:30px}.track-lane{height:63px;background:#ddd}.timeline-clip{position:absolute;background:#267b69;touch-action:none}.trim-handle{position:absolute;top:0;bottom:0;width:8px}.left{left:0}.right{right:0}.playhead{pointer-events:none}
       </style><div id="root"></div><script src="harness.js"></script>`,
     );
     const bootstrap = path.join(directory, 'bootstrap.cjs');
@@ -69,6 +69,7 @@ async function main() {
     const clip = page.locator('.timeline-clip');
     await expect(clip).toBeVisible();
     async function drag() {
+      const before = await page.evaluate(() => window.__gesture.project.clips[0].start);
       await page.evaluate(() => {
         window.__gesture.events = [];
         window.__gesture.records = [];
@@ -78,7 +79,10 @@ async function main() {
       const origin = { x: bounds.x + 25, y: bounds.y + 25 };
       await page.mouse.move(origin.x, origin.y);
       await page.mouse.down();
-      await page.mouse.move(origin.x + 45, origin.y);
+      await page.mouse.move(origin.x + 45, origin.y, { steps: 3 });
+      await expect
+        .poll(() => page.evaluate(() => window.__gesture.project.clips[0].start))
+        .toBeGreaterThan(before);
       await page.waitForTimeout(70);
       assert.deepEqual(
         await page.evaluate(() => window.__gesture.events),
@@ -93,6 +97,7 @@ async function main() {
       .poll(() => page.evaluate(() => window.__gesture.events))
       .toEqual(['lock', 'record', 'unlock']);
     assert.equal(await page.evaluate(() => window.__gesture.records.length), 1);
+    const committed = await page.evaluate(() => window.__gesture.project);
     await drag();
     await clip.evaluate((element) =>
       element.dispatchEvent(
@@ -102,18 +107,30 @@ async function main() {
     await page.mouse.up();
     assert.deepEqual(
       await page.evaluate(() => window.__gesture.events),
-      ['lock', 'record', 'unlock'],
-      'Pointer cancellation did not finish exactly once',
+      ['lock', 'unlock'],
+      'Pointer cancellation must roll back without recording an undo entry',
     );
+    assert.deepEqual(await page.evaluate(() => window.__gesture.project), committed);
+    assert.equal(await page.evaluate(() => window.__gesture.records.length), 0);
     const origin = await drag();
-    await clip.evaluate((element) => element.releasePointerCapture(window.__pointerId));
+    await page
+      .locator('.timeline-inner')
+      .evaluate((element) => element.releasePointerCapture(window.__pointerId));
     await page.mouse.move(origin.x + 46, origin.y);
     await page.mouse.up();
     assert.deepEqual(
       await page.evaluate(() => window.__gesture.events),
-      ['lock', 'record', 'unlock'],
+      ['lock', 'unlock'],
       'Lost capture did not release synchronization exactly once',
     );
+    assert.deepEqual(await page.evaluate(() => window.__gesture.project), committed);
+    assert.equal(await page.evaluate(() => window.__gesture.records.length), 0);
+    await drag();
+    await page.keyboard.press('Escape');
+    await page.mouse.up();
+    assert.deepEqual(await page.evaluate(() => window.__gesture.events), ['lock', 'unlock']);
+    assert.deepEqual(await page.evaluate(() => window.__gesture.project), committed);
+    assert.equal(await page.evaluate(() => window.__gesture.records.length), 0);
     await drag();
     await page.evaluate(() => window.__unmountTimeline());
     await expect(clip).toHaveCount(0);
@@ -133,7 +150,7 @@ async function main() {
           checks: [
             'normal release records before unlocking',
             're-renders retain the gesture',
-            'pointer cancel and lost capture end once',
+            'pointer cancel, Escape and lost capture roll back without undo',
             'unmount unlocks without stale undo',
           ],
           rendererErrors: errors,

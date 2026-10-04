@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Eye,
   EyeOff,
@@ -15,6 +15,15 @@ import {
 } from 'lucide-react';
 import type { Project, Clip, Track } from '../types';
 import { durationOf, trimClip } from '../core/project';
+import {
+  editableSelection,
+  moveSelection,
+  rectanglesIntersect,
+  toggleSelection,
+  type SelectionRectangle,
+} from '../core/timeline-selection';
+import { ClipMediaStrip } from './ClipMediaStrip';
+import './timeline-interaction.css';
 interface Props {
   /** Workbench interactions inspired by Concat timeline/tray.slint; project model stays FreeCut v1. */
   fitRequest?: number;
@@ -23,6 +32,8 @@ interface Props {
   onRazor?: (id: string, time: number) => void;
   project: Project;
   selected?: string;
+  selectedIds?: string[];
+  onSelectionChange?: (ids: string[], primary?: string) => void;
   time: number;
   zoom: number;
   snap: boolean;
@@ -54,6 +65,8 @@ export default function Timeline({
   onRazor,
   project,
   selected,
+  selectedIds,
+  onSelectionChange,
   time,
   zoom,
   snap,
@@ -72,6 +85,16 @@ export default function Timeline({
   const { t } = useI18n();
   const scroller = useRef<HTMLDivElement>(null),
     headerScroller = useRef<HTMLDivElement>(null);
+  const inner = useRef<HTMLDivElement>(null);
+  const [marquee, setMarquee] = useState<SelectionRectangle>();
+  const [invalidDrop, setInvalidDrop] = useState(false);
+  const suppressClick = useRef(false);
+  const selection = selectedIds ?? (selected ? [selected] : []);
+  const selectedSet = new Set(selection);
+  const updateSelection = (ids: string[], primary = ids.at(-1)) => {
+    if (onSelectionChange) onSelectionChange(ids, primary);
+    else select(primary);
+  };
   const dragCleanup = useRef<(() => void) | undefined>(undefined);
   const gestureChange = useRef(onGestureChange);
   gestureChange.current = onGestureChange;
@@ -103,6 +126,7 @@ export default function Timeline({
       return [track.id, { lanes, height: Math.max(63, ends.length * 56 + 7) }];
     }),
   );
+  const assets = new Map(project.assets.map((asset) => [asset.id, asset]));
   const total = Math.max(30, durationOf(project) + 8);
   const width = total * zoom;
   const step =
@@ -138,54 +162,91 @@ export default function Timeline({
     );
   };
   function startDrag(e: React.PointerEvent, clip: Clip, mode: 'move' | 'left' | 'right') {
-    if (
-      e.button !== 0 ||
-      tool === 'razor' ||
-      dragCleanup.current ||
-      project.tracks.find((t) => t.id === clip.trackId)?.locked
-    )
-      return;
+    if (e.button === 0) suppressClick.current = false;
+    if (e.button !== 0 || tool === 'razor' || dragCleanup.current) return;
     e.preventDefault();
     e.stopPropagation();
-    select(clip.id);
-    const target = e.currentTarget as HTMLElement;
+    if (mode === 'move' && (e.shiftKey || e.ctrlKey || e.metaKey)) {
+      updateSelection(toggleSelection(selection, clip.id));
+      suppressClick.current = true;
+      return;
+    }
+    const ids = mode === 'move' && selectedSet.has(clip.id) ? selection : [clip.id];
+    updateSelection(ids, clip.id);
+    if (project.tracks.find((track) => track.id === clip.trackId)?.locked) {
+      suppressClick.current = true;
+      return;
+    }
+    // Capture on the stable timeline parent: crossing tracks re-parents the clip DOM node.
+    const target = inner.current;
+    if (!target) return;
     try {
       target.setPointerCapture(e.pointerId);
     } catch {
       return;
     }
-    const origin = e.clientX,
+    const origin = { x: e.clientX, y: e.clientY },
       snapshot = project;
+    const moving = editableSelection(snapshot, ids);
+    const movingIds = new Set(moving.map((item) => item.id));
+    const snapPoints = snap
+      ? [
+          0,
+          time,
+          ...snapshot.clips
+            .filter((item) => !movingIds.has(item.id))
+            .flatMap((item) => [item.start, item.start + item.duration]),
+        ].sort((a, b) => a - b)
+      : [];
+    const sourceTrack = snapshot.tracks.findIndex((track) => track.id === clip.trackId);
+    const lanes = [...target.querySelectorAll<HTMLElement>('.track-lane')].map((lane) => ({
+      id: lane.dataset.trackId,
+      rect: lane.getBoundingClientRect(),
+    }));
     let next = snapshot;
     let moved = false;
     let ended = false;
     const move = (event: PointerEvent) => {
-      const delta = (event.clientX - origin) / zoom;
-      if (Math.abs(delta) < 0.01) return;
+      if (event.pointerId !== e.pointerId) return;
+      const delta = (event.clientX - origin.x) / zoom;
+      if (!moved && Math.hypot(event.clientX - origin.x, event.clientY - origin.y) < 3) return;
       moved = true;
-      let edited: Clip;
+      suppressClick.current = true;
       if (mode === 'move') {
-        let start = Math.max(0, clip.start + delta);
+        let shift = delta;
         if (snap) {
-          const points = [
-            0,
-            time,
-            ...snapshot.clips
-              .filter((c) => c.id !== clip.id)
-              .flatMap((c) => [c.start, c.start + c.duration]),
-          ];
-          for (const point of points) {
-            if (Math.abs(start - point) < 8 / zoom) {
-              start = point;
-              break;
-            }
-            if (Math.abs(start + clip.duration - point) < 8 / zoom) {
-              start = point - clip.duration;
-              break;
+          let distance = 8 / zoom;
+          for (const member of moving) {
+            for (const edge of [member.start, member.start + member.duration]) {
+              // Search neighboring targets only; large selections must not scan every pair.
+              let low = 0,
+                high = snapPoints.length;
+              while (low < high) {
+                const middle = (low + high) >>> 1;
+                if (snapPoints[middle] < edge + delta) low = middle + 1;
+                else high = middle;
+              }
+              for (const point of snapPoints.slice(Math.max(0, low - 1), low + 1)) {
+                const correction = point - (edge + delta);
+                if (Math.abs(correction) < distance) {
+                  shift = delta + correction;
+                  distance = Math.abs(correction);
+                }
+              }
             }
           }
         }
-        edited = { ...clip, start: Math.max(0, Math.round(start * project.fps) / project.fps) };
+        const hit = lanes.find(
+          (lane) => event.clientY >= lane.rect.top && event.clientY < lane.rect.bottom,
+        );
+        const destination = hit
+          ? snapshot.tracks.findIndex((track) => track.id === hit.id)
+          : sourceTrack;
+        const offset = destination - sourceTrack;
+        const edited = moveSelection(snapshot, ids, shift, offset);
+        // An invalid vertical target cancels the preview; the entire group stays together.
+        setInvalidDrop(offset !== 0 && edited === snapshot);
+        next = edited;
       } else {
         const asset = project.assets.find((a) => a.id === clip.assetId);
         const extend =
@@ -199,35 +260,135 @@ export default function Timeline({
                 Math.max(-clip.inPoint / clip.speed, -clip.start, delta),
               )
             : Math.min(clip.duration - 1 / project.fps, Math.max(-extend, -delta));
-        edited = trimClip(clip, mode === 'left' ? d : 0, mode === 'right' ? d : 0);
+        const edited = trimClip(clip, mode === 'left' ? d : 0, mode === 'right' ? d : 0);
+        next =
+          Math.abs(d) < 1e-8
+            ? snapshot
+            : { ...snapshot, clips: snapshot.clips.map((c) => (c.id === clip.id ? edited : c)) };
       }
-      next = { ...snapshot, clips: snapshot.clips.map((c) => (c.id === clip.id ? edited : c)) };
       setLive(next);
     };
-    const finish = (saveUndo: boolean) => {
+    const finish = (outcome: 'commit' | 'cancel' | 'unmount') => {
       if (ended) return;
       ended = true;
-      target.removeEventListener('pointermove', move);
-      target.removeEventListener('pointerup', end);
-      target.removeEventListener('pointercancel', end);
-      target.removeEventListener('lostpointercapture', end);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', cancel);
+      window.removeEventListener('keydown', escape, true);
+      target.removeEventListener('lostpointercapture', cancel);
       dragCleanup.current = undefined;
       try {
         // Record before unlocking remote synchronization. An unmount may belong to
         // a new project, so never push the old project's snapshot into its history.
-        if (saveUndo && moved) record(snapshot);
+        if (outcome === 'commit' && next !== snapshot) record(snapshot);
+        if (outcome === 'cancel' && next !== snapshot) setLive(snapshot);
+        if (outcome === 'commit' && !moved) updateSelection([clip.id], clip.id);
       } finally {
         if (target.hasPointerCapture(e.pointerId)) target.releasePointerCapture(e.pointerId);
+        if (outcome !== 'unmount') setInvalidDrop(false);
         gestureChange.current?.(false);
       }
     };
-    const end = () => finish(true);
-    dragCleanup.current = () => finish(false);
-    target.addEventListener('pointermove', move);
-    target.addEventListener('pointerup', end);
-    target.addEventListener('pointercancel', end);
-    target.addEventListener('lostpointercapture', end);
+    const end = (event: PointerEvent) => {
+      if (event.pointerId === e.pointerId) finish('commit');
+    };
+    const cancel = (event: PointerEvent) => {
+      if (event.pointerId === e.pointerId) finish('cancel');
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      suppressClick.current = true;
+      finish('cancel');
+    };
+    dragCleanup.current = () => finish('unmount');
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', cancel);
+    window.addEventListener('keydown', escape, true);
+    target.addEventListener('lostpointercapture', cancel);
     gestureChange.current?.(true);
+  }
+
+  function startMarquee(e: React.PointerEvent) {
+    if (e.button !== 0 || dragCleanup.current || tool !== 'select' || !inner.current) return;
+    if ((e.target as HTMLElement).closest('.timeline-clip')) return;
+    e.preventDefault();
+    suppressClick.current = false;
+    const target = inner.current;
+    const rect = target.getBoundingClientRect();
+    const origin = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const initial = selection;
+    const additive = e.shiftKey || e.ctrlKey || e.metaKey;
+    const bounds = [...target.querySelectorAll<HTMLElement>('.timeline-clip')].map((element) => {
+      const box = element.getBoundingClientRect();
+      return {
+        id: element.dataset.clipId!,
+        left: box.left - rect.left,
+        right: box.right - rect.left,
+        top: box.top - rect.top,
+        bottom: box.bottom - rect.top,
+      };
+    });
+    let moved = false;
+    let ended = false;
+    target.setPointerCapture(e.pointerId);
+    const move = (event: PointerEvent) => {
+      if (event.pointerId !== e.pointerId) return;
+      const liveRect = target.getBoundingClientRect();
+      const current = { x: event.clientX - liveRect.left, y: event.clientY - liveRect.top };
+      if (!moved && Math.hypot(current.x - origin.x, current.y - origin.y) < 4) return;
+      moved = true;
+      suppressClick.current = true;
+      const area = {
+        left: Math.min(origin.x, current.x),
+        right: Math.max(origin.x, current.x),
+        top: Math.min(origin.y, current.y),
+        bottom: Math.max(origin.y, current.y),
+      };
+      setMarquee(area);
+      const hits = bounds.filter((box) => rectanglesIntersect(area, box)).map((box) => box.id);
+      const ids = additive ? [...new Set([...initial, ...hits])] : hits;
+      updateSelection(ids);
+    };
+    const finish = (outcome: 'commit' | 'cancel' | 'unmount') => {
+      if (ended) return;
+      ended = true;
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', cancel);
+      window.removeEventListener('keydown', escape, true);
+      target.removeEventListener('lostpointercapture', cancel);
+      dragCleanup.current = undefined;
+      if (outcome !== 'unmount') {
+        setMarquee(undefined);
+        if (outcome === 'cancel') updateSelection(initial, selected);
+        else if (!moved) {
+          if (!additive) updateSelection([]);
+          seek(Math.max(0, Math.round((origin.x / zoom) * project.fps) / project.fps));
+        }
+      }
+      if (target.hasPointerCapture(e.pointerId)) target.releasePointerCapture(e.pointerId);
+    };
+    const end = (event: PointerEvent) => {
+      if (event.pointerId === e.pointerId) finish('commit');
+    };
+    const cancel = (event: PointerEvent) => {
+      if (event.pointerId === e.pointerId) finish('cancel');
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      finish('cancel');
+    };
+    dragCleanup.current = () => finish('unmount');
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', cancel);
+    window.addEventListener('keydown', escape, true);
+    target.addEventListener('lostpointercapture', cancel);
   }
   const changeTrack = (id: string, values: Partial<Track>) =>
     commit((p) => ({ ...p, tracks: p.tracks.map((t) => (t.id === id ? { ...t, ...values } : t)) }));
@@ -247,7 +408,9 @@ export default function Timeline({
     element.addEventListener('pointerup', end);
   };
   return (
-    <div className={`timeline-content ${tool === 'razor' ? 'razor-mode' : ''}`}>
+    <div
+      className={`timeline-content ${tool === 'razor' ? 'razor-mode' : ''} ${invalidDrop ? 'invalid-drop' : ''}`}
+    >
       <div className="track-headers" ref={headerScroller}>
         <div className="track-header-top">
           <span>{t('轨道')}</span>
@@ -314,7 +477,7 @@ export default function Timeline({
           if (headerScroller.current) headerScroller.current.scrollTop = e.currentTarget.scrollTop;
         }}
       >
-        <div className="timeline-inner" style={{ width, minHeight: '100%' }}>
+        <div className="timeline-inner" ref={inner} style={{ width, minHeight: '100%' }}>
           <div
             className="ruler"
             onPointerDown={scrub}
@@ -336,7 +499,7 @@ export default function Timeline({
               className={`track-lane ${track.hidden ? 'hidden-track' : ''}`}
               data-track-id={track.id}
               style={{ height: layouts.get(track.id)!.height }}
-              onClick={() => select(undefined)}
+              onPointerDown={startMarquee}
               onContextMenu={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -363,7 +526,7 @@ export default function Timeline({
                 .map((clip) => (
                   <div
                     key={clip.id}
-                    className={`timeline-clip ${clip.kind} ${selected === clip.id ? 'selected' : ''}`}
+                    className={`timeline-clip ${clip.kind} ${selectedSet.has(clip.id) ? 'selected' : ''} ${selected === clip.id ? 'primary-selection' : ''} ${track.locked ? 'locked-clip' : ''}`}
                     data-clip-id={clip.id}
                     style={{
                       left: clip.start * zoom,
@@ -375,26 +538,42 @@ export default function Timeline({
                     role="button"
                     tabIndex={0}
                     aria-label={t('片段 {v0}', { v0: clip.name })}
+                    aria-pressed={selectedSet.has(clip.id)}
                     onKeyDown={(e) => {
                       keyboardContextMenu(e);
-                      if (e.key === 'Enter') select(clip.id);
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        updateSelection(
+                          e.ctrlKey || e.metaKey || e.shiftKey
+                            ? toggleSelection(selection, clip.id)
+                            : [clip.id],
+                        );
+                      }
                     }}
                     onContextMenu={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
+                      if (!selectedSet.has(clip.id)) updateSelection([clip.id], clip.id);
                       onClipContextMenu(event, clip.id);
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (suppressClick.current) return;
                       if (tool === 'razor' && onRazor && !track.locked) {
                         const at =
                           clip.start +
                           (e.clientX - e.currentTarget.getBoundingClientRect().left) / zoom;
                         onRazor(clip.id, Math.round(at * project.fps) / project.fps);
-                      } else select(clip.id);
+                      } else if (e.detail === 0) updateSelection([clip.id], clip.id);
                     }}
                     onPointerDown={(e) => startDrag(e, clip, 'move')}
                   >
+                    <ClipMediaStrip
+                      clip={clip}
+                      asset={clip.assetId ? assets.get(clip.assetId) : undefined}
+                      showWaveform
+                    />
                     <div
                       className="trim-handle left"
                       title={t('拖动修剪开始')}
@@ -423,7 +602,7 @@ export default function Timeline({
                             : `${clip.speed}× · ${clip.duration.toFixed(1)}s`}
                       </div>
                     )}
-                    {selected === clip.id &&
+                    {selectedSet.has(clip.id) &&
                       Object.values(clip.keyframes)
                         .flat()
                         .filter((v, i, all) => v && all.findIndex((f) => f?.time === v.time) === i)
@@ -454,6 +633,23 @@ export default function Timeline({
                 ))}
             </div>
           ))}
+          {marquee && (
+            <div
+              className="timeline-marquee"
+              aria-hidden="true"
+              style={{
+                left: marquee.left,
+                top: marquee.top,
+                width: marquee.right - marquee.left,
+                height: marquee.bottom - marquee.top,
+              }}
+            />
+          )}
+          {invalidDrop && (
+            <div className="timeline-drop-notice" role="status">
+              {t('目标轨道已锁定或不兼容，片段保持原位')}
+            </div>
+          )}
           <div className="playhead" style={{ left: time * zoom }}>
             <span />
           </div>

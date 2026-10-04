@@ -5,6 +5,41 @@ import { maskPolygon } from './masks';
 
 type Source = HTMLVideoElement | HTMLImageElement;
 const sources = new Map<string, Promise<Source>>();
+// This map is runtime-only and is consulted solely by createPreviewRenderer.
+// renderProject (including strict frame export) always decodes original assets.
+let previewProxies = new Map<string, string>();
+let proxyRevision = 0;
+const originalDimensions = new WeakMap<Source, { width: number; height: number }>();
+const originalVideoSizes = new Map<string, Promise<{ width: number; height: number }>>();
+export function setPreviewMediaProxies(entries: { assetPath: string; proxy?: { url: string } }[]) {
+  const next = new Map(entries.filter(entry => entry.proxy).map(entry => [entry.assetPath, entry.proxy!.url]));
+  if (next.size === previewProxies.size && [...next].every(([key, url]) => previewProxies.get(key) === url)) return;
+  previewProxies = next;
+  originalVideoSizes.clear();
+  proxyRevision++;
+}
+function originalDisplaySize(asset: MediaAsset) {
+  const existing = originalVideoSizes.get(asset.url);
+  if (existing) return existing;
+  const pending = new Promise<{ width: number; height: number }>((resolve, reject) => {
+    // Metadata is small; do not decode a full-resolution frame to learn rotation/SAR.
+    const video = document.createElement('video');
+    const cleanup = () => { clearTimeout(timer); video.onloadedmetadata = null; video.onerror = null; video.removeAttribute('src'); video.load(); };
+    const failed = () => { cleanup(); reject(new Error(`素材无法解码：${asset.name}`)); };
+    const timer = setTimeout(failed, 12000);
+    video.muted = true; video.preload = 'metadata'; video.crossOrigin = 'anonymous';
+    video.onloadedmetadata = () => {
+      const width = video.videoWidth, height = video.videoHeight;
+      cleanup();
+      if (width && height) resolve({ width, height }); else reject(new Error(`素材无法解码：${asset.name}`));
+    };
+    video.onerror = failed; video.src = asset.url;
+  });
+  if (originalVideoSizes.size >= 256) originalVideoSizes.delete(originalVideoSizes.keys().next().value!);
+  originalVideoSizes.set(asset.url, pending);
+  void pending.catch(() => { if (originalVideoSizes.get(asset.url) === pending) originalVideoSizes.delete(asset.url); });
+  return pending;
+}
 const audioSources = new Map<string, HTMLAudioElement>();
 const audioGains = new Map<string, ReturnType<typeof createAudioRouting>>();
 let audioContext: AudioContext | undefined;
@@ -182,10 +217,13 @@ async function renderFrame(
       let source: Source | undefined;
       if (asset) {
         if (asset.missing) throw new Error(`找不到素材 ${asset.name}，请使用“重新链接素材”恢复。`);
-        source = await cancellable(
-          load(asset, `${options?.sourceScope ?? canvasIds.get(canvas)}:${clip.id}`),
-          options?.signal,
-        );
+        const proxyUrl = prepareVideo && asset.kind === 'video' && asset.path ? previewProxies.get(asset.path) : undefined;
+        const [decoded, dimensions] = await cancellable(Promise.all([
+          load(proxyUrl ? { ...asset, url: proxyUrl } : asset, `${options?.sourceScope ?? canvasIds.get(canvas)}:${clip.id}`),
+          proxyUrl ? originalDisplaySize(asset) : undefined,
+        ]), options?.signal);
+        source = decoded;
+        if (dimensions) originalDimensions.set(source, dimensions);
         if (source instanceof HTMLVideoElement) {
           if (prepareVideo) await prepareVideo(source, clip, time, options?.signal);
           else await seek(source, clip.inPoint + (time - clip.start) * clip.speed, options?.signal);
@@ -223,6 +261,7 @@ async function renderFrame(
 /** Interactive decoding is independent from the frame-exact export renderer. */
 export function createPreviewRenderer() {
   const sourceScope = crypto.randomUUID();
+  let currentProxyRevision = proxyRevision;
   type VideoState = {
     clip: Clip;
     assetUrl: string;
@@ -241,6 +280,7 @@ export function createPreviewRenderer() {
     width: number;
     height: number;
     playing: boolean;
+    proxyRevision: number;
     promise: Promise<boolean>;
     resolve: (committed: boolean) => void;
     reject: (reason: unknown) => void;
@@ -415,6 +455,19 @@ export function createPreviewRenderer() {
       options?: Pick<RenderOptions, 'width' | 'height'> & { playing?: boolean },
     ): Promise<boolean> {
       if (disposed) return Promise.resolve(false);
+      if (currentProxyRevision !== proxyRevision) {
+        currentProxyRevision = proxyRevision;
+        pauseInactive();
+        active?.abort();
+        pending?.resolve(false);
+        pending = undefined;
+        desired = undefined;
+        videos.clear();
+        for (const [key, media] of sources) if (key.startsWith(`${sourceScope}:`)) {
+          sources.delete(key);
+          void media.then(releaseSource).catch(() => {});
+        }
+      }
       suspended = false;
       const width = options?.width ?? project.width,
         height = options?.height ?? project.height,
@@ -428,6 +481,7 @@ export function createPreviewRenderer() {
         desired.width === width &&
         desired.height === height &&
         desired.playing === playing
+        && desired.proxyRevision === proxyRevision
       )
         return desired.promise;
       // A remounted preview immediately inherits the most recent complete frame.
@@ -454,6 +508,7 @@ export function createPreviewRenderer() {
         width,
         height,
         playing,
+        proxyRevision,
         promise,
         resolve,
         reject,
@@ -527,8 +582,9 @@ function drawClip(
   let dw = width,
     dh = height;
   if (source) {
-    const iw = source instanceof HTMLVideoElement ? source.videoWidth : source.naturalWidth,
-      ih = source instanceof HTMLVideoElement ? source.videoHeight : source.naturalHeight;
+    const original = originalDimensions.get(source);
+    const iw = original?.width ?? (source instanceof HTMLVideoElement ? source.videoWidth : source.naturalWidth),
+      ih = original?.height ?? (source instanceof HTMLVideoElement ? source.videoHeight : source.naturalHeight);
     const fit = Math.min(width / iw, height / ih);
     dw = iw * fit;
     dh = ih * fit;

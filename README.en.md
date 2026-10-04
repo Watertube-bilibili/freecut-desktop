@@ -12,11 +12,13 @@ FreeCut is a video editor for Windows and macOS, built by middle-school student 
 
 **All features are free forever. No memberships, no paid unlocks, and no export watermark.** No account is required. Media processing happens locally; updates and optional model downloads need an internet connection.
 
-**The 0.5.0 preview is released.** This update adopts selected algorithms and editing interactions from [Concat, formerly WolfCut](https://github.com/jub0t/Concat): resizable panels, media categories, fit-to-timeline and frame stepping, cubic-bezier keyframes, and an expanded FFmpeg path for eligible layered compositions. Suitable text and shape layers are rendered to transparent images once before export. FreeCut retains its two layouts, Easy/Pro modes, speech tools, custom model storage, Internet collaboration and existing project compatibility. See the [integration and provenance record](docs/WOLFCUT-INTEGRATION.md). This is not a complete Rust-engine replacement or a new GPU encoder. See the [0.5.0 verification record](docs/VERIFICATION-050.md) for the actual test scope.
+**The source is now at 0.6.0 preview; packages for `v0.6.0-preview.1` are pending publication.** This update adds manually generated 540p / 720p preview proxies, real waveforms and thumbnails generated on demand, local recovery copies, and timeline multiselection, marquee selection, dragging across tracks and ripple deletion. Proxies affect preview only: audio and final export use the original media. Proxy and preview-cache URLs are never saved or shared in projects. See the [0.6.0 verification record](docs/VERIFICATION-060.md) for test and publication status.
+
+The resizable workbench, media categories, fit-to-timeline, frame stepping, cubic-bezier keyframes and expanded native FFmpeg composition introduced in 0.5.0 remain available. Those changes adopt selected algorithms and interactions from [Concat, formerly WolfCut](https://github.com/jub0t/Concat), retaining FreeCut's two layouts, Easy/Pro modes, speech tools, custom model storage, Internet collaboration and existing project compatibility. See the [integration and provenance record](docs/WOLFCUT-INTEGRATION.md) and historical [0.5.0 verification record](docs/VERIFICATION-050.md).
 
 Custom speech-model storage remains available. In **AI Voice → Text to speech**, choose a parent folder; FreeCut creates a `FreeCut-VoiceModels` subfolder for ChatTTS, lightweight AISHELL Chinese speech models, and their model caches. This feature was introduced in 0.4.2; its original checks remain in the [0.4.2 verification record](docs/VERIFICATION-042.md). FreeCut does not cover every Jianying or CapCut feature. No account is required. Solo media processing is local; starting collaboration shares the project and its media with room members.
 
-The previous 0.4.1 release passed two local desktop instances collaborating, real encrypted project/media transfers between Windows and a remote Linux machine, and native transport checks inside the Windows package. Narrow windows use compact toolbar buttons. See the historical [0.4.1 verification record](docs/VERIFICATION-041.md) and [Internet test summary](docs/verification/041-internet.json) for samples, timing, release status and scope; these do not establish a new Internet test for 0.5.0. The [0.5.0 verification record](docs/VERIFICATION-050.md) states this version’s actual scope. Earlier installer and export work remains documented in the [0.3.2 verification record](docs/VERIFICATION-032.md).
+The previous 0.4.1 release passed two local desktop instances collaborating, real encrypted project/media transfers between Windows and a remote Linux machine, and native transport checks inside the Windows package. Narrow windows use compact toolbar buttons. See the historical [0.4.1 verification record](docs/VERIFICATION-041.md) and [Internet test summary](docs/verification/041-internet.json) for samples, timing, release status and scope; these do not establish a new Internet test for 0.6.0. The [0.6.0 verification record](docs/VERIFICATION-060.md) states this version’s actual scope. Earlier installer and export work remains documented in the [0.3.2 verification record](docs/VERIFICATION-032.md).
 
 Changing the speech-model folder copies and verifies fully installed models before activating the new location, while keeping the original files. Existing download caches and incomplete files remain where they are; subsequent speech-model downloads use the new cache location. A failed change leaves the previous location active. Downloads or generation block folder changes; you can restore the default location, and your choice persists across restarts. Python and sherpa runtimes, generated audio, and SenseVoice/Whisper caption models stay in their original locations. This setting relocates installed speech models and selects the location for subsequent model caches, not all application data.
 
@@ -32,13 +34,13 @@ FLAC and other audio files with embedded album artwork are recognized as audio i
 
 ## Preview
 
-![FreeCut 0.5.0 English desktop workbench](docs/screenshots/editor-en-050.png)
+![FreeCut 0.6.0 English desktop with multiple selected clips](docs/screenshots/editor-en-060.png)
 
-![FreeCut 0.5.0 mobile-style layout in Simplified Chinese](docs/screenshots/mobile-050.png)
+![FreeCut 0.6.0 mobile-style layout in Simplified Chinese](docs/screenshots/mobile-060.png)
 
 The second layout runs in the same desktop application. It is not an Android or iOS app.
 
-These screenshots show the actual 0.5.0 source running on 2026-09-19: English desktop at 1440×900 and the mobile-style layout in Simplified Chinese at 1100×620. All seven workbench checks passed; see the [workbench evidence](docs/verification/050-workbench.json) and [0.5.0 verification record](docs/VERIFICATION-050.md). Installers and matching source are available in the download section below.
+These show the actual 0.6.0 application running on 2026-10-04: English desktop at 1440×900 and the mobile-style layout at 1100×620, with two selected clips. The clearly labelled Synthetic media fixture was imported into a real project, including generated thumbnails, waveforms and a preview proxy. See the [proxy panel](docs/screenshots/media-cache-en-060.png) and [0.6.0 verification record](docs/VERIFICATION-060.md).
 
 [Watch or download the English promo](https://github.com/Watertube-bilibili/freecut-desktop/releases/download/v0.3.1-preview.1/freecut-launch-en-1080p.mp4): 55 seconds, 1080p, exported through the actual FreeCut application and verified completely silent. It credits `@我叫水管同学` and asks viewers to download and Star the repository. Add your own music if you wish. See the [actual product export and silence verification](videos/freecut-launch-en-edit/QA.md), separate from the [English visual source](videos/freecut-launch-en).
 
@@ -46,7 +48,12 @@ These screenshots show the actual 0.5.0 source running on 2026-09-19: English de
 
 ## Editing features
 
-This section describes the 0.5.0 preview, including its new workbench, bezier controls and expanded native composition.
+This section describes the implemented 0.6.0 preview source.
+
+- Generate video proxies manually in **Proxies & media cache**, using 540p by default or optional 720p. **Smooth preview** remembers its setting and can switch immediately back to original media. Preview audio and final exports always use the originals.
+- Visible timeline clips request real waveforms and thumbnails on demand. Cache storage is limited to 2 GB, with up to eight thumbnails and 2,048 waveform bins per source. View progress, cancel jobs, clear cache or choose its folder. Replacing original media invalidates its cache.
+- Unsaved desktop edits create recovery copies after about ten seconds without editing, or approximately every thirty seconds during continuous editing; busy operations defer writes. Restore from Home or **Project backups**, then save the project manually. Limits are eight versions per session, forty total entries and 128 MiB; the latest copy of each unsaved session is protected, and full storage reports an error.
+- Shift / Ctrl / Command-click to select multiple clips, or drag in empty timeline space to select a rectangle. Move, copy, cut, paste, delete and drag across tracks while preserving relative times and track positions; one drag is one undo step. Locked tracks and incompatible destinations are protected. Shift+Delete closes removed time intervals; if another unlocked clip overlaps a removed interval, the entire operation is rejected.
 
 - Resize workbench panels and filter media by type. Fit the timeline to all clips, use grouped editing tools and step through individual frames.
 - Import local video, images, and audio. Arrange multiple tracks, layer picture-in-picture content, snap clips, trim, split, duplicate, and undo or redo edits.
@@ -71,15 +78,15 @@ This section describes the 0.5.0 preview, including its new workbench, bezier co
 
 ## Download and install
 
-[Download the 0.5.0 preview](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.5.0-preview.1). The table lists this published version's package names; use the published assets on that Release for downloads, along with matching source, both guides and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
+**0.6.0 packages are pending publication.** The table lists intended filenames for `v0.6.0-preview.1`, not confirmation that files are already downloadable. Use the assets actually published on [GitHub Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases). The release will include matching source, both guides and SHA-256 checksums. The same application supports both languages and starts in Simplified Chinese.
 
 | Computer or use | Download | How to use it |
 | --- | --- | --- |
-| Windows 10/11 x64, regular installation | `FreeCut-0.5.0-win-x64-Setup.exe` | Choose your drive or folder; C: is not preselected. Upgrades repair eligible old shortcuts and their icons. |
-| Windows 10/11 x64, no installation | `FreeCut-0.5.0-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder for settings, recent projects, and default models. Also retain any separately selected speech-model folder. |
-| Mac with Apple Silicon | `FreeCut-0.5.0-mac-arm64.dmg` | Open the DMG and drag FreeCut into Applications. |
-| Mac with an Intel processor | `FreeCut-0.5.0-mac-x64.dmg` | Install the same way. |
-| Mac, ZIP format preferred | `FreeCut-0.5.0-mac-arm64.zip` or `FreeCut-0.5.0-mac-x64.zip` | Extract the app for your processor. DMG and ZIP contain the same application; choose one. |
+| Windows 10/11 x64, regular installation | `FreeCut-0.6.0-win-x64-Setup.exe` | Choose your drive or folder; C: is not preselected. Upgrades repair eligible old shortcuts and their icons. |
+| Windows 10/11 x64, no installation | `FreeCut-0.6.0-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder for settings, recent projects, recovery copies and default models. Also retain separately selected model and media-cache folders. |
+| Mac with Apple Silicon | `FreeCut-0.6.0-mac-arm64.dmg` | Open the DMG and drag FreeCut into Applications. |
+| Mac with an Intel processor | `FreeCut-0.6.0-mac-x64.dmg` | Install the same way. |
+| Mac, ZIP format preferred | `FreeCut-0.6.0-mac-arm64.zip` or `FreeCut-0.6.0-mac-x64.zip` | Extract the app for your processor. DMG and ZIP contain the same application; choose one. |
 
 You need only one application download for normal use; the source archives are for developers and license compliance. On macOS, **Apple menu → About This Mac** identifies your processor.
 
@@ -170,7 +177,7 @@ Distributing the video engine also requires its corresponding source. CI uses th
 ## Current limits
 
 - This is a desktop application. The mobile-style layout is not an Android or iOS build.
-- Eligible ordinary edits export directly through FFmpeg. Complex effects still require frame-by-frame decoding and Canvas composition, so long or 4K projects can take time. Piped export removes intermediate PNG files, but encoding and the final video still require memory and disk space. Proxy media and a GPU rendering pipeline are not implemented yet; speed improvements are not guaranteed to be the same on every computer.
+- Eligible ordinary edits export directly through FFmpeg. Complex effects still require frame-by-frame decoding and Canvas composition, so long or 4K projects can take time. The 540p / 720p proxies reduce preview decoding work while export keeps original quality and processing. A GPU rendering pipeline is not implemented; speed improvements are not guaranteed to be the same on every computer.
 - Preview decoding depends on formats supported by Electron. Common H.264 MP4, PNG/JPEG, WAV, and MP3 files are a practical starting point; some professional formats need transcoding.
 - Speech recognition depends on language, recording quality, and model choice. Generated captions remain editable and are not guaranteed to be accurate.
 - Model downloads and inference depend on network access, storage, and hardware. The documentation describes the actual tested scope; macOS model inference still needs validation on the corresponding devices.
@@ -179,6 +186,8 @@ Distributing the video engine also requires its corresponding source. CI uses th
 ## Architecture and licenses
 
 FreeCut uses React, TypeScript and Electron. Version 0.5.0 adapts selected Concat algorithms and expands native FFmpeg composition while retaining Canvas and the RGBA pipe for unsupported complex visuals. Preview and host export share the bezier module. Title images are created only in a task-owned temporary directory, with count, byte-size and dimension checks. H.264 still uses x264's veryfast preset with four encoding threads; no Rust or GPU backend is claimed. Desktop IPC authenticates the application window and its main frame. Local media access is granted to files selected by the user or explicitly referenced by an opened project. See the [architecture document](docs/ARCHITECTURE.md).
+
+Version 0.6.0 adds a separate media-cache service and host-owned recovery store. Cache jobs run one at a time with limited encoding threads, inside a marked `FreeCut-MediaCache` subfolder. Recovery writes use temporary files and atomic replacement, and restoring reauthorizes media. Both remain separate from manually saved project files.
 
 Original FreeCut code remains **GPL-3.0-or-later** under [LICENSE](LICENSE). Bezier, placement and rotated-bounds algorithms adapted from Concat remain **AGPL-3.0-or-later**, copyright Jareer and Concat contributors. The combination follows section 13 of both licenses, including the applicable network-source requirement; internal-source adaptations do not use Concat's plugin exception. Read the full [AGPL text](docs/third-party/concat/AGPL-3.0.txt), [provenance and modifications](docs/WOLFCUT-INTEGRATION.md), and [third-party notices](THIRD_PARTY_NOTICES.md). About and collaboration expose source and license links. Redistributed installers must be accompanied by their matching complete corresponding source. Other libraries, models and media retain their own terms; the original icon and brand are documented in [BRAND.md](docs/BRAND.md).
 

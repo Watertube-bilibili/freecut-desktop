@@ -1,4 +1,4 @@
-# FreeCut 0.5.0 Preview Quickstart
+# FreeCut 0.6.0 Preview Quickstart
 
 [简体中文](QUICKSTART.md) · [English](QUICKSTART.en.md)
 
@@ -6,14 +6,14 @@ FreeCut is an open-source desktop video editor. **All features are free forever:
 
 ## Choose your download
 
-The table lists 0.5.0 preview package names. Download one application file from the assets actually published on [GitHub Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases).
+This guide covers **0.6.0, release tag `v0.6.0-preview.1`**. The table explains the platform packages. Download one application file from the assets actually published on [GitHub Releases](https://github.com/Watertube-bilibili/freecut-desktop/releases).
 
 | Computer / preference | File | Use |
 | --- | --- | --- |
-| Windows 10/11 x64, regular installation | `FreeCut-0.5.0-win-x64-Setup.exe` | Choose C drive, D drive, or a custom folder in the installer. |
-| Windows 10/11 x64, no installation | `FreeCut-0.5.0-win-x64-Portable.exe` | Run from a writable folder. Keep the adjacent `FreeCutData` folder and any separately selected speech-model folder when moving the app. |
-| Mac with Apple silicon (M series) | `FreeCut-0.5.0-mac-arm64.dmg` | Open and drag FreeCut into Applications. |
-| Mac with an Intel processor | `FreeCut-0.5.0-mac-x64.dmg` | Open and drag FreeCut into Applications. |
+| Windows 10/11 x64, regular installation | `FreeCut-0.6.0-win-x64-Setup.exe` | Choose C drive, D drive, or a custom folder in the installer. |
+| Windows 10/11 x64, no installation | `FreeCut-0.6.0-win-x64-Portable.exe` | Run from a writable folder. Keep adjacent `FreeCutData`, including recovery copies, and separately selected model or media-cache folders when moving the app. |
+| Mac with Apple silicon (M series) | `FreeCut-0.6.0-mac-arm64.dmg` | Open and drag FreeCut into Applications. |
+| Mac with an Intel processor | `FreeCut-0.6.0-mac-x64.dmg` | Open and drag FreeCut into Applications. |
 | Mac, archive preference | Matching `mac-arm64.zip` or `mac-x64.zip` | Extract FreeCut.app; choose ZIP or DMG, not both. |
 
 Check Apple menu → About This Mac for your chip. Source archives are for developers and license compliance; you do not need them to run the app. `SHA256SUMS.txt` provides download hashes. Windows builds are unsigned; Mac builds use an ad hoc signature and are not notarized. Mobile-style layout is inside the desktop application, not an iOS or Android app.
@@ -45,6 +45,22 @@ Desktop and mobile-style layouts edit the same project. The mobile inspector can
 - Use **Fit timeline** beside the timeline zoom controls to see the whole edit. Zoom buttons and the slider let you inspect individual cuts. The toolbar groups selection, razor, split and snapping tools.
 - **Previous frame / Next frame** beside playback move one project frame at a time; Left/Right arrow keys do the same. Export frame rate is a separate output setting.
 
+## Multiple clips, tracks and ripple deletion
+
+Shift, Ctrl or Command-click clips to add or remove them from the selection. Drag in empty timeline space for marquee selection; hold a modifier to add to the existing selection. Drag selected clips together while preserving their time gaps. Drag vertically to change tracks while preserving relative track positions. Audio tracks accept audio clips; picture tracks accept visual content and audio. Locked or incompatible destinations reject the move.
+
+Copy, cut, paste, duplicate and delete operate on the selection. Paste places its earliest clip at the playhead while keeping relative times and tracks, with fresh clip and keyframe IDs. Each drag or batch action is one undo step; Escape cancels an active drag. The clip clipboard remains local to the current project.
+
+**Ripple delete** (Shift+Delete) removes editable selected clips, then shifts later clips on unlocked tracks by the union of removed time intervals. Locked tracks stay in place. If another unlocked clip overlaps any removed interval, the entire operation is rejected with a message; adjust that overlap first. Ordinary Delete removes clips without shifting later content.
+
+## Smooth preview and media caching
+
+Click **Smooth preview** in the editor to open **Proxies & media cache**. Choose the default **540p** or optional **720p**, then select **Generate proxy** for one video or **Generate all video proxies**. Generation runs locally with progress and cancellation. High-resolution or long sources take time. The **Smooth preview** switch uses available proxies; turning it off returns immediately to originals, and the preference persists.
+
+Proxies retain the original display geometry and timing. Audio and final exports always use the original media. Projects and collaboration never contain proxy URLs. Keep original files: proxies are not backups, and missing originals still need relinking. Some professional containers may remain incompatible with preview even after generating a proxy.
+
+Visible timeline clips request real waveforms and thumbnails on demand, with up to **2,048 waveform bins** and **eight thumbnails** per source. Their display follows trimming and speed. Cache storage is limited to **2 GB**, with older entries removed as needed and invalidation when originals change. The panel shows usage and supports clearing or choosing a parent folder; FreeCut uses only its marked `FreeCut-MediaCache` subfolder. Stop active jobs before clearing or changing location. Changing location leaves previous cache behind; clearing preserves original media and projects.
+
 ## Context menus and keyframes
 
 Right-click a clip, preview object, track, timeline blank area or library asset for its available actions. Copy, cut and paste preserve keyframes and create independent clip IDs. Track-menu paste uses the clicked timeline time; the keyboard shortcut pastes at the playhead. Locked tracks reject edits, and assets currently used in the project cannot be removed from the library. Clip clipboard is internal to the current project, not a system or cross-project clipboard.
@@ -74,7 +90,7 @@ Text inputs keep their normal editing shortcuts. In a menu, use arrows to naviga
 
 Open **Export → Output settings** to choose resolution, frame rate and quality. Start with **720p at 30 fps** on a slower computer. These settings keep your project canvas and original files unchanged. Output is watermark-free H.264/AAC MP4.
 
-FreeCut 0.5.0 automatically selects native FFmpeg composition for eligible layers, static scale/rotation/opacity, position keyframes and fades. Suitable title, caption and shape layers are rendered to transparent images once. No additional switch is needed.
+Since 0.5.0, FreeCut automatically selects native FFmpeg composition for eligible layers, static scale/rotation/opacity, position keyframes and fades. Suitable title, caption and shape layers are rendered to transparent images once. No additional switch is needed.
 
 Animated scale/rotation/opacity, unsupported effects, cuts that do not align with the output frame grid and other ineligible cases retain frame-by-frame Canvas rendering. Long titles or effects that cannot safely be baked into an image, such as blur, feathering and vignette, also keep their existing rendering path. Complex projects can still take time; no universal speedup or GPU encoding is claimed. Cancelling an export preserves an existing destination file.
 
@@ -96,9 +112,17 @@ Closing with unsaved changes offers save, discard or cancel. Cancelled or failed
 
 Home → Settings → Software updates checks this repository's Releases, downloads the correct platform package, verifies its SHA-256, and waits until idle before installation. You can postpone or disable automatic updates. Unsaved changes still need your choice before the app exits. Mac must run outside the read-only DMG; Portable keeps data in the adjacent `FreeCutData` folder.
 
+## Recovery copies and history
+
+Unsaved desktop edits create a local recovery copy after about **ten seconds** without editing, or approximately every **thirty seconds** during continuous editing. Active gestures, export or file operations defer writes. Open **Project backups** at the bottom of the editor to inspect versions; Home also shows available recovery records. Failed writes show an error, and manual saving remains available.
+
+Choose a version to restore. Unsaved work still receives its save/discard/cancel protection. Restoration opens an editable project without overwriting the original `.freecut` file; save it manually to your chosen location. Recovery copies contain media references, not the media itself. Missing files need relinking. Deleting a recovery copy removes only that record.
+
+Retention is bounded to **eight versions per session**, **forty entries / 128 MiB** overall and **16 MiB per copy**. Saved or older revisions are removed first, protecting the newest copy of each unsaved session. If space cannot be reclaimed safely, the write fails with a cleanup message. A crash can still lose edits made since the latest completed copy, so keep saving important milestones manually.
+
 ## Current limits
 
-FreeCut does not yet provide every feature of established editors. Multi-select clips, nested timelines, multicam, proxy generation, speed curves, motion tracking, advanced color grading and cloud collaboration are still pending. Export is currently H.264/AAC MP4. Use the [English README](../README.en.md) and [feature matrix](FEATURE-MATRIX.md) for the implemented scope, and [verification record](VERIFICATION.md) for tested boundaries.
+FreeCut does not yet provide every feature of established editors. Nested timelines, multicam, speed curves, motion tracking, advanced color grading and cloud collaboration are still pending. Proxies reduce preview decoding work; export still processes original media and currently outputs H.264/AAC MP4. Use the [English README](../README.en.md) and [feature matrix](FEATURE-MATRIX.md) for implemented scope, and the [0.6.0 verification record](VERIFICATION-060.md) for tested boundaries and publication status.
 
 ## Remote collaboration
 
