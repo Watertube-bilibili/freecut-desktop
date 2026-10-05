@@ -115,6 +115,8 @@ Model capabilities and licenses are separate from the application's free feature
 
 The free [shuiguan-cut Skill](skills/shuiguan-cut/SKILL.md) turns local media and a JSON editing recipe into a genuine `.freecut` project and an MP4 exported by the actual FreeCut application.
 
+As of October 5, 2026, it also has a [standalone open-source repository](https://github.com/Watertube-bilibili/shuiguan-cut-skill) and a [v0.6.0 downloadable Skill package](https://github.com/Watertube-bilibili/shuiguan-cut-skill/releases/tag/v0.6.0), with Chinese and English setup instructions. The bridge now includes FreeCut's existing 1440p export option. The desktop application remains at 0.6.0; the Skill package contains neither the application runtime nor models. Download it and Star the repository if you find it useful.
+
 It launches an isolated application instance and uses the real import, project, Canvas, and FFmpeg paths. It does not replace the final export with another editor. The recipe bridge currently covers cuts, layered text and shapes, basic transforms and keyframes, constant speed, fades, volume, and stereo routing. Its scope is narrower than the full application.
 
 See [AI editing setup](docs/AI-EDITING.md) and the [recipe reference](skills/shuiguan-cut/references/recipe.md). The Skill requires a compatible FreeCut source checkout and local dependencies; it does not bundle runtimes or models. Its output directory must be new, so existing output is not overwritten.

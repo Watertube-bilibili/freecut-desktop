@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-05",
+  "skillVersion": "0.6.0",
+  "applicationVersion": "0.6.0",
+  "packaged": true,
+  "passed": true,
+  "assets": 14,
+  "clips": 14,
+  "dimensions": {
+    "width": 2560,
+    "height": 1440,
+    "fps": 24
+  },
+  "duration": 211.16666666666669,
+  "completeDecode": true,
+  "rendererErrors": [],
+  "warnings": [],
+  "privacy": "Only anonymous technical results. User filenames, paths, projects and media are excluded.",
+  "scope": "Actual Windows packaged application export with 1440p selected through the product interface. No runtime, exporter or validation changes."
+}

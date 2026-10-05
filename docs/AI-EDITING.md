@@ -6,7 +6,7 @@
 
 ## 安装 Skill
 
-从本仓库的 `skills/shuiguan-cut` 获取文件夹，或在 [Release](https://github.com/Watertube-bilibili/freecut-desktop/releases/tag/v0.3.0-preview.1) 下载 `shuiguan-cut-skill.zip` 并解压。将完整的 `shuiguan-cut` 文件夹放到 Codex 的技能目录：
+从本仓库的 `skills/shuiguan-cut` 获取文件夹，或从[独立开源仓库](https://github.com/Watertube-bilibili/shuiguan-cut-skill)的 [v0.6.0 Release](https://github.com/Watertube-bilibili/shuiguan-cut-skill/releases/tag/v0.6.0) 下载 `shuiguan-cut.zip` 并解压。将完整的 `shuiguan-cut` 文件夹放到 Codex 的技能目录；若已有同名 Skill，先保留旧文件夹作为备份：
 
 - Windows 默认是 `%USERPROFILE%\.codex\skills\shuiguan-cut`。
 - Mac 默认是 `~/.codex/skills/shuiguan-cut`。
@@ -15,6 +15,8 @@
 让 AI 在后续会话中使用 `$shuiguan-cut`。其他支持 Skill 的工具可以读取同一份 `SKILL.md`，但需要能够运行本地 Node 脚本。
 
 此版需要同版本水管剪辑源码仓库及其开发依赖（Node.js 22.12 或更新版、Playwright、TypeScript、Electron 和已准备的 FFmpeg）。按仓库 README 完成 `npm ci`、运行时准备与 `npm run build`；Skill 压缩包不携带这些运行环境。已有安装版可用 `--exe` 指向实际应用可执行文件，但仍需 `--repo` 提供同版本工程模型和自动化依赖。
+
+2026-10-05 的独立 Skill v0.6.0 对应 FreeCut 0.6.0，桥接已包含产品现有的 1440p 档位，可导出 16:9 的 2560×1440 视频。720p、1080p、1440p、2160p 均沿用产品的短边尺寸规则和最大 3840 像素限制，不会修改导出器或绕过工程校验。产品自动选择合适的原生 FFmpeg 或 Canvas 合成路径。[Windows 打包应用的 1440p 实测摘要](verification/skill-060.json)记录了实际导入、14 段拼接、保存工程、导出和完整解码结果，仅含匿名技术参数，不含用户的素材、路径或工程。
 
 ## 给 AI 的示例要求
 

@@ -12,7 +12,7 @@ const { promisify } = require('node:util');
 const assert = require('node:assert/strict');
 const execute = promisify(execFile);
 const uid = () => crypto.randomUUID();
-const help = `Waterpipe Cut / 水管剪辑 AI bridge (Node.js 22+)
+const help = `FreeCut / 水管剪辑 AI bridge (Node.js 22+)
   node shuiguan-cut.cjs doctor --repo PATH [--exe INSTALLED_EXECUTABLE]
   node shuiguan-cut.cjs edit-render --repo PATH --recipe FILE --out-dir NEW_DIRECTORY [--exe EXECUTABLE] [--timeout SECONDS]
   node shuiguan-cut.cjs demo --repo PATH --out-dir NEW_DIRECTORY [--exe EXECUTABLE]
@@ -296,7 +296,7 @@ async function editRender(opts, env, recipe, directory) {
   const report = {
     passed: false,
     software: '水管剪辑',
-    engine: 'Product Canvas renderer + product FFmpeg exporter',
+    engine: 'Product-selected native FFmpeg or Canvas composition + product FFmpeg exporter',
     directory,
     project: saved,
     output,
@@ -395,8 +395,8 @@ async function editRender(opts, env, recipe, directory) {
       quality: recipe.export?.quality ?? 'high',
     };
     assert(
-      [720, 1080, 2160].includes(exportSettings.height),
-      'Export height must be 720, 1080 or 2160',
+      [720, 1080, 1440, 2160].includes(exportSettings.height),
+      'Export height must be 720, 1080, 1440 or 2160',
     );
     assert([24, 25, 30, 50, 60].includes(exportSettings.fps), 'Export fps must be 24,25,30,50,60');
     assert(
