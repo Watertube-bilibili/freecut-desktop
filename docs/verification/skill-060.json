@@ -16,5 +16,18 @@
   "rendererErrors": [],
   "warnings": [],
   "privacy": "Only anonymous technical results. User filenames, paths, projects and media are excluded.",
-  "scope": "Actual Windows packaged application export with 1440p selected through the product interface. No runtime, exporter or validation changes."
+  "scope": "Actual Windows packaged application export with 1440p selected through the product interface. No runtime, exporter or validation changes.",
+  "visualReview": {
+    "initialExport": "Four single-frame black cut boundaries were found by comparing source frames; structural export checks alone did not detect them.",
+    "productIssue": "FreeCut 0.6.0 native exporter rounds fractional 24fps boundary times.",
+    "boundary": "passed above refers to application operation, dimensions, frame rate and full decode, not complete visual quality.",
+    "correction": {
+      "method": "Original-source short patch inputs, composed and exported again through the same Skill and real FreeCut application.",
+      "passed": true,
+      "checkedBoundaryFrames": 12,
+      "videoFrames": 5068,
+      "applicationUnmodified": true,
+      "note": "This repairs the delivered video; the general exporter boundary issue remains documented."
+    }
+  }
 }
